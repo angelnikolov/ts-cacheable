@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for ngx-cacheable/cacheable.decorator.ts</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../prettify.css" />
+    <link rel="stylesheet" href="../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../index.html">all files</a> / <a href="index.html">ngx-cacheable/</a> cacheable.decorator.ts
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>30/30</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">96.97% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>32/33</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>6/6</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>29/29</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line high'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">100×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">139×</span>
+<span class="cline-any cline-yes">69×</span>
+<span class="cline-any cline-yes">103×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">69×</span>
+<span class="cline-any cline-yes">16×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5×</span>
+<span class="cline-any cline-yes">5×</span>
+<span class="cline-any cline-yes">11×</span>
+<span class="cline-any cline-yes">5×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">69×</span>
+<span class="cline-any cline-yes">27×</span>
+<span class="cline-any cline-yes">27×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">42×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">32×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">30×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">15×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">30×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { Observable } from 'rxjs/Observable';
+import { of } from 'rxjs/observable/of';
+import { delay, tap } from 'rxjs/operators';
+&nbsp;
+const DEFAULT_CACHE_RESOLVER = (oldParams:Array&lt;any&gt;, newParams:Array&lt;any&gt;) =&gt;
+  JSON.stringify(oldParams) === JSON.stringify(newParams);
+&nbsp;
+export type ICacheRequestResolver = (
+  oldParameters: Array&lt;any&gt;,
+  newParameters: Array&lt;any&gt;
+) =&gt; boolean;
+export type IShouldCacheDecider = (response: any) =&gt; boolean;
+export type ICacheable = (...args:Array&lt;any&gt;) =&gt; Observable&lt;any&gt;;
+interface ICachePair {
+  parameters: any;
+  response: any;
+  created: Date;
+}
+export interface ICacheConfig {
+  /**
+   * @description request cache resolver which will get old and new paramaters passed to and based on those
+   * will figure out if we need to bail out of cache or not
+   */
+  cacheResolver?: ICacheRequestResolver;
+  /**
+   * @description cache decider that will figure out if the response should be cached or not, based on it
+   */
+  shouldCacheDecider?: IShouldCacheDecider;
+  /**
+   * maxAge of cache in milliseconds
+   * @description if time between method calls is larger - we bail out of cache
+   */
+  maxAge?: number;
+  /**
+   * whether should use a sliding expiration strategy on caches
+   * this will reset the cache created property and keep the cache alive for @param maxAge milliseconds more
+   */
+  slidingExpiration?: boolean;
+  /**
+   * max cacheCount for different parameters
+   * @description maximum allowed unique caches (same parameters)
+   */
+  maxCacheCount?: number;
+  /**
+   * cache will be resolved asynchronously - an extra change detection pass will be made by
+   * @description should cache be resolved asynchronously? - helps with declarative forms and two-way databinding via ngModel
+   */
+  async?: boolean;
+}
+export const Cacheable: ((
+  cacheConfig?: ICacheConfig
+) =&gt; (
+  target: Object,
+  propertyKey: string,
+  propertyDescriptor: TypedPropertyDescriptor&lt;ICacheable&gt;
+) =&gt; TypedPropertyDescriptor&lt;ICacheable&gt;) = _cacheConfig =&gt; {
+  return function(
+    _target: Object,
+    _propertyKey: string,
+    propertyDescriptor: TypedPropertyDescriptor&lt;ICacheable&gt;
+  ) {
+    const _oldMethod = propertyDescriptor.value;
+    <span class="missing-if-branch" title="else path not taken" >E</span>if (propertyDescriptor &amp;&amp; propertyDescriptor.value) {
+      const _cachePairs: Array&lt;ICachePair&gt; = [];
+      const cacheConfig = _cacheConfig ? _cacheConfig : {};
+      cacheConfig.cacheResolver = cacheConfig.cacheResolver
+        ? cacheConfig.cacheResolver
+        : DEFAULT_CACHE_RESOLVER;
+&nbsp;
+      /* use function instead of an arrow function to keep context of invocation */
+      (propertyDescriptor.value as any) = function(...parameters:Array&lt;any&gt;) {
+        let _foundCachePair = _cachePairs.find(cp =&gt;
+          cacheConfig.cacheResolver(cp.parameters, parameters)
+        );
+        /**
+         * check if maxAge is passed and cache has actually expired
+         */
+        if (cacheConfig.maxAge &amp;&amp; _foundCachePair &amp;&amp; _foundCachePair.created) {
+          if (
+            new Date().getTime() - _foundCachePair.created.getTime() &gt;
+            cacheConfig.maxAge
+          ) {
+            _cachePairs.splice(_cachePairs.indexOf(_foundCachePair, 1));
+            _foundCachePair = null;
+          } else if (_cacheConfig.slidingExpiration) {
+            _foundCachePair.created = new Date();
+          }
+        }
+&nbsp;
+        if (_foundCachePair) {
+          const cached$ = of(_foundCachePair.response);
+          return cacheConfig.async ? cached$.pipe(delay(0)) : cached$;
+        } else {
+          return (_oldMethod.call(this, ...parameters) as Observable&lt;any&gt;).pipe(
+            tap(response =&gt; {
+              /**
+               * if no maxCacheCount has been passed
+               * if maxCacheCount has not been passed, just shift the cachePair to make room for the new one
+               * if maxCacheCount has been passed, respect that and only shift the cachePairs if the new cachePair will make them exceed the count
+               */
+              if (
+                !cacheConfig.shouldCacheDecider ||
+                cacheConfig.shouldCacheDecider(response)
+              ) {
+                if (
+                  !cacheConfig.maxCacheCount ||
+                  cacheConfig.maxCacheCount === 1 ||
+                  (cacheConfig.maxCacheCount &amp;&amp;
+                    cacheConfig.maxCacheCount &lt; _cachePairs.length + 1)
+                ) {
+                  _cachePairs.shift();
+                }
+                _cachePairs.push({
+                  parameters,
+                  response,
+                  created: cacheConfig.maxAge ? new Date() : null
+                });
+              }
+            })
+          );
+        }
+      };
+    }
+    return propertyDescriptor;
+  };
+};
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Thu Apr 05 2018 01:41:09 GMT+0300 (EEST)
+</div>
+</div>
+<script src="../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../sorter.js"></script>
+</body>
+</html>
