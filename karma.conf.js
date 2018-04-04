@@ -1,7 +1,7 @@
 module.exports = function(config) {
   config.set({
     frameworks: ["jasmine", "karma-typescript"],
-    browsers: ["ChromeHeadless"],
+    browsers: ["ChromeHeadlessNoSandbox"],
     reporters: ["progress", "karma-typescript"],
     files: ["./cacheable.decorator.ts", "./cacheable.decorator.spec.ts"],
     preprocessors: {
@@ -9,6 +9,13 @@ module.exports = function(config) {
     },
     karmaTypescriptConfig: {
       tsconfig: "./tsconfig.json"
+    },
+    // you can define custom flags
+    customLaunchers: {
+      ChromeHeadlessNoSandbox: {
+        base: "ChromeHeadless",
+        flags: ["--no-sandbox"]
+      }
     }
   });
 };
