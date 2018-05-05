@@ -3,23 +3,38 @@ import { combineLatest } from 'rxjs/observable/combineLatest';
 import { forkJoin } from 'rxjs/observable/forkJoin';
 import { timer } from 'rxjs/observable/timer';
 import { mapTo, startWith } from 'rxjs/operators';
+import { Subject } from 'rxjs/Subject';
 
+import { CacheBuster } from './cache-buster.decorator';
 import { Cacheable } from './cacheable.decorator';
 
+
+const cacheBusterNotifier = new Subject<void>();
 class Service {
-  public mockServiceCall(parameter) {
+  mockServiceCall(parameter) {
     return timer(1000).pipe(mapTo({ payload: parameter }));
   }
+  mockSaveServiceCall() {
+    return timer(1000).pipe(mapTo('SAVED'));
+  }
+
   @Cacheable()
   getData(parameter: string) {
     return this.mockServiceCall(parameter);
   }
+
+  @Cacheable()
+  getDataAndReturnCachedStream(parameter: string) {
+    return this.mockServiceCall(parameter);
+  }
+
   @Cacheable({
     async: true
   })
   getDataAsync(parameter: string) {
     return this.mockServiceCall(parameter);
   }
+
   @Cacheable({
     maxAge: 7500
   })
@@ -41,6 +56,7 @@ class Service {
   getDataWithMaxCacheCount(parameter: string) {
     return this.mockServiceCall(parameter);
   }
+
   @Cacheable({
     maxAge: 7500,
     maxCacheCount: 5
@@ -48,6 +64,7 @@ class Service {
   getDataWithMaxCacheCountAndExpiration(parameter: string) {
     return this.mockServiceCall(parameter);
   }
+
   @Cacheable({
     maxAge: 7500,
     maxCacheCount: 5,
@@ -74,8 +91,22 @@ class Service {
   getDataWithCustomCacheDecider(parameter: string) {
     return this.mockServiceCall(parameter);
   }
+
+  @CacheBuster({
+    cacheBusterNotifier: cacheBusterNotifier
+  })
+  saveDataAndCacheBust() {
+    return this.mockSaveServiceCall();
+  }
+
+  @Cacheable({
+    cacheBusterObserver: cacheBusterNotifier.asObservable()
+  })
+  getDataWithCacheBusting(parameter: string) {
+    return this.mockServiceCall(parameter);
+  }
 }
-describe('CacheDecorator', () => {
+describe('CacheableDecorator', () => {
   let service: Service = null;
   let mockServiceCallSpy: jasmine.Spy = null;
   beforeEach(() => {
@@ -88,204 +119,73 @@ describe('CacheDecorator', () => {
     jasmine.clock().uninstall();
   });
 
-  it('return cached data for 5 unique requests all available for 7500ms WITH slidingExpiration on', () => {
-    jasmine.clock().mockDate();
-    /**
-     * call the same endpoint with 5 different parameters and cache all 5 responses, based on the maxCacheCount parameter
-     */
-    const parameters = ['test1', 'test2', 'test3', 'test4', 'test5'];
-    parameters.forEach((param) => service.getDataWithMaxCacheCountAndSlidingExpiration(param).subscribe());
-    expect(mockServiceCallSpy).toHaveBeenCalledTimes(5);
+  /**
+   * do not use async await when using jasmine.clock()
+   * we can mitigate this but will make our tests slower
+   * https://www.google.bg/search?q=jasmine.clock.install+%2B+async+await&oq=jasmine.clock.install+%2B+async+await&aqs=chrome..69i57.4240j0j7&sourceid=chrome&ie=UTF-8
+   */
 
-    /**
-     * allow for the mock request to complete
-     */
-    jasmine.clock().tick(1000);
-
-    /**
-     * pass through time to just before the cache expires
-     */
-    jasmine.clock().tick(7500);
-    /**
-     * re-call just with test2 so we renew its expiration
-     */
-    service.getDataWithMaxCacheCountAndSlidingExpiration('test2').subscribe();
-
-    expect(mockServiceCallSpy).toHaveBeenCalledTimes(5);
-    /**
-     * expire ALL caches except the test2 one
-     */
-    jasmine.clock().tick(1);
-    const cachedResponse = _timedStreamAsyncAwait(
-      combineLatest(
-        parameters.map((param) => service.getDataWithMaxCacheCountAndSlidingExpiration(param).pipe(startWith(null)))
-      )
-    );
-    /**
-     * no cache for 4 payloads, so 4 more calls to the service will be made
-     */
-    expect(mockServiceCallSpy).toHaveBeenCalledTimes(9);
-    expect(cachedResponse).toEqual([null, { payload: 'test2' }, null, null, null]);
-    jasmine.clock().uninstall();
-  });
-
-  it('return cached data for 5 unique requests all available for 7500ms', () => {
-    jasmine.clock().mockDate();
-
-    /**
-     * call the same endpoint with 5 different parameters and cache all 5 responses, based on the maxCacheCount parameter
-     */
-    const parameters = ['test1', 'test2', 'test3', 'test4', 'test5'];
-    parameters.forEach((param) => service.getDataWithMaxCacheCountAndExpiration(param).subscribe());
-    expect(mockServiceCallSpy).toHaveBeenCalledTimes(5);
-
-    jasmine.clock().tick(1000);
-    const cachedResponse2 = _timedStreamAsyncAwait(
-      forkJoin(parameters.map((param) => service.getDataWithMaxCacheCountAndExpiration(param)))
-    );
-    expect(mockServiceCallSpy).toHaveBeenCalledTimes(5);
-
-    expect(cachedResponse2).toEqual([
-      { payload: 'test1' },
-      { payload: 'test2' },
-      { payload: 'test3' },
-      { payload: 'test4' },
-      { payload: 'test5' }
-    ]);
-
-    /**
-     * expire caches
-     */
-    jasmine.clock().tick(7501);
-
-    const cachedResponse3 = _timedStreamAsyncAwait(service.getDataWithMaxCacheCountAndExpiration('test1'));
-    expect(cachedResponse3).toEqual(null);
-    /**
-     * by now, no cache exists for the 'test1' parameter, so 1 more call will be made to the service
-     */
-    expect(mockServiceCallSpy).toHaveBeenCalledTimes(6);
-  });
-
-  it('return cached date up until the maxAge period has passed and then bail out to data source', () => {
-    /**
-     * do not use async await when using jasmine.clock()
-     * we can mitigate this but will make our tests slower
-     * https://www.google.bg/search?q=jasmine.clock.install+%2B+async+await&oq=jasmine.clock.install+%2B+async+await&aqs=chrome..69i57.4240j0j7&sourceid=chrome&ie=UTF-8
-     */
-    jasmine.clock().mockDate();
-    let asyncFreshData = null;
-    service.getDataWithExpiration('test').subscribe((data) => {
-      asyncFreshData = data;
-    });
-    jasmine.clock().tick(1000);
+  it('return cached data up until a new parameter is passed and the cache is busted', () => {
+    const asyncFreshData = _timedStreamAsyncAwait(service.getData('test'), 1000);
     expect(asyncFreshData).toEqual({ payload: 'test' });
     expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
 
-    const cachedResponse = _timedStreamAsyncAwait(service.getDataWithExpiration('test'));
+    const cachedResponse = _timedStreamAsyncAwait(service.getData('test'));
+    expect(cachedResponse).toEqual({ payload: 'test' });
     /**
-     * service shouldn't be called and we should route directly to cache
+     * response acquired from cache, so no incrementation on the service spy call counter is expected here
      */
     expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
-    expect(cachedResponse).toEqual({ payload: 'test' });
 
-    /**
-     * progress in time for 7501 ms, e.g - one millisecond after the maxAge would expire
-     */
-    jasmine.clock().tick(7501);
-
-    /**
-     * no cache anymore, bail out to service call
-     */
-    const cachedResponse2 = _timedStreamAsyncAwait(service.getDataWithExpiration('test'));
+    const cachedResponse2 = _timedStreamAsyncAwait(service.getData('test2'));
     expect(cachedResponse2).toEqual(null);
+
+    /**
+     * no cache for 'test2', but service call was made so the spy counter is incremented
+     */
     expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
 
-    let asyncFreshDataAfterCacheBust = null;
-    service.getDataWithExpiration('test').subscribe((data) => {
-      asyncFreshDataAfterCacheBust = data;
-    });
+    const cachedResponse3 = _timedStreamAsyncAwait(service.getData('test3'), 1000);
+
+    /**
+     * service call is made and waited out
+     */
+    expect(cachedResponse3).toEqual({ payload: 'test3' });
+
+    /**
+     * this should NOT return cached response, since the currently cached one should be 'test3'
+     */
+    const cachedResponse4 = _timedStreamAsyncAwait(service.getData('test'));
+    expect(cachedResponse4).toEqual(null);
+
+    expect(mockServiceCallSpy).toHaveBeenCalledTimes(4);
+  });
+
+  it('return the cached observable up until it completes or errors', () => {
+    /**
+     * call the service endpoint five hundred times with the same parameter
+     * but the service should only be called once, since the observable will be cached
+     */
+    for (let i = 0; i < 500; i++) {
+      service.getDataAndReturnCachedStream('test');
+    }
+
+    expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+    /**
+     * return the response
+     */
     jasmine.clock().tick(1000);
-    expect(asyncFreshDataAfterCacheBust).toEqual({ payload: 'test' });
-  });
-  it('return cached data up until the maxAge period but renew the expiration if called within the period', () => {
     /**
-     * do not use async await when using jasmine.clock()
-     * we can mitigate this but will make our tests slower
-     * https://www.google.bg/search?q=jasmine.clock.install+%2B+async+await&oq=jasmine.clock.install+%2B+async+await&aqs=chrome..69i57.4240j0j7&sourceid=chrome&ie=UTF-8
+     * call again..
      */
-    jasmine.clock().mockDate();
-    let asyncFreshData = null;
-    service.getDataWithSlidingExpiration('test').subscribe((data) => {
-      asyncFreshData = data;
-    });
-    jasmine.clock().tick(1000);
-    expect(asyncFreshData).toEqual({ payload: 'test' });
-    expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
-
-    const cachedResponse = _timedStreamAsyncAwait(service.getDataWithSlidingExpiration('test'));
-    expect(cachedResponse).toEqual({ payload: 'test' });
+    service.getDataAndReturnCachedStream('test');
     /**
-     * call count should still be one, since we rerouted to cache, instead of service call
+     * service call count should still be 1, since we are returning from cache now
      */
     expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
-
-    /**
-     * travel through 3000ms of time
-     */
-    jasmine.clock().tick(3000);
-    /**
-     * calling the method again should renew expiration for 7500 more milliseconds
-     */
-    service.getDataWithSlidingExpiration('test').subscribe();
-    jasmine.clock().tick(4501);
-
-    /**
-     * this should have returned null, if the cache didnt renew
-     */
-
-    const cachedResponse2 = _timedStreamAsyncAwait(service.getDataWithSlidingExpiration('test'));
-    expect(cachedResponse2).toEqual({ payload: 'test' });
-    /**
-     * call count is still one, because we renewed the cache 4501ms ago
-     */
-    expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
-
-    /**
-     * expire cache, shouldn't renew since 7501 ms have ellapsed
-     */
-    jasmine.clock().tick(7501);
-
-    const cachedResponse3 = _timedStreamAsyncAwait(service.getDataWithSlidingExpiration('test'));
-    /**
-     * cached has expired, request hasn't returned yet but still - the service was called
-     */
-    expect(cachedResponse3).toEqual(null);
-    expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
   });
 
-  it('return cached data up until new parameters are passed WITH a custom resolver function', () => {
-    const asyncFreshData = _timedStreamAsyncAwait(service.getDataWithCustomCacheResolver('test1'), 1000);
-    expect(asyncFreshData).toEqual({ payload: 'test1' });
-    expect(mockServiceCallSpy).toHaveBeenCalled();
-
-    const asyncFreshData2 = _timedStreamAsyncAwait(service.getDataWithCustomCacheResolver('test2'), 1000);
-    expect(asyncFreshData2).toEqual({ payload: 'test2' });
-    expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
-
-    const cachedResponse = _timedStreamAsyncAwait(
-      service.getDataWithCustomCacheResolver('test3', { straightToLastCache: true })
-    );
-    expect(cachedResponse).toEqual({ payload: 'test2' });
-    /**
-     * call count still 2, since we rerouted directly to cache
-     */
-    expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
-    _timedStreamAsyncAwait(service.getDataWithCustomCacheResolver('test3'));
-    /**no cache reerouter -> bail to service call -> increment call counter*/
-    expect(mockServiceCallSpy).toHaveBeenCalledTimes(3);
-  });
-
-  it('return cached data ASYNCHRONOUSLY up until a new parameter is passed and the cache is busted', () => {
+  it('with async:true return cached data ASYNCHRONOUSLY up until a new parameter is passed and the cache is busted', () => {
     const asyncFreshData = _timedStreamAsyncAwait(service.getDataAsync('test'), 1000);
     expect(asyncFreshData).toEqual({ payload: 'test' });
     expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
@@ -333,41 +233,85 @@ describe('CacheDecorator', () => {
 
     expect(mockServiceCallSpy).toHaveBeenCalledTimes(4);
   });
+  it('return cached date up until the maxAge period has passed and then bail out to data source', () => {
+    jasmine.clock().mockDate();
+    const asyncFreshData = _timedStreamAsyncAwait(service.getDataWithExpiration('test'), 1000);
 
-  it('return cached data up until a new parameter is passed and the cache is busted', () => {
-    const asyncFreshData = _timedStreamAsyncAwait(service.getData('test'), 1000);
     expect(asyncFreshData).toEqual({ payload: 'test' });
     expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
 
-    const cachedResponse = _timedStreamAsyncAwait(service.getData('test'));
+    const cachedResponse = _timedStreamAsyncAwait(service.getDataWithExpiration('test'));
+    /**
+     * service shouldn't be called and we should route directly to cache
+     */
+    expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+    expect(cachedResponse).toEqual({ payload: 'test' });
+
+    /**
+     * progress in time for 7501 ms, e.g - one millisecond after the maxAge would expire
+     */
+    jasmine.clock().tick(7501);
+
+    /**
+     * no cache anymore, bail out to service call
+     */
+    const cachedResponse2 = _timedStreamAsyncAwait(service.getDataWithExpiration('test'));
+    expect(cachedResponse2).toEqual(null);
+    expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
+
+    let asyncFreshDataAfterCacheBust = null;
+    service.getDataWithExpiration('test').subscribe((data) => {
+      asyncFreshDataAfterCacheBust = data;
+    });
+    jasmine.clock().tick(1000);
+    expect(asyncFreshDataAfterCacheBust).toEqual({ payload: 'test' });
+  });
+
+  it('return cached data up until the maxAge period but renew the expiration if called within the period', () => {
+    jasmine.clock().mockDate();
+    const asyncFreshData = _timedStreamAsyncAwait(service.getDataWithSlidingExpiration('test'), 1000);
+    expect(asyncFreshData).toEqual({ payload: 'test' });
+    expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+
+    const cachedResponse = _timedStreamAsyncAwait(service.getDataWithSlidingExpiration('test'));
     expect(cachedResponse).toEqual({ payload: 'test' });
     /**
-     * response acquired from cache, so no incrementation on the service spy call counter is expected here
+     * call count should still be one, since we rerouted to cache, instead of service call
      */
     expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
 
-    const cachedResponse2 = _timedStreamAsyncAwait(service.getData('test2'));
-    expect(cachedResponse2).toEqual(null);
+    /**
+     * travel through 3000ms of time
+     */
+    jasmine.clock().tick(3000);
+    /**
+     * calling the method again should renew expiration for 7500 more milliseconds
+     */
+    service.getDataWithSlidingExpiration('test').subscribe();
+    jasmine.clock().tick(4501);
 
     /**
-     * no cache for 'test2', but service call was made so the spy counter is incremented
+     * this should have returned null, if the cache didnt renew
      */
+
+    const cachedResponse2 = _timedStreamAsyncAwait(service.getDataWithSlidingExpiration('test'));
+    expect(cachedResponse2).toEqual({ payload: 'test' });
+    /**
+     * call count is still one, because we renewed the cache 4501ms ago
+     */
+    expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+
+    /**
+     * expire cache, shouldn't renew since 7501 ms have ellapsed
+     */
+    jasmine.clock().tick(7501);
+
+    const cachedResponse3 = _timedStreamAsyncAwait(service.getDataWithSlidingExpiration('test'));
+    /**
+     * cached has expired, request hasn't returned yet but still - the service was called
+     */
+    expect(cachedResponse3).toEqual(null);
     expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
-
-    const cachedResponse3 = _timedStreamAsyncAwait(service.getData('test3'), 1000);
-
-    /**
-     * service call is made and waited out
-     */
-    expect(cachedResponse3).toEqual({ payload: 'test3' });
-
-    /**
-     * this should return cached response, since the currently cached one should be 'test3'
-     */
-    const cachedResponse4 = _timedStreamAsyncAwait(service.getData('test'));
-    expect(cachedResponse4).toEqual(null);
-
-    expect(mockServiceCallSpy).toHaveBeenCalledTimes(4);
   });
 
   it('return cached data for 5 unique requests, then should bail to data source', () => {
@@ -450,6 +394,106 @@ describe('CacheDecorator', () => {
     expect(mockServiceCallSpy).toHaveBeenCalledTimes(8);
   });
 
+  it('return cached data for 5 unique requests all available for 7500ms', () => {
+    jasmine.clock().mockDate();
+
+    /**
+     * call the same endpoint with 5 different parameters and cache all 5 responses, based on the maxCacheCount parameter
+     */
+    const parameters = ['test1', 'test2', 'test3', 'test4', 'test5'];
+    parameters.forEach((param) => service.getDataWithMaxCacheCountAndExpiration(param).subscribe());
+    expect(mockServiceCallSpy).toHaveBeenCalledTimes(5);
+
+    jasmine.clock().tick(1000);
+    const cachedResponse2 = _timedStreamAsyncAwait(
+      forkJoin(parameters.map((param) => service.getDataWithMaxCacheCountAndExpiration(param)))
+    );
+    expect(mockServiceCallSpy).toHaveBeenCalledTimes(5);
+
+    expect(cachedResponse2).toEqual([
+      { payload: 'test1' },
+      { payload: 'test2' },
+      { payload: 'test3' },
+      { payload: 'test4' },
+      { payload: 'test5' }
+    ]);
+
+    /**
+     * expire caches
+     */
+    jasmine.clock().tick(7501);
+
+    const cachedResponse3 = _timedStreamAsyncAwait(service.getDataWithMaxCacheCountAndExpiration('test1'));
+    expect(cachedResponse3).toEqual(null);
+    /**
+     * by now, no cache exists for the 'test1' parameter, so 1 more call will be made to the service
+     */
+    expect(mockServiceCallSpy).toHaveBeenCalledTimes(6);
+  });
+
+  it('return cached data for 5 unique requests all available for 7500ms WITH slidingExpiration on', () => {
+    jasmine.clock().mockDate();
+    /**
+     * call the same endpoint with 5 different parameters and cache all 5 responses, based on the maxCacheCount parameter
+     */
+    const parameters = ['test1', 'test2', 'test3', 'test4', 'test5'];
+    parameters.forEach((param) => service.getDataWithMaxCacheCountAndSlidingExpiration(param).subscribe());
+    expect(mockServiceCallSpy).toHaveBeenCalledTimes(5);
+
+    /**
+     * allow for the mock request to complete
+     */
+    jasmine.clock().tick(1000);
+
+    /**
+     * pass through time to just before the cache expires
+     */
+    jasmine.clock().tick(7500);
+    /**
+     * re-call just with test2 so we renew its expiration
+     */
+    service.getDataWithMaxCacheCountAndSlidingExpiration('test2').subscribe();
+
+    expect(mockServiceCallSpy).toHaveBeenCalledTimes(5);
+    /**
+     * expire ALL caches except the test2 one
+     */
+    jasmine.clock().tick(1);
+    const cachedResponse = _timedStreamAsyncAwait(
+      combineLatest(
+        parameters.map((param) => service.getDataWithMaxCacheCountAndSlidingExpiration(param).pipe(startWith(null)))
+      )
+    );
+    /**
+     * no cache for 4 payloads, so 4 more calls to the service will be made
+     */
+    expect(mockServiceCallSpy).toHaveBeenCalledTimes(9);
+    expect(cachedResponse).toEqual([null, { payload: 'test2' }, null, null, null]);
+    jasmine.clock().uninstall();
+  });
+
+  it('return cached data up until new parameters are passed WITH a custom resolver function', () => {
+    const asyncFreshData = _timedStreamAsyncAwait(service.getDataWithCustomCacheResolver('test1'), 1000);
+    expect(asyncFreshData).toEqual({ payload: 'test1' });
+    expect(mockServiceCallSpy).toHaveBeenCalled();
+
+    const asyncFreshData2 = _timedStreamAsyncAwait(service.getDataWithCustomCacheResolver('test2'), 1000);
+    expect(asyncFreshData2).toEqual({ payload: 'test2' });
+    expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
+
+    const cachedResponse = _timedStreamAsyncAwait(
+      service.getDataWithCustomCacheResolver('test3', { straightToLastCache: true })
+    );
+    expect(cachedResponse).toEqual({ payload: 'test2' });
+    /**
+     * call count still 2, since we rerouted directly to cache
+     */
+    expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
+    _timedStreamAsyncAwait(service.getDataWithCustomCacheResolver('test3'));
+    /**no cache reerouter -> bail to service call -> increment call counter*/
+    expect(mockServiceCallSpy).toHaveBeenCalledTimes(3);
+  });
+
   it('only cache data when a specific response is returned, otherwise it should bail to service call', () => {
     const asyncData = _timedStreamAsyncAwait(service.getDataWithCustomCacheDecider('test1'), 1000);
     expect(asyncData).toEqual({ payload: 'test1' });
@@ -479,6 +523,40 @@ describe('CacheDecorator', () => {
      * the service call count won't be incremented
      */
     expect(mockServiceCallSpy).toHaveBeenCalledTimes(3);
+  });
+
+  it('cache data until the cacheBusterNotifier has emitted', () => {
+    const asyncFreshData = _timedStreamAsyncAwait(service.getDataWithCacheBusting('test'), 1000);
+    expect(asyncFreshData).toEqual({ payload: 'test' });
+    expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+
+    const cachedResponse = _timedStreamAsyncAwait(service.getDataWithCacheBusting('test'));
+    expect(cachedResponse).toEqual({ payload: 'test' });
+    /**
+     * response acquired from cache, so no incrementation on the service spy call counter is expected here
+     */
+    expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+
+    /**
+     * make the save call
+     * after 1 second the cache busting subject will emit and the cache for getDataWithCacheBusting('test') will be relieved of
+     */
+    expect(_timedStreamAsyncAwait(service.saveDataAndCacheBust(), 1000)).toEqual('SAVED');
+
+    const cachedResponse2 = _timedStreamAsyncAwait(service.getDataWithCacheBusting('test'));
+    expect(cachedResponse2).toEqual(null);
+    /**
+     * call count has incremented due to the actual method call (instead of cache)
+     */
+    expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
+    /**
+     * pass through 1s of time
+     */
+    jasmine.clock().tick(1000);
+    /**
+     * synchronous cached response should now be returned
+     */
+    expect(_timedStreamAsyncAwait(service.getDataWithCacheBusting('test'))).toEqual({ payload: 'test' });
   });
 });
 

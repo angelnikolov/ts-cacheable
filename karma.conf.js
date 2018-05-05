@@ -3,7 +3,7 @@ module.exports = function(config) {
     frameworks: ["jasmine", "karma-typescript"],
     browsers: ["ChromeHeadlessNoSandbox"],
     reporters: ["progress", "karma-typescript"],
-    files: ["./cacheable.decorator.ts", "./cacheable.decorator.spec.ts"],
+    files: ["./cacheable.decorator.ts", "./cache-buster.decorator.ts", "./cacheable.decorator.spec.ts"],
     preprocessors: {
       "**/*.ts": "karma-typescript"
     },

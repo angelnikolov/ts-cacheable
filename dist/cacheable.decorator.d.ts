@@ -1,8 +1,11 @@
 import { Observable } from 'rxjs/Observable';
 export declare type ICacheRequestResolver = (oldParameters: Array<any>, newParameters: Array<any>) => boolean;
 export declare type IShouldCacheDecider = (response: any) => boolean;
-export declare type ICacheable = (...args: Array<any>) => Observable<any>;
 export interface ICacheConfig {
+    /**
+     * pass an Observable upon whose emission all caches will be busted
+     */
+    cacheBusterObserver?: Observable<void>;
     /**
      * @description request cache resolver which will get old and new paramaters passed to and based on those
      * will figure out if we need to bail out of cache or not
@@ -33,4 +36,4 @@ export interface ICacheConfig {
      */
     async?: boolean;
 }
-export declare const Cacheable: ((cacheConfig?: ICacheConfig) => (target: Object, propertyKey: string, propertyDescriptor: TypedPropertyDescriptor<ICacheable>) => TypedPropertyDescriptor<ICacheable>);
+export declare function Cacheable(_cacheConfig?: ICacheConfig): (_target: Object, _propertyKey: string, propertyDescriptor: TypedPropertyDescriptor<(...args: any[]) => Observable<any>>) => TypedPropertyDescriptor<(...args: any[]) => Observable<any>>;

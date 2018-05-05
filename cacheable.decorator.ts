@@ -1,8 +1,8 @@
 import { Observable } from 'rxjs/Observable';
 import { of } from 'rxjs/observable/of';
-import { delay, tap } from 'rxjs/operators';
+import { delay, finalize, shareReplay, tap } from 'rxjs/operators';
 
-const DEFAULT_CACHE_RESOLVER = (oldParams:Array<any>, newParams:Array<any>) =>
+const DEFAULT_CACHE_RESOLVER = (oldParams, newParams) =>
   JSON.stringify(oldParams) === JSON.stringify(newParams);
 
 export type ICacheRequestResolver = (
@@ -10,13 +10,18 @@ export type ICacheRequestResolver = (
   newParameters: Array<any>
 ) => boolean;
 export type IShouldCacheDecider = (response: any) => boolean;
-export type ICacheable = (...args:Array<any>) => Observable<any>;
-interface ICachePair {
+type ICacheable = (...args) => Observable<any>;
+interface ICachePair<T> {
   parameters: any;
-  response: any;
+  response: T;
   created: Date;
 }
 export interface ICacheConfig {
+  /**
+   * pass an Observable upon whose emission all caches will be busted
+   */
+  cacheBusterObserver?: Observable<void>;
+
   /**
    * @description request cache resolver which will get old and new paramaters passed to and based on those
    * will figure out if we need to bail out of cache or not
@@ -47,13 +52,7 @@ export interface ICacheConfig {
    */
   async?: boolean;
 }
-export const Cacheable: ((
-  cacheConfig?: ICacheConfig
-) => (
-  target: Object,
-  propertyKey: string,
-  propertyDescriptor: TypedPropertyDescriptor<ICacheable>
-) => TypedPropertyDescriptor<ICacheable>) = _cacheConfig => {
+export function Cacheable(_cacheConfig?: ICacheConfig) {
   return function(
     _target: Object,
     _propertyKey: string,
@@ -61,15 +60,28 @@ export const Cacheable: ((
   ) {
     const _oldMethod = propertyDescriptor.value;
     if (propertyDescriptor && propertyDescriptor.value) {
-      const _cachePairs: Array<ICachePair> = [];
+      const _cachePairs: Array<ICachePair<any>> = [];
+      const _observableCachePairs: Array<ICachePair<Observable<any>>> = [];
       const cacheConfig = _cacheConfig ? _cacheConfig : {};
+      if (cacheConfig.cacheBusterObserver) {
+        /**
+         * subscribe to the cacheBusterObserver and upon emission, clear all caches
+         */
+        cacheConfig.cacheBusterObserver.subscribe(_ => {
+          _cachePairs.length = 0;
+          _observableCachePairs.length = 0;
+        });
+      }
       cacheConfig.cacheResolver = cacheConfig.cacheResolver
         ? cacheConfig.cacheResolver
         : DEFAULT_CACHE_RESOLVER;
 
       /* use function instead of an arrow function to keep context of invocation */
-      (propertyDescriptor.value as any) = function(...parameters:Array<any>) {
+      (propertyDescriptor.value as any) = function(...parameters) {
         let _foundCachePair = _cachePairs.find(cp =>
+          cacheConfig.cacheResolver(cp.parameters, parameters)
+        );
+        const _foundObservableCachePair = _observableCachePairs.find(cp =>
           cacheConfig.cacheResolver(cp.parameters, parameters)
         );
         /**
@@ -80,9 +92,15 @@ export const Cacheable: ((
             new Date().getTime() - _foundCachePair.created.getTime() >
             cacheConfig.maxAge
           ) {
+            /**
+             * cache duration has expired - remove it from the cachePairs array
+             */
             _cachePairs.splice(_cachePairs.indexOf(_foundCachePair, 1));
             _foundCachePair = null;
           } else if (_cacheConfig.slidingExpiration) {
+            /**
+             * renew cache duration
+             */
             _foundCachePair.created = new Date();
           }
         }
@@ -90,8 +108,23 @@ export const Cacheable: ((
         if (_foundCachePair) {
           const cached$ = of(_foundCachePair.response);
           return cacheConfig.async ? cached$.pipe(delay(0)) : cached$;
+        } else if (_foundObservableCachePair) {
+          return _foundObservableCachePair.response;
         } else {
-          return (_oldMethod.call(this, ...parameters) as Observable<any>).pipe(
+          const response$ = (_oldMethod.call(this, ...parameters) as Observable<
+            any
+          >).pipe(
+            finalize(() => {
+              /**
+               * if there has been an observable cache pair for these parameters, when it completes or errors, remove it
+               */
+              const _observableCachePairToRemove = _observableCachePairs.find(
+                cp => cacheConfig.cacheResolver(cp.parameters, parameters)
+              );
+              _observableCachePairs.splice(
+                _observableCachePairs.indexOf(_observableCachePairToRemove, 1)
+              );
+            }),
             tap(response => {
               /**
                * if no maxCacheCount has been passed
@@ -116,11 +149,24 @@ export const Cacheable: ((
                   created: cacheConfig.maxAge ? new Date() : null
                 });
               }
-            })
+            }),
+            /**
+             * replay cached observable, so we don't enter finalize and tap for every cached observable subscription
+             */
+            shareReplay()
           );
+          /**
+           * cache the stream
+           */
+          _observableCachePairs.push({
+            parameters: parameters,
+            response: response$,
+            created: new Date()
+          });
+          return response$;
         }
       };
     }
     return propertyDescriptor;
   };
-};
+}

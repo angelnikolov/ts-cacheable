@@ -4,4 +4,5 @@ function __export(m) {
 }
 Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./cacheable.decorator"));
+__export(require("./cache-buster.decorator"));
 //# sourceMappingURL=index.js.map
