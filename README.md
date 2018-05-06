@@ -4,7 +4,7 @@
 Observable cache decorator you can use to decorate class methods which return streams and cache their return values.
 
 
-### Installing
+## Installing
 
 To install the package, just run
 
@@ -37,7 +37,7 @@ If we call this method by `service.getUser(1)`, its return value will be cached 
 
 For more information and other configurations, see the configuration options below
 
-# Configuration
+## Configuration
 ```
 export interface ICacheConfig {
   /**
