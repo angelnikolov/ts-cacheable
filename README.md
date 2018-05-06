@@ -1,6 +1,5 @@
 [![Build Status](https://travis-ci.org/angelnikolov/ngx-cacheable.svg?branch=master)](https://travis-ci.org/angelnikolov/ngx-cacheable)
 # ngx-cacheable
-# Project Title
 
 Observable cache decorator you can use to decorate class methods which return streams and cache their return values.
 
@@ -36,8 +35,9 @@ Another example will be:
 ```
 If we call this method by `service.getUser(1)`, its return value will be cached and returned, up until the method is called with a different parameter. Then the old cache will be busted and a new one will take its place.
 
-For more information and other configurations, see the documentation below:
+For more information and other configurations, see the configuration options below
 
+# Configuration
 ```
 export interface ICacheConfig {
   /**
