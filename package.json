@@ -1,23 +1,23 @@
 {
   "name": "ngx-cacheable",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Rx Observable cache decorator",
   "main": "dist/index.js",
-  "types" : "dist/index.d.ts",
+  "types": "dist/index.d.ts",
   "scripts": {
     "test": "karma start",
     "build": "tsc"
   },
   "repository": {
-   "type": "git",
-   "url": "git+https://github.com/angelnikolov/ngx-cacheable.git"
+    "type": "git",
+    "url": "git+https://github.com/angelnikolov/ngx-cacheable.git"
   },
   "author": "Angel Nikolov <darkysharky@gmail.com>",
   "license": "ISC",
   "dependencies": {
     "@types/jasmine": "^2.8.6",
     "jasmine": "^3.1.0",
-    "rxjs": "^5.5.6"
+    "rxjs": "6.2.0"
   },
   "devDependencies": {
     "karma": "^2.0.0",

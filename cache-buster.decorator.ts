@@ -1,6 +1,5 @@
-import { Observable } from 'rxjs/Observable';
+import { Observable, Subject } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { Subject } from 'rxjs/Subject';
 
 type ICacheable = (...args) => Observable<any>;
 export interface ICacheBusterConfig {
@@ -8,10 +7,14 @@ export interface ICacheBusterConfig {
    * pass a Subject which will emit whenever the inner source stream has emitted
    * this can later be subscribed to from Cacheables so they can get rid of their caches
    */
-  cacheBusterNotifier?: Subject<void>;
+  cacheBusterNotifier?: Subject<any>;
 }
 export function CacheBuster(_cacheBusterConfig?: ICacheBusterConfig) {
-  return function(_target: Object, _propertyKey: string, propertyDescriptor: TypedPropertyDescriptor<ICacheable>) {
+  return function(
+    _target: Object,
+    _propertyKey: string,
+    propertyDescriptor: TypedPropertyDescriptor<ICacheable>
+  ) {
     const _oldMethod = propertyDescriptor.value;
     if (propertyDescriptor && propertyDescriptor.value) {
       const cacheBusterConfig = _cacheBusterConfig ? _cacheBusterConfig : {};

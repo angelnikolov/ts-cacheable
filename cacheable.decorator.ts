@@ -1,5 +1,4 @@
-import { Observable } from 'rxjs/Observable';
-import { of } from 'rxjs/observable/of';
+import { Observable, of } from 'rxjs';
 import { delay, finalize, shareReplay, tap } from 'rxjs/operators';
 
 const DEFAULT_CACHE_RESOLVER = (oldParams, newParams) =>
@@ -20,7 +19,7 @@ export interface ICacheConfig {
   /**
    * pass an Observable upon whose emission all caches will be busted
    */
-  cacheBusterObserver?: Observable<void>;
+  cacheBusterObserver?: Observable<any>;
 
   /**
    * @description request cache resolver which will get old and new paramaters passed to and based on those

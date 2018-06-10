@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var of_1 = require("rxjs/observable/of");
+var rxjs_1 = require("rxjs");
 var operators_1 = require("rxjs/operators");
 var DEFAULT_CACHE_RESOLVER = function (oldParams, newParams) {
     return JSON.stringify(oldParams) === JSON.stringify(newParams);
@@ -56,7 +56,7 @@ function Cacheable(_cacheConfig) {
                     }
                 }
                 if (_foundCachePair) {
-                    var cached$ = of_1.of(_foundCachePair.response);
+                    var cached$ = rxjs_1.of(_foundCachePair.response);
                     return cacheConfig_1.async ? cached$.pipe(operators_1.delay(0)) : cached$;
                 }
                 else if (_foundObservableCachePair) {
