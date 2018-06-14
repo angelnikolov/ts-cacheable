@@ -14,10 +14,10 @@
   },
   "author": "Angel Nikolov <darkysharky@gmail.com>",
   "license": "ISC",
-  "dependencies": {
+  "peerDependencies": {
     "@types/jasmine": "^2.8.6",
     "jasmine": "^3.1.0",
-    "rxjs": "6.2.0"
+    "rxjs": "^6.2.0"
   },
   "devDependencies": {
     "karma": "^2.0.0",
