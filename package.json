@@ -14,12 +14,12 @@
   },
   "author": "Angel Nikolov <darkysharky@gmail.com>",
   "license": "ISC",
-  "dependencies": {
-    "@types/jasmine": "^2.8.6",
-    "jasmine": "^3.1.0",
+  "peerDependencies": {
     "rxjs": "6.2.0"
   },
   "devDependencies": {
+    "@types/jasmine": "^2.8.6",
+    "jasmine": "^3.1.0",
     "karma": "^2.0.0",
     "karma-chrome-launcher": "^2.2.0",
     "karma-commonjs": "^1.0.0",

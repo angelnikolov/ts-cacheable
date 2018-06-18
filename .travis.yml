@@ -6,6 +6,7 @@ node_js :
  - stable
 install:
  - npm install
+ - npm install rxjs@6.2.0
 script:
  - npm test
  
