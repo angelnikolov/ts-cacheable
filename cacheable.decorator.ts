@@ -94,7 +94,7 @@ export function Cacheable(_cacheConfig?: ICacheConfig) {
             /**
              * cache duration has expired - remove it from the cachePairs array
              */
-            _cachePairs.splice(_cachePairs.indexOf(_foundCachePair, 1));
+            _cachePairs.splice(_cachePairs.indexOf(_foundCachePair), 1);
             _foundCachePair = null;
           } else if (_cacheConfig.slidingExpiration) {
             /**
@@ -121,7 +121,8 @@ export function Cacheable(_cacheConfig?: ICacheConfig) {
                 cp => cacheConfig.cacheResolver(cp.parameters, parameters)
               );
               _observableCachePairs.splice(
-                _observableCachePairs.indexOf(_observableCachePairToRemove, 1)
+                _observableCachePairs.indexOf(_observableCachePairToRemove),
+                1
               );
             }),
             tap(response => {
