@@ -18,6 +18,11 @@ class Service {
   }
 
   @Cacheable()
+  getDataWithParamsObj(parameter: any) {
+    return this.mockServiceCall(parameter);
+  }
+
+  @Cacheable()
   getDataAndReturnCachedStream(parameter: string) {
     return this.mockServiceCall(parameter);
   }
@@ -162,6 +167,35 @@ describe('CacheableDecorator', () => {
     expect(cachedResponse4).toEqual(null);
 
     expect(mockServiceCallSpy).toHaveBeenCalledTimes(4);
+  });
+
+
+  it('returns observables in cache with a referential type params', () => {
+    let params = {
+      number: [1]
+    };
+    /**
+     * call the service endpoint with current params values
+     */
+    service.getDataWithParamsObj(params);
+
+    /**
+     * return the response
+     */
+    jasmine.clock().tick(1000);
+
+    /**
+     * change params object values
+     */
+    params.number.push(2);
+    /**
+     * call again..
+     */
+    service.getDataWithParamsObj(params);
+    /**
+     * service call count should still be 2, since param object has changed
+     */
+    expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
   });
 
   it('return the cached observable up until it completes or errors', () => {
