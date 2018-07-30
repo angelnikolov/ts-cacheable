@@ -76,7 +76,8 @@ export function Cacheable(_cacheConfig?: ICacheConfig) {
         : DEFAULT_CACHE_RESOLVER;
 
       /* use function instead of an arrow function to keep context of invocation */
-      (propertyDescriptor.value as any) = function(...parameters) {
+      (propertyDescriptor.value as any) = function(..._parameters) {
+        let parameters = JSON.parse(JSON.stringify(_parameters));
         let _foundCachePair = _cachePairs.find(cp =>
           cacheConfig.cacheResolver(cp.parameters, parameters)
         );
