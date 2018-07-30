@@ -26,10 +26,11 @@ function Cacheable(_cacheConfig) {
                 : DEFAULT_CACHE_RESOLVER;
             /* use function instead of an arrow function to keep context of invocation */
             propertyDescriptor.value = function () {
-                var parameters = [];
+                var _parameters = [];
                 for (var _i = 0; _i < arguments.length; _i++) {
-                    parameters[_i] = arguments[_i];
+                    _parameters[_i] = arguments[_i];
                 }
+                var parameters = JSON.parse(JSON.stringify(_parameters));
                 var _foundCachePair = _cachePairs_1.find(function (cp) {
                     return cacheConfig_1.cacheResolver(cp.parameters, parameters);
                 });
@@ -45,7 +46,7 @@ function Cacheable(_cacheConfig) {
                         /**
                          * cache duration has expired - remove it from the cachePairs array
                          */
-                        _cachePairs_1.splice(_cachePairs_1.indexOf(_foundCachePair, 1));
+                        _cachePairs_1.splice(_cachePairs_1.indexOf(_foundCachePair), 1);
                         _foundCachePair = null;
                     }
                     else if (_cacheConfig.slidingExpiration) {
@@ -68,7 +69,7 @@ function Cacheable(_cacheConfig) {
                          * if there has been an observable cache pair for these parameters, when it completes or errors, remove it
                          */
                         var _observableCachePairToRemove = _observableCachePairs_1.find(function (cp) { return cacheConfig_1.cacheResolver(cp.parameters, parameters); });
-                        _observableCachePairs_1.splice(_observableCachePairs_1.indexOf(_observableCachePairToRemove, 1));
+                        _observableCachePairs_1.splice(_observableCachePairs_1.indexOf(_observableCachePairToRemove), 1);
                     }), operators_1.tap(function (response) {
                         /**
                          * if no maxCacheCount has been passed
