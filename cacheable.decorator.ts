@@ -1,8 +1,14 @@
 import { Observable, of } from 'rxjs';
 import { delay, finalize, shareReplay, tap } from 'rxjs/operators';
+import * as hash from 'object-hash';
 
 const DEFAULT_CACHE_RESOLVER = (oldParams, newParams) =>
   JSON.stringify(oldParams) === JSON.stringify(newParams);
+
+const HASH_CACHE_RESOLVER = (oldParams, newParams) => {
+  console.log("hashcache",oldParams,newParams,hash(oldParams) === hash(newParams));
+  return hash(oldParams) === hash(newParams);
+}
 
 export type ICacheRequestResolver = (
   oldParameters: Array<any>,
@@ -41,6 +47,13 @@ export interface ICacheConfig {
    */
   slidingExpiration?: boolean;
   /**
+   * whether should use object-hash cache resolver
+   * this will use a hash instead of JSON.stringify() to compare the parameters (allows for different key positions to be considered the same)
+   * ie a parameter of {k1: true,k2:true} will be considered the same as {k2:true, k1:true} whereas the default cache resolver
+   * would consider them different
+   */
+  hashcache?: boolean;
+  /**
    * max cacheCount for different parameters
    * @description maximum allowed unique caches (same parameters)
    */
@@ -71,9 +84,9 @@ export function Cacheable(_cacheConfig?: ICacheConfig) {
           _observableCachePairs.length = 0;
         });
       }
-      cacheConfig.cacheResolver = cacheConfig.cacheResolver
-        ? cacheConfig.cacheResolver
-        : DEFAULT_CACHE_RESOLVER;
+      cacheConfig.cacheResolver = cacheConfig.cacheResolver ? cacheConfig.cacheResolver
+                                                            : cacheConfig.hashcache ? HASH_CACHE_RESOLVER
+                                                                                    : DEFAULT_CACHE_RESOLVER;
 
       /* use function instead of an arrow function to keep context of invocation */
       (propertyDescriptor.value as any) = function(..._parameters) {

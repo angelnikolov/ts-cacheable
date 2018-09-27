@@ -23,6 +23,16 @@ class Service {
   }
 
   @Cacheable()
+  getDataWithDifferentKeyPosition(parameter: any) {
+    return this.mockServiceCall(parameter);
+  }
+
+  @Cacheable({hashcache:true})
+  getDataWithHashCache(parameter: any) {
+    return this.mockServiceCall(parameter);
+  }
+
+  @Cacheable()
   getDataAndReturnCachedStream(parameter: string) {
     return this.mockServiceCall(parameter);
   }
@@ -196,6 +206,70 @@ describe('CacheableDecorator', () => {
      * service call count should still be 2, since param object has changed
      */
     expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
+  });
+
+  it('creates 2 caches with a different key positions', () => {
+    let params:any = {
+      key1: 'k1',
+      key2: 'k2'
+    };
+    /**
+     * call the service endpoint with current params values
+     */
+    service.getDataWithDifferentKeyPosition(params);
+
+    /**
+     * return the response
+     */
+    jasmine.clock().tick(1000);
+
+    /**
+     * change params object values
+     */
+    params = {
+      key2: 'k2',
+      key1: 'k1'
+    };
+    /**
+     * call again..
+     */
+    service.getDataWithDifferentKeyPosition(params);
+    /**
+     * service call count should still be 2, since param object has changed
+     */
+    expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
+  });
+
+  it('creates 1 cache with a different key positions', () => {
+    let params:any = {
+      key1: 'k1',
+      key2: 'k2'
+    };
+    /**
+     * call the service endpoint with current params values
+     */
+    service.getDataWithHashCache(params);
+
+    /**
+     * return the response
+     */
+    jasmine.clock().tick(1000);
+
+    /**
+     * change params object values
+     */
+    params = {
+      key2: 'k2',
+      key1: 'k1'
+    };
+    /**
+     * call again..
+     */
+    service.getDataWithHashCache(params);
+    /**
+     * service call count should be 1, as it is using the hashcache option
+     */
+    expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
   });
 
   it('return the cached observable up until it completes or errors', () => {
