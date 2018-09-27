@@ -2,8 +2,13 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var rxjs_1 = require("rxjs");
 var operators_1 = require("rxjs/operators");
+var hash = require("object-hash");
 var DEFAULT_CACHE_RESOLVER = function (oldParams, newParams) {
     return JSON.stringify(oldParams) === JSON.stringify(newParams);
+};
+var HASH_CACHE_RESOLVER = function (oldParams, newParams) {
+    console.log("hashcache", oldParams, newParams, hash(oldParams) === hash(newParams));
+    return hash(oldParams) === hash(newParams);
 };
 function Cacheable(_cacheConfig) {
     return function (_target, _propertyKey, propertyDescriptor) {
@@ -21,9 +26,9 @@ function Cacheable(_cacheConfig) {
                     _observableCachePairs_1.length = 0;
                 });
             }
-            cacheConfig_1.cacheResolver = cacheConfig_1.cacheResolver
-                ? cacheConfig_1.cacheResolver
-                : DEFAULT_CACHE_RESOLVER;
+            cacheConfig_1.cacheResolver = cacheConfig_1.cacheResolver ? cacheConfig_1.cacheResolver
+                : cacheConfig_1.hashcache ? HASH_CACHE_RESOLVER
+                    : DEFAULT_CACHE_RESOLVER;
             /* use function instead of an arrow function to keep context of invocation */
             propertyDescriptor.value = function () {
                 var _parameters = [];

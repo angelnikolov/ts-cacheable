@@ -20,8 +20,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
         while (_) try {
-            if (f = 1, y && (t = y[op[0] & 2 ? "return" : op[0] ? "throw" : "next"]) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [0, t.value];
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
             switch (op[0]) {
                 case 0: case 1: t = op; break;
                 case 4: _.label++; return { value: op[1], done: false };
@@ -60,6 +60,12 @@ var Service = /** @class */ (function () {
         return this.mockServiceCall(parameter);
     };
     Service.prototype.getDataWithParamsObj = function (parameter) {
+        return this.mockServiceCall(parameter);
+    };
+    Service.prototype.getDataWithDifferentKeyPosition = function (parameter) {
+        return this.mockServiceCall(parameter);
+    };
+    Service.prototype.getDataWithHashCache = function (parameter) {
         return this.mockServiceCall(parameter);
     };
     Service.prototype.getDataAndReturnCachedStream = function (parameter) {
@@ -101,6 +107,12 @@ var Service = /** @class */ (function () {
     __decorate([
         cacheable_decorator_1.Cacheable()
     ], Service.prototype, "getDataWithParamsObj", null);
+    __decorate([
+        cacheable_decorator_1.Cacheable()
+    ], Service.prototype, "getDataWithDifferentKeyPosition", null);
+    __decorate([
+        cacheable_decorator_1.Cacheable({ hashcache: true })
+    ], Service.prototype, "getDataWithHashCache", null);
     __decorate([
         cacheable_decorator_1.Cacheable()
     ], Service.prototype, "getDataAndReturnCachedStream", null);
@@ -232,6 +244,64 @@ describe('CacheableDecorator', function () {
          * service call count should still be 2, since param object has changed
          */
         expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
+    });
+    it('creates 2 caches with a different key positions', function () {
+        var params = {
+            key1: 'k1',
+            key2: 'k2'
+        };
+        /**
+         * call the service endpoint with current params values
+         */
+        service.getDataWithDifferentKeyPosition(params);
+        /**
+         * return the response
+         */
+        jasmine.clock().tick(1000);
+        /**
+         * change params object values
+         */
+        params = {
+            key2: 'k2',
+            key1: 'k1'
+        };
+        /**
+         * call again..
+         */
+        service.getDataWithDifferentKeyPosition(params);
+        /**
+         * service call count should still be 2, since param object has changed
+         */
+        expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
+    });
+    it('creates 1 cache with a different key positions', function () {
+        var params = {
+            key1: 'k1',
+            key2: 'k2'
+        };
+        /**
+         * call the service endpoint with current params values
+         */
+        service.getDataWithHashCache(params);
+        /**
+         * return the response
+         */
+        jasmine.clock().tick(1000);
+        /**
+         * change params object values
+         */
+        params = {
+            key2: 'k2',
+            key1: 'k1'
+        };
+        /**
+         * call again..
+         */
+        service.getDataWithHashCache(params);
+        /**
+         * service call count should be 1, as it is using the hashcache option
+         */
+        expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
     });
     it('return the cached observable up until it completes or errors', function () {
         /**

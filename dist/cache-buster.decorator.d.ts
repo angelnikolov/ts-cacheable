@@ -1,4 +1,5 @@
 import { Observable, Subject } from 'rxjs';
+declare type ICacheable = (...args: any[]) => Observable<any>;
 export interface ICacheBusterConfig {
     /**
      * pass a Subject which will emit whenever the inner source stream has emitted
@@ -6,4 +7,5 @@ export interface ICacheBusterConfig {
      */
     cacheBusterNotifier?: Subject<any>;
 }
-export declare function CacheBuster(_cacheBusterConfig?: ICacheBusterConfig): (_target: Object, _propertyKey: string, propertyDescriptor: TypedPropertyDescriptor<(...args: any[]) => Observable<any>>) => TypedPropertyDescriptor<(...args: any[]) => Observable<any>>;
+export declare function CacheBuster(_cacheBusterConfig?: ICacheBusterConfig): (_target: Object, _propertyKey: string, propertyDescriptor: TypedPropertyDescriptor<ICacheable>) => TypedPropertyDescriptor<ICacheable>;
+export {};
