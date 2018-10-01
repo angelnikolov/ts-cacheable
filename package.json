@@ -15,7 +15,7 @@
   "author": "Angel Nikolov <darkysharky@gmail.com>",
   "license": "ISC",
   "peerDependencies": {
-    "rxjs": "6.2.0"
+    "rxjs": "^6.2.0"
   },
   "devDependencies": {
     "@types/jasmine": "^2.8.6",
