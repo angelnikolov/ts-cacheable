@@ -16,7 +16,7 @@ Import the decorator from ngx-cacheable like:
 import { Cacheable } from 'ngx-cacheable';
 ```
 and use it decorate any class method like:
-```
+```ts
 @Cacheable()
   getUsers() {
     return this.http
@@ -26,7 +26,7 @@ and use it decorate any class method like:
 Now all subsequent calls to this endpoint will be returned from an in-memory cache, rather than the actual http call!
 Another example will be:
 
-```
+```ts
 @Cacheable()
   getUser(id:string) {
     return this.http
@@ -37,8 +37,28 @@ If we call this method by `service.getUser(1)`, its return value will be cached 
 
 For more information and other configurations, see the configuration options below
 
-## Configuration
+## Examples
+### Cache Busting
+You can achieve it by decorating the cache busting method with the CacheBuster decorator. So you can have one method for fetching and caching data and another, to remove the cache. This is useful when for example you want to add an item to a list and refresh that list afterwards.
+```ts
+const cacheBuster$ = new Subject<void>();
+export class Service {
+  @Cacheable({
+    cacheBusterObserver: cacheBuster$
+  })
+  getData() {
+    ///needs to return an Observable
+  }
+  @CacheBuster({
+    cacheBusterNotifier: cacheBuster$
+  })
+  saveData() {
+    ///needs to return an Observable
+  }
+}
 ```
+## Configuration
+```ts
 export interface ICacheConfig {
   /**
    * pass an Observable upon whose emission all caches will be busted
