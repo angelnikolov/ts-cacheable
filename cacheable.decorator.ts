@@ -1,9 +1,10 @@
-import { Observable, of } from 'rxjs';
+import { empty, merge, Observable, of, Subject } from 'rxjs';
 import { delay, finalize, shareReplay, tap } from 'rxjs/operators';
 
 const DEFAULT_CACHE_RESOLVER = (oldParams, newParams) =>
   JSON.stringify(oldParams) === JSON.stringify(newParams);
 
+export const globalCacheBusterNotifier = new Subject<void>();
 export type ICacheRequestResolver = (
   oldParameters: Array<any>,
   newParameters: Array<any>
@@ -62,15 +63,20 @@ export function Cacheable(_cacheConfig?: ICacheConfig) {
       const _cachePairs: Array<ICachePair<any>> = [];
       const _observableCachePairs: Array<ICachePair<Observable<any>>> = [];
       const cacheConfig = _cacheConfig ? _cacheConfig : {};
-      if (cacheConfig.cacheBusterObserver) {
-        /**
-         * subscribe to the cacheBusterObserver and upon emission, clear all caches
-         */
-        cacheConfig.cacheBusterObserver.subscribe(_ => {
-          _cachePairs.length = 0;
-          _observableCachePairs.length = 0;
-        });
-      }
+      
+      /**
+       * subscribe to the globalCacheBuster
+       * if a custom cacheBusterObserver is passed, subscribe to it as well
+       * subscribe to the cacheBusterObserver and upon emission, clear all caches
+       */
+      merge(
+        globalCacheBusterNotifier.asObservable(),
+        cacheConfig.cacheBusterObserver ? cacheConfig.cacheBusterObserver : empty()
+      ).subscribe((_) => {
+        _cachePairs.length = 0;
+        _observableCachePairs.length = 0;
+      });
+      
       cacheConfig.cacheResolver = cacheConfig.cacheResolver
         ? cacheConfig.cacheResolver
         : DEFAULT_CACHE_RESOLVER;
