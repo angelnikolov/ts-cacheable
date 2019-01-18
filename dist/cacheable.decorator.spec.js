@@ -583,6 +583,75 @@ describe('CacheableDecorator', function () {
          */
         expect(_timedStreamAsyncAwait(service.getDataWithCacheBusting('test'))).toEqual({ payload: 'test' });
     });
+    it('should clear all caches when the global cache buster is called', function () {
+        /**
+         * set up a service with multiple cached methods
+         */
+        var Service = /** @class */ (function () {
+            function Service() {
+            }
+            Service.prototype.mockServiceCall = function (parameter) {
+                return rxjs_1.timer(1000).pipe(operators_1.mapTo({ payload: parameter }));
+            };
+            Service.prototype.getData1 = function (parameter) {
+                return this.mockServiceCall(parameter);
+            };
+            Service.prototype.getData2 = function (parameter) {
+                return this.mockServiceCall(parameter);
+            };
+            Service.prototype.getData3 = function (parameter) {
+                return this.mockServiceCall(parameter);
+            };
+            __decorate([
+                cacheable_decorator_1.Cacheable()
+            ], Service.prototype, "getData1", null);
+            __decorate([
+                cacheable_decorator_1.Cacheable()
+            ], Service.prototype, "getData2", null);
+            __decorate([
+                cacheable_decorator_1.Cacheable()
+            ], Service.prototype, "getData3", null);
+            return Service;
+        }());
+        var service = new Service();
+        mockServiceCallSpy = spyOn(service, 'mockServiceCall').and.callThrough();
+        /**
+         * call the first method and cache it
+         */
+        service.getData1('test1');
+        var asyncFreshData1 = _timedStreamAsyncAwait(service.getData1('test1'), 1000);
+        expect(asyncFreshData1).toEqual({ payload: 'test1' });
+        var cachedResponse1 = _timedStreamAsyncAwait(service.getData1('test1'));
+        expect(cachedResponse1).toEqual({ payload: 'test1' });
+        /**
+         * even though we called getData1 twice, this should only be called once
+         * since the second call went straight to the cache
+         */
+        expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+        service.getData2('test2');
+        var asyncFreshData2 = _timedStreamAsyncAwait(service.getData2('test2'), 1000);
+        expect(asyncFreshData2).toEqual({ payload: 'test2' });
+        var cachedResponse2 = _timedStreamAsyncAwait(service.getData2('test2'));
+        expect(cachedResponse2).toEqual({ payload: 'test2' });
+        expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
+        service.getData3('test3');
+        var asyncFreshData3 = _timedStreamAsyncAwait(service.getData3('test3'), 1000);
+        expect(asyncFreshData3).toEqual({ payload: 'test3' });
+        var cachedResponse3 = _timedStreamAsyncAwait(service.getData3('test3'));
+        expect(cachedResponse3).toEqual({ payload: 'test3' });
+        expect(mockServiceCallSpy).toHaveBeenCalledTimes(3);
+        /**
+         * bust all caches
+         */
+        cacheable_decorator_1.globalCacheBusterNotifier.next();
+        _timedStreamAsyncAwait(service.getData1('test1'), 1000);
+        _timedStreamAsyncAwait(service.getData2('test2'), 1000);
+        _timedStreamAsyncAwait(service.getData3('test3'), 1000);
+        /**
+         * if we didn't bust the cache, this would've been 3
+         */
+        expect(mockServiceCallSpy).toHaveBeenCalledTimes(6);
+    });
 });
 function _timedStreamAsyncAwait(stream$, skipTime) {
     var response = null;

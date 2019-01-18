@@ -5,6 +5,7 @@ var operators_1 = require("rxjs/operators");
 var DEFAULT_CACHE_RESOLVER = function (oldParams, newParams) {
     return JSON.stringify(oldParams) === JSON.stringify(newParams);
 };
+exports.globalCacheBusterNotifier = new rxjs_1.Subject();
 function Cacheable(_cacheConfig) {
     return function (_target, _propertyKey, propertyDescriptor) {
         var _oldMethod = propertyDescriptor.value;
@@ -12,15 +13,15 @@ function Cacheable(_cacheConfig) {
             var _cachePairs_1 = [];
             var _observableCachePairs_1 = [];
             var cacheConfig_1 = _cacheConfig ? _cacheConfig : {};
-            if (cacheConfig_1.cacheBusterObserver) {
-                /**
-                 * subscribe to the cacheBusterObserver and upon emission, clear all caches
-                 */
-                cacheConfig_1.cacheBusterObserver.subscribe(function (_) {
-                    _cachePairs_1.length = 0;
-                    _observableCachePairs_1.length = 0;
-                });
-            }
+            /**
+             * subscribe to the globalCacheBuster
+             * if a custom cacheBusterObserver is passed, subscribe to it as well
+             * subscribe to the cacheBusterObserver and upon emission, clear all caches
+             */
+            rxjs_1.merge(exports.globalCacheBusterNotifier.asObservable(), cacheConfig_1.cacheBusterObserver ? cacheConfig_1.cacheBusterObserver : rxjs_1.empty()).subscribe(function (_) {
+                _cachePairs_1.length = 0;
+                _observableCachePairs_1.length = 0;
+            });
             cacheConfig_1.cacheResolver = cacheConfig_1.cacheResolver
                 ? cacheConfig_1.cacheResolver
                 : DEFAULT_CACHE_RESOLVER;
