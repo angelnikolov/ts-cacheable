@@ -1,4 +1,5 @@
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
+export declare const globalCacheBusterNotifier: Subject<void>;
 export declare type ICacheRequestResolver = (oldParameters: Array<any>, newParameters: Array<any>) => boolean;
 export declare type IShouldCacheDecider = (response: any) => boolean;
 export interface ICacheConfig {
