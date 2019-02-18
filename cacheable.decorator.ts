@@ -1,4 +1,4 @@
-import { empty, merge, Observable, of, Subject } from 'rxjs';
+import { EMPTY, merge, Observable, of, Subject } from 'rxjs';
 import { delay, finalize, shareReplay, tap } from 'rxjs/operators';
 
 const DEFAULT_CACHE_RESOLVER = (oldParams, newParams) =>
@@ -51,6 +51,12 @@ export interface ICacheConfig {
    * @description should cache be resolved asynchronously? - helps with declarative forms and two-way databinding via ngModel
    */
   async?: boolean;
+
+    /**
+     * cache will be maintained in localStorage instead of in-memory
+     * @description should cache be maintained in the localStorage? - cache does not clear on page refresh
+     */
+  localStorage?: boolean;
 }
 export function Cacheable(_cacheConfig?: ICacheConfig) {
   return function(
@@ -63,7 +69,7 @@ export function Cacheable(_cacheConfig?: ICacheConfig) {
       const _cachePairs: Array<ICachePair<any>> = [];
       const _observableCachePairs: Array<ICachePair<Observable<any>>> = [];
       const cacheConfig = _cacheConfig ? _cacheConfig : {};
-      
+
       /**
        * subscribe to the globalCacheBuster
        * if a custom cacheBusterObserver is passed, subscribe to it as well
@@ -71,12 +77,16 @@ export function Cacheable(_cacheConfig?: ICacheConfig) {
        */
       merge(
         globalCacheBusterNotifier.asObservable(),
-        cacheConfig.cacheBusterObserver ? cacheConfig.cacheBusterObserver : empty()
+        cacheConfig.cacheBusterObserver ? cacheConfig.cacheBusterObserver : EMPTY
       ).subscribe((_) => {
-        _cachePairs.length = 0;
-        _observableCachePairs.length = 0;
+          if (cacheConfig.localStorage) {
+              window.localStorage.clear();
+          } else {
+              _cachePairs.length = 0;
+              _observableCachePairs.length = 0;
+          }
       });
-      
+
       cacheConfig.cacheResolver = cacheConfig.cacheResolver
         ? cacheConfig.cacheResolver
         : DEFAULT_CACHE_RESOLVER;
@@ -84,9 +94,14 @@ export function Cacheable(_cacheConfig?: ICacheConfig) {
       /* use function instead of an arrow function to keep context of invocation */
       (propertyDescriptor.value as any) = function(..._parameters) {
         let parameters = JSON.parse(JSON.stringify(_parameters));
-        let _foundCachePair = _cachePairs.find(cp =>
-          cacheConfig.cacheResolver(cp.parameters, parameters)
-        );
+        let _foundCachePair;
+        if (cacheConfig.localStorage) {
+              _foundCachePair = JSON.parse(window.localStorage.getItem(JSON.stringify(_parameters)));
+        } else {
+            _foundCachePair = _cachePairs.find(cp =>
+                cacheConfig.cacheResolver(cp.parameters, parameters)
+            );
+        }
         const _foundObservableCachePair = _observableCachePairs.find(cp =>
           cacheConfig.cacheResolver(cp.parameters, parameters)
         );
@@ -101,8 +116,13 @@ export function Cacheable(_cacheConfig?: ICacheConfig) {
             /**
              * cache duration has expired - remove it from the cachePairs array
              */
-            _cachePairs.splice(_cachePairs.indexOf(_foundCachePair), 1);
-            _foundCachePair = null;
+            if (!cacheConfig.localStorage) {
+                _cachePairs.splice(_cachePairs.indexOf(_foundCachePair), 1);
+                _foundCachePair = null;
+            } else {
+                window.localStorage.setItem(JSON.stringify(_parameters), null);
+                _foundCachePair = null;
+            }
           } else if (_cacheConfig.slidingExpiration) {
             /**
              * renew cache duration
@@ -150,11 +170,19 @@ export function Cacheable(_cacheConfig?: ICacheConfig) {
                 ) {
                   _cachePairs.shift();
                 }
-                _cachePairs.push({
-                  parameters,
-                  response,
-                  created: cacheConfig.maxAge ? new Date() : null
-                });
+                if(cacheConfig.localStorage) {
+                    window.localStorage.setItem(JSON.stringify(_parameters), JSON.stringify({
+                        parameters,
+                        response,
+                        created: cacheConfig.maxAge ? new Date() : null
+                    }));
+                } else {
+                    _cachePairs.push({
+                        parameters,
+                        response,
+                        created: cacheConfig.maxAge ? new Date() : null
+                    });
+                }
               }
             }),
             /**

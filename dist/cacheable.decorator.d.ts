@@ -1,7 +1,8 @@
-import { Observable, Subject } from 'rxjs';
-export declare const globalCacheBusterNotifier: Subject<void>;
+import { Observable } from 'rxjs';
+export declare const globalCacheBusterNotifier: any;
 export declare type ICacheRequestResolver = (oldParameters: Array<any>, newParameters: Array<any>) => boolean;
 export declare type IShouldCacheDecider = (response: any) => boolean;
+declare type ICacheable = (...args: any[]) => Observable<any>;
 export interface ICacheConfig {
     /**
      * pass an Observable upon whose emission all caches will be busted
@@ -36,5 +37,11 @@ export interface ICacheConfig {
      * @description should cache be resolved asynchronously? - helps with declarative forms and two-way databinding via ngModel
      */
     async?: boolean;
+    /**
+     * cache will be maintained in localStorage instead of in-memory
+     * @description should cache be maintained in the localStorage? - cache does not clear on page refresh
+     */
+    localStorage?: boolean;
 }
-export declare function Cacheable(_cacheConfig?: ICacheConfig): (_target: Object, _propertyKey: string, propertyDescriptor: TypedPropertyDescriptor<(...args: any[]) => Observable<any>>) => TypedPropertyDescriptor<(...args: any[]) => Observable<any>>;
+export declare function Cacheable(_cacheConfig?: ICacheConfig): (_target: Object, _propertyKey: string, propertyDescriptor: TypedPropertyDescriptor<ICacheable>) => TypedPropertyDescriptor<ICacheable>;
+export {};

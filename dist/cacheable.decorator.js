@@ -18,9 +18,14 @@ function Cacheable(_cacheConfig) {
              * if a custom cacheBusterObserver is passed, subscribe to it as well
              * subscribe to the cacheBusterObserver and upon emission, clear all caches
              */
-            rxjs_1.merge(exports.globalCacheBusterNotifier.asObservable(), cacheConfig_1.cacheBusterObserver ? cacheConfig_1.cacheBusterObserver : rxjs_1.empty()).subscribe(function (_) {
-                _cachePairs_1.length = 0;
-                _observableCachePairs_1.length = 0;
+            rxjs_1.merge(exports.globalCacheBusterNotifier.asObservable(), cacheConfig_1.cacheBusterObserver ? cacheConfig_1.cacheBusterObserver : rxjs_1.EMPTY).subscribe(function (_) {
+                if (cacheConfig_1.localStorage) {
+                    window.localStorage.clear();
+                }
+                else {
+                    _cachePairs_1.length = 0;
+                    _observableCachePairs_1.length = 0;
+                }
             });
             cacheConfig_1.cacheResolver = cacheConfig_1.cacheResolver
                 ? cacheConfig_1.cacheResolver
@@ -32,9 +37,15 @@ function Cacheable(_cacheConfig) {
                     _parameters[_i] = arguments[_i];
                 }
                 var parameters = JSON.parse(JSON.stringify(_parameters));
-                var _foundCachePair = _cachePairs_1.find(function (cp) {
-                    return cacheConfig_1.cacheResolver(cp.parameters, parameters);
-                });
+                var _foundCachePair;
+                if (cacheConfig_1.localStorage) {
+                    _foundCachePair = JSON.parse(window.localStorage.getItem(JSON.stringify(_parameters)));
+                }
+                else {
+                    _foundCachePair = _cachePairs_1.find(function (cp) {
+                        return cacheConfig_1.cacheResolver(cp.parameters, parameters);
+                    });
+                }
                 var _foundObservableCachePair = _observableCachePairs_1.find(function (cp) {
                     return cacheConfig_1.cacheResolver(cp.parameters, parameters);
                 });
@@ -47,8 +58,14 @@ function Cacheable(_cacheConfig) {
                         /**
                          * cache duration has expired - remove it from the cachePairs array
                          */
-                        _cachePairs_1.splice(_cachePairs_1.indexOf(_foundCachePair), 1);
-                        _foundCachePair = null;
+                        if (!cacheConfig_1.localStorage) {
+                            _cachePairs_1.splice(_cachePairs_1.indexOf(_foundCachePair), 1);
+                            _foundCachePair = null;
+                        }
+                        else {
+                            window.localStorage.setItem(JSON.stringify(_parameters), null);
+                            _foundCachePair = null;
+                        }
                     }
                     else if (_cacheConfig.slidingExpiration) {
                         /**
@@ -85,11 +102,20 @@ function Cacheable(_cacheConfig) {
                                     cacheConfig_1.maxCacheCount < _cachePairs_1.length + 1)) {
                                 _cachePairs_1.shift();
                             }
-                            _cachePairs_1.push({
-                                parameters: parameters,
-                                response: response,
-                                created: cacheConfig_1.maxAge ? new Date() : null
-                            });
+                            if (cacheConfig_1.localStorage) {
+                                window.localStorage.setItem(JSON.stringify(_parameters), JSON.stringify({
+                                    parameters: parameters,
+                                    response: response,
+                                    created: cacheConfig_1.maxAge ? new Date() : null
+                                }));
+                            }
+                            else {
+                                _cachePairs_1.push({
+                                    parameters: parameters,
+                                    response: response,
+                                    created: cacheConfig_1.maxAge ? new Date() : null
+                                });
+                            }
                         }
                     }), 
                     /**
