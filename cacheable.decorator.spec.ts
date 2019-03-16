@@ -9,7 +9,7 @@ class Service {
     return timer(1000).pipe(mapTo({ payload: parameter }));
   }
   mockSaveServiceCall() {
-    return timer(1000).pipe(mapTo('SAVED'));
+    return timer(1000).pipe(mapTo('SAVED'));  
   }
 
   @Cacheable()

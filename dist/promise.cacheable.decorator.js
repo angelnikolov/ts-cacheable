@@ -1,16 +1,24 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var rxjs_1 = require("rxjs");
-var operators_1 = require("rxjs/operators");
+var cacheable_decorator_1 = require("./cacheable.decorator");
 var common_1 = require("./common");
-exports.globalCacheBusterNotifier = new rxjs_1.Subject();
-exports.Cacheable = common_1.makeCacheableDecorator(function (propertyDescriptor, oldMethod, cachePairs, pendingCachePairs, cacheConfig) {
+var removeCachePair = function (cachePairs, parameters, cacheConfig) {
+    /**
+     * if there has been an pending cache pair for these parameters, when it completes or errors, remove it
+     */
+    var _pendingCachePairToRemove = cachePairs.find(function (cp) {
+        return cacheConfig.cacheResolver(cp.parameters, parameters);
+    });
+    cachePairs.splice(cachePairs.indexOf(_pendingCachePairToRemove), 1);
+};
+exports.PCacheable = common_1.makeCacheableDecorator(function (propertyDescriptor, oldMethod, cachePairs, pendingCachePairs, cacheConfig) {
     /**
      * subscribe to the globalCacheBuster
      * if a custom cacheBusterObserver is passed, subscribe to it as well
      * subscribe to the cacheBusterObserver and upon emission, clear all caches
      */
-    rxjs_1.merge(exports.globalCacheBusterNotifier.asObservable(), cacheConfig.cacheBusterObserver
+    rxjs_1.merge(cacheable_decorator_1.globalCacheBusterNotifier.asObservable(), cacheConfig.cacheBusterObserver
         ? cacheConfig.cacheBusterObserver
         : rxjs_1.empty()).subscribe(function (_) {
         cachePairs.length = 0;
@@ -52,22 +60,14 @@ exports.Cacheable = common_1.makeCacheableDecorator(function (propertyDescriptor
             }
         }
         if (_foundCachePair) {
-            var cached$ = rxjs_1.of(_foundCachePair.response);
-            return cacheConfig.async ? cached$.pipe(operators_1.delay(0)) : cached$;
+            return Promise.resolve(_foundCachePair.response);
         }
         else if (_foundPendingCachePair) {
             return _foundPendingCachePair.response;
         }
         else {
-            var response$ = oldMethod.call.apply(oldMethod, [this].concat(parameters)).pipe(operators_1.finalize(function () {
-                /**
-                 * if there has been an observable cache pair for these parameters, when it completes or errors, remove it
-                 */
-                var _pendingCachePairToRemove = pendingCachePairs.find(function (cp) {
-                    return cacheConfig.cacheResolver(cp.parameters, parameters);
-                });
-                pendingCachePairs.splice(pendingCachePairs.indexOf(_pendingCachePairToRemove), 1);
-            }), operators_1.tap(function (response) {
+            var response$ = oldMethod.call.apply(oldMethod, [this].concat(parameters))
+                .then(function (response) {
                 /**
                  * if no maxCacheCount has been passed
                  * if maxCacheCount has not been passed, just shift the cachePair to make room for the new one
@@ -87,11 +87,12 @@ exports.Cacheable = common_1.makeCacheableDecorator(function (propertyDescriptor
                         created: cacheConfig.maxAge ? new Date() : null
                     });
                 }
-            }), 
-            /**
-             * replay cached observable, so we don't enter finalize and tap for every cached observable subscription
-             */
-            operators_1.shareReplay());
+                removeCachePair(pendingCachePairs, parameters, cacheConfig);
+                return response;
+            })
+                .catch(function (_) {
+                removeCachePair(pendingCachePairs, parameters, cacheConfig);
+            });
             /**
              * cache the stream
              */
@@ -104,4 +105,4 @@ exports.Cacheable = common_1.makeCacheableDecorator(function (propertyDescriptor
         }
     };
 });
-//# sourceMappingURL=cacheable.decorator.js.map
+//# sourceMappingURL=promise.cacheable.decorator.js.map
