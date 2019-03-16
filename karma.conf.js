@@ -25,6 +25,6 @@ module.exports = function(config) {
         flags: ['--no-sandbox']
       }
     },
-    // singleRun: true
+    singleRun: true
   });
 };
