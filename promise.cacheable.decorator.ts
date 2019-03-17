@@ -1,10 +1,24 @@
-import { empty, merge, Observable, of, Subject } from 'rxjs';
-import { delay, finalize, shareReplay, tap } from 'rxjs/operators';
+import { empty, merge } from 'rxjs';
+import { globalCacheBusterNotifier } from './cacheable.decorator';
 import { DEFAULT_CACHE_RESOLVER, makeCacheableDecorator } from './common';
 import { ICacheConfig } from './common/ICacheConfig';
-export const globalCacheBusterNotifier = new Subject<void>();
+import { ICachePair } from './common/ICachePair';
 
-export const Cacheable = makeCacheableDecorator<Observable<any>>(
+const removeCachePair = <T>(
+  cachePairs: Array<ICachePair<T>>,
+  parameters: any,
+  cacheConfig: ICacheConfig
+) => {
+  /**
+   * if there has been an pending cache pair for these parameters, when it completes or errors, remove it
+   */
+  const _pendingCachePairToRemove = cachePairs.find(cp =>
+    cacheConfig.cacheResolver(cp.parameters, parameters)
+  );
+  cachePairs.splice(cachePairs.indexOf(_pendingCachePairToRemove), 1);
+};
+
+export const PCacheable = makeCacheableDecorator<Promise<any>>(
   (
     propertyDescriptor,
     oldMethod,
@@ -26,7 +40,7 @@ export const Cacheable = makeCacheableDecorator<Observable<any>>(
       cachePairs.length = 0;
       pendingCachePairs.length = 0;
     });
-
+    
     cacheConfig.cacheResolver = cacheConfig.cacheResolver
       ? cacheConfig.cacheResolver
       : DEFAULT_CACHE_RESOLVER;
@@ -62,27 +76,12 @@ export const Cacheable = makeCacheableDecorator<Observable<any>>(
       }
 
       if (_foundCachePair) {
-        const cached$ = of(_foundCachePair.response);
-        return cacheConfig.async ? cached$.pipe(delay(0)) : cached$;
+        return Promise.resolve(_foundCachePair.response);
       } else if (_foundPendingCachePair) {
         return _foundPendingCachePair.response;
       } else {
-        const response$ = (oldMethod.call(this, ...parameters) as Observable<
-          any
-        >).pipe(
-          finalize(() => {
-            /**
-             * if there has been an observable cache pair for these parameters, when it completes or errors, remove it
-             */
-            const _pendingCachePairToRemove = pendingCachePairs.find(cp =>
-              cacheConfig.cacheResolver(cp.parameters, parameters)
-            );
-            pendingCachePairs.splice(
-              pendingCachePairs.indexOf(_pendingCachePairToRemove),
-              1
-            );
-          }),
-          tap(response => {
+        const response$ = (oldMethod.call(this, ...parameters) as Promise<any>)
+          .then(response => {
             /**
              * if no maxCacheCount has been passed
              * if maxCacheCount has not been passed, just shift the cachePair to make room for the new one
@@ -106,12 +105,13 @@ export const Cacheable = makeCacheableDecorator<Observable<any>>(
                 created: cacheConfig.maxAge ? new Date() : null
               });
             }
-          }),
-          /**
-           * replay cached observable, so we don't enter finalize and tap for every cached observable subscription
-           */
-          shareReplay()
-        );
+            removeCachePair(pendingCachePairs, parameters, cacheConfig);
+
+            return response;
+          })
+          .catch(_ => {
+            removeCachePair(pendingCachePairs, parameters, cacheConfig);
+          });
         /**
          * cache the stream
          */

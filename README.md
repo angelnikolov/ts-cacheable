@@ -1,11 +1,10 @@
 [![Build Status](https://travis-ci.org/angelnikolov/ngx-cacheable.svg?branch=master)](https://travis-ci.org/angelnikolov/ngx-cacheable)
 # ngx-cacheable
 
-Observable cache decorator you can use to decorate class methods which return streams and cache their return values.
+Observable/Promise cache decorator you can use to decorate class methods which return streams and cache their return values.
 
 
-## Installing
-
+## Installing (all examples below will also work with Promise-returning methods and the `PCacheable`, `PCacheBuster` decorators)
 To install the package, just run
 
 ```
