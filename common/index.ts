@@ -59,7 +59,6 @@ export const makeCacheBusterDecorator = <T>(
       _propertyKey: string,
       propertyDescriptor: TypedPropertyDescriptor<ICacheable<T>>
     ) {
-      console.log(propertyDescriptor)
       const oldMethod = propertyDescriptor.value;
       if (propertyDescriptor && propertyDescriptor.value) {
           decorate(propertyDescriptor, oldMethod, cacheBusterConfig)

@@ -19,7 +19,6 @@ exports.makeCacheableDecorator = function (decorate) {
 exports.makeCacheBusterDecorator = function (decorate) {
     return function CacheBuster(cacheBusterConfig) {
         return function (_target, _propertyKey, propertyDescriptor) {
-            console.log(propertyDescriptor);
             var oldMethod = propertyDescriptor.value;
             if (propertyDescriptor && propertyDescriptor.value) {
                 decorate(propertyDescriptor, oldMethod, cacheBusterConfig);
