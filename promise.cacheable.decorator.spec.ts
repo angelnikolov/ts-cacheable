@@ -109,7 +109,7 @@ class Service {
     return this.mockServiceCall(parameter);
   }
 }
-fdescribe('PCacheableDecorator', () => {
+describe('PCacheableDecorator', () => {
   let service: Service = null;
   let mockServiceCallSpy: jasmine.Spy = null;
   beforeEach(() => {

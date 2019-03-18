@@ -165,7 +165,7 @@ var Service = /** @class */ (function () {
     ], Service.prototype, "getDataWithCacheBusting", null);
     return Service;
 }());
-fdescribe('PCacheableDecorator', function () {
+describe('PCacheableDecorator', function () {
     var service = null;
     var mockServiceCallSpy = null;
     beforeEach(function () {
