@@ -1,4 +1,4 @@
 import { Observable, Subject } from 'rxjs';
-import { ICacheConfig } from './common/ICacheConfig';
+import { IObservableCacheConfig } from './common/IObservableCacheConfig';
 export declare const globalCacheBusterNotifier: Subject<void>;
-export declare const Cacheable: (cacheConfig?: ICacheConfig) => (_target: Object, _propertyKey: string, propertyDescriptor: TypedPropertyDescriptor<(...args: any[]) => Observable<any>>) => TypedPropertyDescriptor<(...args: any[]) => Observable<any>>;
+export declare const Cacheable: (cacheConfig?: IObservableCacheConfig) => (_target: Object, _propertyKey: string, propertyDescriptor: TypedPropertyDescriptor<(...args: any[]) => Observable<any>>) => TypedPropertyDescriptor<(...args: any[]) => Observable<any>>;

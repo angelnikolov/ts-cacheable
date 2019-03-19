@@ -1,16 +1,16 @@
 import { empty, merge, Observable, of, Subject } from 'rxjs';
 import { delay, finalize, shareReplay, tap } from 'rxjs/operators';
 import { DEFAULT_CACHE_RESOLVER, makeCacheableDecorator } from './common';
-import { ICacheConfig } from './common/ICacheConfig';
+import { IObservableCacheConfig } from './common/IObservableCacheConfig';
 export const globalCacheBusterNotifier = new Subject<void>();
 
-export const Cacheable = makeCacheableDecorator<Observable<any>>(
+export const Cacheable = makeCacheableDecorator<Observable<any>, IObservableCacheConfig>(
   (
     propertyDescriptor,
     oldMethod,
     cachePairs,
     pendingCachePairs,
-    cacheConfig: ICacheConfig
+    cacheConfig
   ) => {
     /**
      * subscribe to the globalCacheBuster

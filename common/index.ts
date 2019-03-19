@@ -14,16 +14,16 @@ export type IShouldCacheDecider = (response: any) => boolean;
 
 export type ICacheable<T> = (...args) => T;
 
-export const makeCacheableDecorator = <T>(
+export const makeCacheableDecorator = <T, K extends ICacheConfig = ICacheConfig>(
   decorate: (
     propertyDescriptor: TypedPropertyDescriptor<ICacheable<T>>,
     oldMethod: ICacheable<T>,
     cachePairs: Array<ICachePair<any>>,
     pendingCachePairs: Array<ICachePair<T>>,
-    cacheConfig: ICacheConfig
+    cacheConfig: K
   ) => void
 ) => {
-  return function Cacheable(cacheConfig?: ICacheConfig) {
+  return function Cacheable(cacheConfig?: K) {
     return function(
       _target: Object,
       _propertyKey: string,
@@ -38,7 +38,7 @@ export const makeCacheableDecorator = <T>(
           oldMethod,
           cachePairs,
           pendingCachePairs,
-          cacheConfig ? cacheConfig : ({} as ICacheConfig)
+          cacheConfig ? cacheConfig : ({} as K)
         );
       }
       return propertyDescriptor;

@@ -24,7 +24,7 @@ export const PCacheable = makeCacheableDecorator<Promise<any>>(
     oldMethod,
     cachePairs,
     pendingCachePairs,
-    cacheConfig: ICacheConfig
+    cacheConfig
   ) => {
     /**
      * subscribe to the globalCacheBuster

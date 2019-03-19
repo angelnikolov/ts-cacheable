@@ -30,10 +30,4 @@ export interface ICacheConfig {
    * pass an Observable upon whose emission all caches will be busted
    */
   cacheBusterObserver?: Observable<any>;
-
-  /**
-   * cache will be resolved asynchronously - an extra change detection pass will be made by
-   * @description should cache be resolved asynchronously? - helps with declarative forms and two-way databinding via ngModel
-   */
-  async?: boolean;
 }
