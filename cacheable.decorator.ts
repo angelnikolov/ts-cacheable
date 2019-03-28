@@ -1,4 +1,4 @@
-import { empty, merge, Observable, of, Subject } from 'rxjs';
+import { EMPTY, merge, Observable, of, Subject } from 'rxjs';
 import { delay, finalize, shareReplay, tap } from 'rxjs/operators';
 import { DEFAULT_CACHE_RESOLVER, ICacheable } from './common';
 import { IObservableCacheConfig } from './common/IObservableCacheConfig';
@@ -6,7 +6,7 @@ import { ICachePair } from './common/ICachePair';
 export const globalCacheBusterNotifier = new Subject<void>();
 
 export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
-  return function (
+  return function(
     _target: Object,
     _propertyKey: string,
     propertyDescriptor: TypedPropertyDescriptor<ICacheable<Observable<any>>>
@@ -24,10 +24,14 @@ export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
         globalCacheBusterNotifier.asObservable(),
         cacheConfig.cacheBusterObserver
           ? cacheConfig.cacheBusterObserver
-          : empty()
+          : EMPTY
       ).subscribe(_ => {
-        cachePairs.length = 0;
-        pendingCachePairs.length = 0;
+          if (cacheConfig.localStorage) {
+              window.localStorage.clear();
+          } else {
+              cachePairs.length = 0;
+              pendingCachePairs.length = 0;
+          }
       });
 
       cacheConfig.cacheResolver = cacheConfig.cacheResolver
@@ -37,12 +41,17 @@ export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
       /* use function instead of an arrow function to keep context of invocation */
       (propertyDescriptor.value as any) = function (..._parameters) {
         let parameters = JSON.parse(JSON.stringify(_parameters));
-        let _foundCachePair = cachePairs.find(cp =>
-          cacheConfig.cacheResolver(cp.parameters, parameters)
-        );
+        let _foundCachePair;
         const _foundPendingCachePair = pendingCachePairs.find(cp =>
-          cacheConfig.cacheResolver(cp.parameters, parameters)
+            cacheConfig.cacheResolver(cp.parameters, parameters)
         );
+        if (cacheConfig.localStorage) {
+              _foundCachePair = JSON.parse(window.localStorage.getItem(JSON.stringify(_parameters)));
+        } else {
+            _foundCachePair = cachePairs.find(cp =>
+                cacheConfig.cacheResolver(cp.parameters, parameters)
+            );
+        }
         /**
          * check if maxAge is passed and cache has actually expired
          */
@@ -54,8 +63,13 @@ export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
             /**
              * cache duration has expired - remove it from the cachePairs array
              */
-            cachePairs.splice(cachePairs.indexOf(_foundCachePair), 1);
-            _foundCachePair = null;
+              if (!cacheConfig.localStorage) {
+                  cachePairs.splice(cachePairs.indexOf(_foundCachePair), 1);
+                  _foundCachePair = null;
+              } else {
+                  window.localStorage.setItem(JSON.stringify(_parameters), null);
+                  _foundCachePair = null;
+              }
           } else if (cacheConfig.slidingExpiration) {
             /**
              * renew cache duration
@@ -103,11 +117,19 @@ export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
                 ) {
                   cachePairs.shift();
                 }
-                cachePairs.push({
-                  parameters,
-                  response,
-                  created: cacheConfig.maxAge ? new Date() : null
-                });
+                if(cacheConfig.localStorage) {
+                    window.localStorage.setItem(JSON.stringify(_parameters), JSON.stringify({
+                        parameters,
+                        response,
+                        created: cacheConfig.maxAge ? new Date() : null
+                    }));
+                } else {
+                    cachePairs.push({
+                        parameters,
+                        response,
+                        created: cacheConfig.maxAge ? new Date() : null
+                    });
+                }
               }
             }),
             /**

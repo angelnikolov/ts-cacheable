@@ -29,4 +29,9 @@ export interface ICacheConfig {
      * pass an Observable upon whose emission all caches will be busted
      */
     cacheBusterObserver?: Observable<any>;
+    /**
+     * cache will be maintained in localStorage instead of in-memory if this is true
+     * @description should cache be maintained in the localStorage? - cache does not clear on page refresh
+     */
+    localStorage?: boolean;
 }
