@@ -12,6 +12,10 @@ class Service {
     return timer(1000).pipe(mapTo('SAVED'));  
   }
 
+  mockServiceCallWithMultipleParameters(parameter1, parameter2) {
+    return timer(1000).pipe(mapTo({ payload: [parameter1, parameter2] }));
+  }
+
   @Cacheable()
   getData(parameter: string) {
     return this.mockServiceCall(parameter);
@@ -107,7 +111,18 @@ class Service {
   getDataWithCacheBusting(parameter: string) {
     return this.mockServiceCall(parameter);
   }
+
+  @Cacheable()
+  getDataWithUndefinedParameter(parameter: string = '') {
+    return this.mockServiceCall(parameter);
+  }
+
+  @Cacheable()
+  getDataWithMultipleUndefinedParameters(parameter: string = 'Parameter1', parameter1: string = 'Parameter2') {
+    return this.mockServiceCallWithMultipleParameters(parameter, parameter1);
+  }
 }
+
 describe('CacheableDecorator', () => {
   let service: Service = null;
   let mockServiceCallSpy: jasmine.Spy = null;
@@ -168,7 +183,6 @@ describe('CacheableDecorator', () => {
 
     expect(mockServiceCallSpy).toHaveBeenCalledTimes(4);
   });
-
 
   it('returns observables in cache with a referential type params', () => {
     let params = {
@@ -779,6 +793,29 @@ describe('CacheableDecorator', () => {
      * if we didn't bust the cache, this would've been 3
      */
     expect(mockServiceCallSpy).toHaveBeenCalledTimes(6);
+  });
+
+  it('should not change undefined parameters to null', () => {
+    service.getDataWithUndefinedParameter(undefined);
+    expect(mockServiceCallSpy).toHaveBeenCalledWith('');
+    service.getDataWithUndefinedParameter();
+    expect(mockServiceCallSpy).toHaveBeenCalledWith('');
+
+    let mockServiceCallWithMultipleParametersSpy = spyOn(service, 'mockServiceCallWithMultipleParameters').and.callThrough();
+
+    const asyncData = _timedStreamAsyncAwait(
+      service.getDataWithMultipleUndefinedParameters(undefined, undefined),
+      1000
+    );
+
+    expect(asyncData).toEqual({ payload: ['Parameter1', 'Parameter2'] });
+    expect(mockServiceCallWithMultipleParametersSpy).toHaveBeenCalledWith('Parameter1', 'Parameter2');
+    
+    service.getDataWithMultipleUndefinedParameters(undefined, undefined);
+    expect(mockServiceCallWithMultipleParametersSpy).toHaveBeenCalledTimes(1);
+
+    service.getDataWithMultipleUndefinedParameters('Parameter1', undefined);
+    expect(mockServiceCallWithMultipleParametersSpy).toHaveBeenCalledTimes(2);
   });
 });
 
