@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var rxjs_1 = require("rxjs");
-var cacheable_decorator_1 = require("./cacheable.decorator");
 var common_1 = require("./common");
+exports.promiseGlobalCacheBusterNotifier = new rxjs_1.Subject();
 var removeCachePair = function (cachePairs, parameters, cacheConfig) {
     /**
      * if there has been an pending cache pair for these parameters, when it completes or errors, remove it
@@ -20,11 +20,11 @@ function PCacheable(cacheConfig) {
             var cachePairs_1 = [];
             var pendingCachePairs_1 = [];
             /**
-             * subscribe to the globalCacheBuster
+             * subscribe to the promiseGlobalCacheBusterNotifier
              * if a custom cacheBusterObserver is passed, subscribe to it as well
              * subscribe to the cacheBusterObserver and upon emission, clear all caches
              */
-            rxjs_1.merge(cacheable_decorator_1.globalCacheBusterNotifier.asObservable(), cacheConfig.cacheBusterObserver
+            rxjs_1.merge(exports.promiseGlobalCacheBusterNotifier.asObservable(), cacheConfig.cacheBusterObserver
                 ? cacheConfig.cacheBusterObserver
                 : rxjs_1.empty()).subscribe(function (_) {
                 cachePairs_1.length = 0;

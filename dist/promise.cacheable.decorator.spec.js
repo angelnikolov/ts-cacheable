@@ -43,9 +43,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
 var rxjs_1 = require("rxjs");
-var cacheable_decorator_1 = require("./cacheable.decorator");
-var promise_cache_buster_decorator_1 = require("./promise.cache-buster.decorator");
 var promise_cacheable_decorator_1 = require("./promise.cacheable.decorator");
+var promise_cache_buster_decorator_1 = require("./promise.cache-buster.decorator");
+var promise_cacheable_decorator_2 = require("./promise.cacheable.decorator");
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000;
 var cacheBusterNotifier = new rxjs_1.Subject();
 var Service = /** @class */ (function () {
@@ -118,52 +118,52 @@ var Service = /** @class */ (function () {
         return this.mockServiceCallWithMultipleParameters(parameter, parameter1);
     };
     __decorate([
-        promise_cacheable_decorator_1.PCacheable()
+        promise_cacheable_decorator_2.PCacheable()
     ], Service.prototype, "getData", null);
     __decorate([
-        promise_cacheable_decorator_1.PCacheable()
+        promise_cacheable_decorator_2.PCacheable()
     ], Service.prototype, "getDataWithParamsObj", null);
     __decorate([
-        promise_cacheable_decorator_1.PCacheable()
+        promise_cacheable_decorator_2.PCacheable()
     ], Service.prototype, "getDataAndReturnCachedStream", null);
     __decorate([
-        promise_cacheable_decorator_1.PCacheable({
+        promise_cacheable_decorator_2.PCacheable({
             maxAge: 1500
         })
     ], Service.prototype, "getDataWithExpiration", null);
     __decorate([
-        promise_cacheable_decorator_1.PCacheable({
+        promise_cacheable_decorator_2.PCacheable({
             maxAge: 1500,
             slidingExpiration: true
         })
     ], Service.prototype, "getDataWithSlidingExpiration", null);
     __decorate([
-        promise_cacheable_decorator_1.PCacheable({
+        promise_cacheable_decorator_2.PCacheable({
             maxCacheCount: 5
         })
     ], Service.prototype, "getDataWithMaxCacheCount", null);
     __decorate([
-        promise_cacheable_decorator_1.PCacheable({
+        promise_cacheable_decorator_2.PCacheable({
             maxAge: 1500,
             maxCacheCount: 5
         })
     ], Service.prototype, "getDataWithMaxCacheCountAndExpiration", null);
     __decorate([
-        promise_cacheable_decorator_1.PCacheable({
+        promise_cacheable_decorator_2.PCacheable({
             maxAge: 1500,
             maxCacheCount: 5,
             slidingExpiration: true
         })
     ], Service.prototype, "getDataWithMaxCacheCountAndSlidingExpiration", null);
     __decorate([
-        promise_cacheable_decorator_1.PCacheable({
+        promise_cacheable_decorator_2.PCacheable({
             cacheResolver: function (_oldParameters, newParameters) {
                 return newParameters.find(function (param) { return !!param.straightToLastCache; });
             }
         })
     ], Service.prototype, "getDataWithCustomCacheResolver", null);
     __decorate([
-        promise_cacheable_decorator_1.PCacheable({
+        promise_cacheable_decorator_2.PCacheable({
             shouldCacheDecider: function (response) {
                 return response.payload === 'test';
             }
@@ -175,15 +175,15 @@ var Service = /** @class */ (function () {
         })
     ], Service.prototype, "saveDataAndCacheBust", null);
     __decorate([
-        promise_cacheable_decorator_1.PCacheable({
+        promise_cacheable_decorator_2.PCacheable({
             cacheBusterObserver: cacheBusterNotifier.asObservable()
         })
     ], Service.prototype, "getDataWithCacheBusting", null);
     __decorate([
-        promise_cacheable_decorator_1.PCacheable()
+        promise_cacheable_decorator_2.PCacheable()
     ], Service.prototype, "getDataWithUndefinedParameter", null);
     __decorate([
-        promise_cacheable_decorator_1.PCacheable()
+        promise_cacheable_decorator_2.PCacheable()
     ], Service.prototype, "getDataWithMultipleUndefinedParameters", null);
     return Service;
 }());
@@ -607,13 +607,13 @@ describe('PCacheableDecorator', function () {
                             return this.mockServiceCall(parameter);
                         };
                         __decorate([
-                            promise_cacheable_decorator_1.PCacheable()
+                            promise_cacheable_decorator_2.PCacheable()
                         ], Service.prototype, "getData1", null);
                         __decorate([
-                            promise_cacheable_decorator_1.PCacheable()
+                            promise_cacheable_decorator_2.PCacheable()
                         ], Service.prototype, "getData2", null);
                         __decorate([
-                            promise_cacheable_decorator_1.PCacheable()
+                            promise_cacheable_decorator_2.PCacheable()
                         ], Service.prototype, "getData3", null);
                         return Service;
                     }());
@@ -659,7 +659,7 @@ describe('PCacheableDecorator', function () {
                     /**
                      * bust all caches
                      */
-                    cacheable_decorator_1.globalCacheBusterNotifier.next();
+                    promise_cacheable_decorator_1.promiseGlobalCacheBusterNotifier.next();
                     return [4 /*yield*/, (service.getData1('test1'))];
                 case 7:
                     _a.sent();

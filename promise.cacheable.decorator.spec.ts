@@ -1,5 +1,5 @@
 import { Subject } from 'rxjs';
-import { globalCacheBusterNotifier } from './promise.cacheable.decorator';
+import { promiseGlobalCacheBusterNotifier } from './promise.cacheable.decorator';
 import { PCacheBuster } from './promise.cache-buster.decorator';
 import { PCacheable } from './promise.cacheable.decorator';
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000;
@@ -540,7 +540,7 @@ describe('PCacheableDecorator', () => {
     /**
      * bust all caches
      */
-    globalCacheBusterNotifier.next();
+    promiseGlobalCacheBusterNotifier.next();
 
     await(service.getData1('test1'));
     await(service.getData2('test2'));
