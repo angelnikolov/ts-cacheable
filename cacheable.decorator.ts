@@ -36,7 +36,7 @@ export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
 
       /* use function instead of an arrow function to keep context of invocation */
       (propertyDescriptor.value as any) = function (..._parameters) {
-        let parameters = JSON.parse(JSON.stringify(_parameters));
+        let parameters = _parameters.map(param => param !== undefined ? JSON.parse(JSON.stringify(param)) : param);
         let _foundCachePair = cachePairs.find(cp =>
           cacheConfig.cacheResolver(cp.parameters, parameters)
         );

@@ -1,3 +1,4 @@
-import { Observable } from 'rxjs';
 import { ICacheBusterConfig } from './common/ICacheBusterConfig';
-export declare const CacheBuster: (cacheBusterConfig?: ICacheBusterConfig) => (_target: Object, _propertyKey: string, propertyDescriptor: TypedPropertyDescriptor<(...args: any[]) => Observable<any>>) => TypedPropertyDescriptor<(...args: any[]) => Observable<any>>;
+import { ICacheable } from './common';
+import { Observable } from 'rxjs';
+export declare function CacheBuster(cacheBusterConfig?: ICacheBusterConfig): (_target: Object, _propertyKey: string, propertyDescriptor: TypedPropertyDescriptor<ICacheable<Observable<any>>>) => TypedPropertyDescriptor<ICacheable<Observable<any>>>;
