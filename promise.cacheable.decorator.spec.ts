@@ -1,5 +1,5 @@
 import { Subject } from 'rxjs';
-import { globalCacheBusterNotifier } from './cacheable.decorator';
+import { globalCacheBusterNotifier } from './promise.cacheable.decorator';
 import { PCacheBuster } from './promise.cache-buster.decorator';
 import { PCacheable } from './promise.cacheable.decorator';
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000;

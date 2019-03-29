@@ -1,8 +1,8 @@
-import { empty, merge } from 'rxjs';
-import { globalCacheBusterNotifier } from './cacheable.decorator';
+import { empty, merge, Subject } from 'rxjs';
 import { DEFAULT_CACHE_RESOLVER, ICacheable } from './common';
 import { ICacheConfig } from './common/ICacheConfig';
 import { ICachePair } from './common/ICachePair';
+export const globalCacheBusterNotifier = new Subject<void>();
 
 const removeCachePair = <T>(
   cachePairs: Array<ICachePair<T>>,
@@ -29,7 +29,7 @@ export function PCacheable(cacheConfig: ICacheConfig = {}) {
       const cachePairs: Array<ICachePair<Promise<any>>> = [];
       const pendingCachePairs: Array<ICachePair<Promise<any>>> = [];
       /**
-       * subscribe to the globalCacheBuster
+       * subscribe to the globalCacheBusterNotifier
        * if a custom cacheBusterObserver is passed, subscribe to it as well
        * subscribe to the cacheBusterObserver and upon emission, clear all caches
        */
