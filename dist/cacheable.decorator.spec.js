@@ -56,6 +56,9 @@ var Service = /** @class */ (function () {
     Service.prototype.mockSaveServiceCall = function () {
         return rxjs_1.timer(1000).pipe(operators_1.mapTo('SAVED'));
     };
+    Service.prototype.mockServiceCallWithMultipleParameters = function (parameter1, parameter2) {
+        return rxjs_1.timer(1000).pipe(operators_1.mapTo({ payload: [parameter1, parameter2] }));
+    };
     Service.prototype.getData = function (parameter) {
         return this.mockServiceCall(parameter);
     };
@@ -94,6 +97,15 @@ var Service = /** @class */ (function () {
     };
     Service.prototype.getDataWithCacheBusting = function (parameter) {
         return this.mockServiceCall(parameter);
+    };
+    Service.prototype.getDataWithUndefinedParameter = function (parameter) {
+        if (parameter === void 0) { parameter = ''; }
+        return this.mockServiceCall(parameter);
+    };
+    Service.prototype.getDataWithMultipleUndefinedParameters = function (parameter, parameter1) {
+        if (parameter === void 0) { parameter = 'Parameter1'; }
+        if (parameter1 === void 0) { parameter1 = 'Parameter2'; }
+        return this.mockServiceCallWithMultipleParameters(parameter, parameter1);
     };
     __decorate([
         cacheable_decorator_1.Cacheable()
@@ -162,6 +174,12 @@ var Service = /** @class */ (function () {
             cacheBusterObserver: cacheBusterNotifier.asObservable()
         })
     ], Service.prototype, "getDataWithCacheBusting", null);
+    __decorate([
+        cacheable_decorator_1.Cacheable()
+    ], Service.prototype, "getDataWithUndefinedParameter", null);
+    __decorate([
+        cacheable_decorator_1.Cacheable()
+    ], Service.prototype, "getDataWithMultipleUndefinedParameters", null);
     return Service;
 }());
 describe('CacheableDecorator', function () {
@@ -651,6 +669,20 @@ describe('CacheableDecorator', function () {
          * if we didn't bust the cache, this would've been 3
          */
         expect(mockServiceCallSpy).toHaveBeenCalledTimes(6);
+    });
+    it('should not change undefined parameters to null', function () {
+        service.getDataWithUndefinedParameter(undefined);
+        expect(mockServiceCallSpy).toHaveBeenCalledWith('');
+        service.getDataWithUndefinedParameter();
+        expect(mockServiceCallSpy).toHaveBeenCalledWith('');
+        var mockServiceCallWithMultipleParametersSpy = spyOn(service, 'mockServiceCallWithMultipleParameters').and.callThrough();
+        var asyncData = _timedStreamAsyncAwait(service.getDataWithMultipleUndefinedParameters(undefined, undefined), 1000);
+        expect(asyncData).toEqual({ payload: ['Parameter1', 'Parameter2'] });
+        expect(mockServiceCallWithMultipleParametersSpy).toHaveBeenCalledWith('Parameter1', 'Parameter2');
+        service.getDataWithMultipleUndefinedParameters(undefined, undefined);
+        expect(mockServiceCallWithMultipleParametersSpy).toHaveBeenCalledTimes(1);
+        service.getDataWithMultipleUndefinedParameters('Parameter1', undefined);
+        expect(mockServiceCallWithMultipleParametersSpy).toHaveBeenCalledTimes(2);
     });
 });
 function _timedStreamAsyncAwait(stream$, skipTime) {

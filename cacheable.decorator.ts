@@ -2,7 +2,7 @@ import { EMPTY, merge, Observable, of, Subject } from 'rxjs';
 import { delay, finalize, shareReplay, tap } from 'rxjs/operators';
 import { DEFAULT_CACHE_RESOLVER, ICacheable } from './common';
 import { IObservableCacheConfig } from './common/IObservableCacheConfig';
-import { ICachePair } from './common/ICachePair';
+import { ICachePair } from './common';
 export const globalCacheBusterNotifier = new Subject<void>();
 
 export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
@@ -40,8 +40,9 @@ export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
 
       /* use function instead of an arrow function to keep context of invocation */
       (propertyDescriptor.value as any) = function (..._parameters) {
-        let parameters = JSON.parse(JSON.stringify(_parameters));
+        let parameters = _parameters.map(param => param !== undefined ? JSON.parse(JSON.stringify(param)) : param);
         let _foundCachePair;
+
         const _foundPendingCachePair = pendingCachePairs.find(cp =>
             cacheConfig.cacheResolver(cp.parameters, parameters)
         );
@@ -151,4 +152,4 @@ export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
     }
     return propertyDescriptor;
   }
-};
+}

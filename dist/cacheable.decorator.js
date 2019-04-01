@@ -36,7 +36,7 @@ function Cacheable(cacheConfig) {
                 for (var _i = 0; _i < arguments.length; _i++) {
                     _parameters[_i] = arguments[_i];
                 }
-                var parameters = JSON.parse(JSON.stringify(_parameters));
+                var parameters = _parameters.map(function (param) { return param !== undefined ? JSON.parse(JSON.stringify(param)) : param; });
                 var _foundCachePair;
                 var _foundPendingCachePair = pendingCachePairs_1.find(function (cp) {
                     return cacheConfig.cacheResolver(cp.parameters, parameters);
@@ -140,5 +140,4 @@ function Cacheable(cacheConfig) {
     };
 }
 exports.Cacheable = Cacheable;
-;
 //# sourceMappingURL=cacheable.decorator.js.map
