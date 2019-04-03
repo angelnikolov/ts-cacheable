@@ -27,11 +27,11 @@ export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
           ? cacheConfig.cacheBusterObserver
           : EMPTY
       ).subscribe(_ => {
-          cachePairs.length = 0;
-          pendingCachePairs.length = 0;
-          if(cacheConfig.localStorage) {
-              window.localStorage.setItem(LOCAL_STORAGE_CACHE, null);
-          }
+        cachePairs.length = 0;
+        pendingCachePairs.length = 0;
+        if(cacheConfig.localStorage) {
+          window.localStorage.setItem(LOCAL_STORAGE_CACHE, null);
+        }
       });
 
       cacheConfig.cacheResolver = cacheConfig.cacheResolver
@@ -42,21 +42,20 @@ export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
       (propertyDescriptor.value as any) = function (..._parameters) {
         let parameters = _parameters.map(param => param !== undefined ? JSON.parse(JSON.stringify(param)) : param);
         let _foundCachePair = cachePairs.find(cp =>
-            cacheConfig.cacheResolver(cp.parameters, parameters)
+           cacheConfig.cacheResolver(cp.parameters, parameters)
         );
 
         const _foundPendingCachePair = pendingCachePairs.find(cp =>
-            cacheConfig.cacheResolver(cp.parameters, parameters)
+           cacheConfig.cacheResolver(cp.parameters, parameters)
         );
         if (cacheConfig.localStorage) {
-            const localStorageCachePairs = JSON.parse(window.localStorage.getItem(LOCAL_STORAGE_CACHE));
-            if (localStorageCachePairs) {
-                _foundCachePair = localStorageCachePairs.find(cp =>
+           const localStorageCachePairs = JSON.parse(window.localStorage.getItem(LOCAL_STORAGE_CACHE));
+           if (localStorageCachePairs) {
+               _foundCachePair = localStorageCachePairs.find(cp =>
                     cacheConfig.cacheResolver(cp.parameters, parameters));
-            } else {
-                _foundCachePair = null;
-            }
-
+           } else {
+               _foundCachePair = null;
+           }
         }
         /**
          * check if maxAge is passed and cache has actually expired
