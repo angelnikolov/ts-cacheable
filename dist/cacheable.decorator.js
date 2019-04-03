@@ -4,6 +4,7 @@ var rxjs_1 = require("rxjs");
 var operators_1 = require("rxjs/operators");
 var common_1 = require("./common");
 exports.globalCacheBusterNotifier = new rxjs_1.Subject();
+var LOCAL_STORAGE_CACHE = "localStorageCache";
 function Cacheable(cacheConfig) {
     if (cacheConfig === void 0) { cacheConfig = {}; }
     return function (_target, _propertyKey, propertyDescriptor) {
@@ -19,12 +20,10 @@ function Cacheable(cacheConfig) {
             rxjs_1.merge(exports.globalCacheBusterNotifier.asObservable(), cacheConfig.cacheBusterObserver
                 ? cacheConfig.cacheBusterObserver
                 : rxjs_1.EMPTY).subscribe(function (_) {
+                cachePairs_1.length = 0;
+                pendingCachePairs_1.length = 0;
                 if (cacheConfig.localStorage) {
-                    window.localStorage.clear();
-                }
-                else {
-                    cachePairs_1.length = 0;
-                    pendingCachePairs_1.length = 0;
+                    window.localStorage.setItem(LOCAL_STORAGE_CACHE, null);
                 }
             });
             cacheConfig.cacheResolver = cacheConfig.cacheResolver
@@ -37,17 +36,22 @@ function Cacheable(cacheConfig) {
                     _parameters[_i] = arguments[_i];
                 }
                 var parameters = _parameters.map(function (param) { return param !== undefined ? JSON.parse(JSON.stringify(param)) : param; });
-                var _foundCachePair;
+                var _foundCachePair = cachePairs_1.find(function (cp) {
+                    return cacheConfig.cacheResolver(cp.parameters, parameters);
+                });
                 var _foundPendingCachePair = pendingCachePairs_1.find(function (cp) {
                     return cacheConfig.cacheResolver(cp.parameters, parameters);
                 });
                 if (cacheConfig.localStorage) {
-                    _foundCachePair = JSON.parse(window.localStorage.getItem(JSON.stringify(_parameters)));
-                }
-                else {
-                    _foundCachePair = cachePairs_1.find(function (cp) {
-                        return cacheConfig.cacheResolver(cp.parameters, parameters);
-                    });
+                    var localStorageCachePairs = JSON.parse(window.localStorage.getItem(LOCAL_STORAGE_CACHE));
+                    if (localStorageCachePairs) {
+                        _foundCachePair = localStorageCachePairs.find(function (cp) {
+                            return cacheConfig.cacheResolver(cp.parameters, parameters);
+                        });
+                    }
+                    else {
+                        _foundCachePair = null;
+                    }
                 }
                 /**
                  * check if maxAge is passed and cache has actually expired
@@ -58,14 +62,8 @@ function Cacheable(cacheConfig) {
                         /**
                          * cache duration has expired - remove it from the cachePairs array
                          */
-                        if (!cacheConfig.localStorage) {
-                            cachePairs_1.splice(cachePairs_1.indexOf(_foundCachePair), 1);
-                            _foundCachePair = null;
-                        }
-                        else {
-                            window.localStorage.setItem(JSON.stringify(_parameters), null);
-                            _foundCachePair = null;
-                        }
+                        cachePairs_1.splice(cachePairs_1.indexOf(_foundCachePair), 1);
+                        _foundCachePair = null;
                     }
                     else if (cacheConfig.slidingExpiration) {
                         /**
@@ -104,19 +102,13 @@ function Cacheable(cacheConfig) {
                                     cacheConfig.maxCacheCount < cachePairs_1.length + 1)) {
                                 cachePairs_1.shift();
                             }
+                            cachePairs_1.push({
+                                parameters: parameters,
+                                response: response,
+                                created: cacheConfig.maxAge ? new Date() : null
+                            });
                             if (cacheConfig.localStorage) {
-                                window.localStorage.setItem(JSON.stringify(_parameters), JSON.stringify({
-                                    parameters: parameters,
-                                    response: response,
-                                    created: cacheConfig.maxAge ? new Date() : null
-                                }));
-                            }
-                            else {
-                                cachePairs_1.push({
-                                    parameters: parameters,
-                                    response: response,
-                                    created: cacheConfig.maxAge ? new Date() : null
-                                });
+                                window.localStorage.setItem(LOCAL_STORAGE_CACHE, JSON.stringify(cachePairs_1));
                             }
                         }
                     }), 

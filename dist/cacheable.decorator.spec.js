@@ -107,6 +107,9 @@ var Service = /** @class */ (function () {
         if (parameter1 === void 0) { parameter1 = 'Parameter2'; }
         return this.mockServiceCallWithMultipleParameters(parameter, parameter1);
     };
+    Service.prototype.getDataCachedInLocalStorage = function (parameter) {
+        return this.mockServiceCall(parameter);
+    };
     __decorate([
         cacheable_decorator_1.Cacheable()
     ], Service.prototype, "getData", null);
@@ -180,6 +183,9 @@ var Service = /** @class */ (function () {
     __decorate([
         cacheable_decorator_1.Cacheable()
     ], Service.prototype, "getDataWithMultipleUndefinedParameters", null);
+    __decorate([
+        cacheable_decorator_1.Cacheable({ localStorage: true })
+    ], Service.prototype, "getDataCachedInLocalStorage", null);
     return Service;
 }());
 describe('CacheableDecorator', function () {
@@ -683,6 +689,28 @@ describe('CacheableDecorator', function () {
         expect(mockServiceCallWithMultipleParametersSpy).toHaveBeenCalledTimes(1);
         service.getDataWithMultipleUndefinedParameters('Parameter1', undefined);
         expect(mockServiceCallWithMultipleParametersSpy).toHaveBeenCalledTimes(2);
+    });
+    it('return the cached results from localStorage', function () {
+        /**
+         * call the service endpoint five hundred times with the same parameter
+         * but the service should only be called once, since the observable will be cached
+         */
+        for (var i = 0; i < 500; i++) {
+            service.getDataCachedInLocalStorage('test');
+        }
+        expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+        /**
+         * return the response
+         */
+        jasmine.clock().tick(1000);
+        /**
+         * call again..
+         */
+        service.getDataCachedInLocalStorage('test');
+        /**
+         * service call count should still be 1, since we are returning from cache now
+         */
+        expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
     });
 });
 function _timedStreamAsyncAwait(stream$, skipTime) {
