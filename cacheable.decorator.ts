@@ -4,6 +4,7 @@ import { DEFAULT_CACHE_RESOLVER, ICacheable } from './common';
 import { IObservableCacheConfig } from './common/IObservableCacheConfig';
 import { ICachePair } from './common';
 export const globalCacheBusterNotifier = new Subject<void>();
+const LOCAL_STORAGE_CACHE = "localStorageCache";
 
 export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
   return function(
@@ -26,11 +27,10 @@ export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
           ? cacheConfig.cacheBusterObserver
           : EMPTY
       ).subscribe(_ => {
-          if (cacheConfig.localStorage) {
-              window.localStorage.clear();
-          } else {
-              cachePairs.length = 0;
-              pendingCachePairs.length = 0;
+          cachePairs.length = 0;
+          pendingCachePairs.length = 0;
+          if(cacheConfig.localStorage) {
+              window.localStorage.setItem(LOCAL_STORAGE_CACHE, null);
           }
       });
 
@@ -41,17 +41,22 @@ export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
       /* use function instead of an arrow function to keep context of invocation */
       (propertyDescriptor.value as any) = function (..._parameters) {
         let parameters = _parameters.map(param => param !== undefined ? JSON.parse(JSON.stringify(param)) : param);
-        let _foundCachePair;
+        let _foundCachePair = cachePairs.find(cp =>
+            cacheConfig.cacheResolver(cp.parameters, parameters)
+        );
 
         const _foundPendingCachePair = pendingCachePairs.find(cp =>
             cacheConfig.cacheResolver(cp.parameters, parameters)
         );
         if (cacheConfig.localStorage) {
-              _foundCachePair = JSON.parse(window.localStorage.getItem(JSON.stringify(_parameters)));
-        } else {
-            _foundCachePair = cachePairs.find(cp =>
-                cacheConfig.cacheResolver(cp.parameters, parameters)
-            );
+            const localStorageCachePairs = JSON.parse(window.localStorage.getItem(LOCAL_STORAGE_CACHE));
+            if (localStorageCachePairs) {
+                _foundCachePair = localStorageCachePairs.find(cp =>
+                    cacheConfig.cacheResolver(cp.parameters, parameters));
+            } else {
+                _foundCachePair = null;
+            }
+
         }
         /**
          * check if maxAge is passed and cache has actually expired
@@ -64,13 +69,8 @@ export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
             /**
              * cache duration has expired - remove it from the cachePairs array
              */
-              if (!cacheConfig.localStorage) {
-                  cachePairs.splice(cachePairs.indexOf(_foundCachePair), 1);
-                  _foundCachePair = null;
-              } else {
-                  window.localStorage.setItem(JSON.stringify(_parameters), null);
-                  _foundCachePair = null;
-              }
+                cachePairs.splice(cachePairs.indexOf(_foundCachePair), 1);
+                _foundCachePair = null;
           } else if (cacheConfig.slidingExpiration) {
             /**
              * renew cache duration
@@ -118,18 +118,13 @@ export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
                 ) {
                   cachePairs.shift();
                 }
+                cachePairs.push({
+                    parameters,
+                    response,
+                    created: cacheConfig.maxAge ? new Date() : null
+                });
                 if(cacheConfig.localStorage) {
-                    window.localStorage.setItem(JSON.stringify(_parameters), JSON.stringify({
-                        parameters,
-                        response,
-                        created: cacheConfig.maxAge ? new Date() : null
-                    }));
-                } else {
-                    cachePairs.push({
-                        parameters,
-                        response,
-                        created: cacheConfig.maxAge ? new Date() : null
-                    });
+                    window.localStorage.setItem(LOCAL_STORAGE_CACHE, JSON.stringify(cachePairs));
                 }
               }
             }),

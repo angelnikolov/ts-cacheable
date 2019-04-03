@@ -9,7 +9,7 @@ class Service {
     return timer(1000).pipe(mapTo({ payload: parameter }));
   }
   mockSaveServiceCall() {
-    return timer(1000).pipe(mapTo('SAVED'));  
+    return timer(1000).pipe(mapTo('SAVED'));
   }
 
   mockServiceCallWithMultipleParameters(parameter1, parameter2) {
@@ -120,6 +120,10 @@ class Service {
   @Cacheable()
   getDataWithMultipleUndefinedParameters(parameter: string = 'Parameter1', parameter1: string = 'Parameter2') {
     return this.mockServiceCallWithMultipleParameters(parameter, parameter1);
+  }
+  @Cacheable({localStorage: true})
+  getDataCachedInLocalStorage(parameter: string) {
+      return this.mockServiceCall(parameter);
   }
 }
 
@@ -724,7 +728,7 @@ describe('CacheableDecorator', () => {
       getData2(parameter: string) {
         return this.mockServiceCall(parameter);
       }
-    
+
       @Cacheable()
       getData3(parameter: string) {
         return this.mockServiceCall(parameter);
@@ -770,7 +774,7 @@ describe('CacheableDecorator', () => {
     const cachedResponse3 = _timedStreamAsyncAwait(service.getData3('test3'));
     expect(cachedResponse3).toEqual({ payload: 'test3' });
     expect(mockServiceCallSpy).toHaveBeenCalledTimes(3);
-    
+
     /**
      * bust all caches
      */
@@ -810,12 +814,36 @@ describe('CacheableDecorator', () => {
 
     expect(asyncData).toEqual({ payload: ['Parameter1', 'Parameter2'] });
     expect(mockServiceCallWithMultipleParametersSpy).toHaveBeenCalledWith('Parameter1', 'Parameter2');
-    
+
     service.getDataWithMultipleUndefinedParameters(undefined, undefined);
     expect(mockServiceCallWithMultipleParametersSpy).toHaveBeenCalledTimes(1);
 
     service.getDataWithMultipleUndefinedParameters('Parameter1', undefined);
     expect(mockServiceCallWithMultipleParametersSpy).toHaveBeenCalledTimes(2);
+  });
+
+  it('return the cached results from localStorage', () => {
+      /**
+       * call the service endpoint five hundred times with the same parameter
+       * but the service should only be called once, since the observable will be cached
+       */
+      for (let i = 0; i < 500; i++) {
+          service.getDataCachedInLocalStorage('test');
+      }
+
+      expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+      /**
+       * return the response
+       */
+      jasmine.clock().tick(1000);
+      /**
+       * call again..
+       */
+      service.getDataCachedInLocalStorage('test');
+      /**
+       * service call count should still be 1, since we are returning from cache now
+       */
+      expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
   });
 });
 
