@@ -3,8 +3,6 @@ import { mapTo, startWith } from 'rxjs/operators';
 import { CacheBuster } from './cache-buster.decorator';
 import { Cacheable, globalCacheBusterNotifier } from './cacheable.decorator';
 const cacheBusterNotifier = new Subject();
-const cache = window.localStorage;
-const cacheName = "localStorageCache";
 class Service {
   mockServiceCall(parameter) {
     return timer(1000).pipe(mapTo({ payload: parameter }));
@@ -122,21 +120,15 @@ class Service {
   getDataWithMultipleUndefinedParameters(parameter: string = 'Parameter1', parameter1: string = 'Parameter2') {
     return this.mockServiceCallWithMultipleParameters(parameter, parameter1);
   }
-  @Cacheable({persistenceAdapter: cache, name: cacheName})
-  getDataCachedInPersistentStorage(parameter: string) {
-      return this.mockServiceCall(parameter);
-  }
 }
 
 describe('CacheableDecorator', () => {
   let service: Service = null;
   let mockServiceCallSpy: jasmine.Spy = null;
-  let mockDomPersistenceAdapter: jasmine.Spy = null;
   beforeEach(() => {
     jasmine.clock().install();
     service = new Service();
     mockServiceCallSpy = spyOn(service, 'mockServiceCall').and.callThrough();
-    mockDomPersistenceAdapter = jasmine.createSpyObj('mockDomPersistenceAdapter', [ 'set', 'get' ]).and.callThrough();
   });
 
   afterEach(() => {
@@ -823,30 +815,6 @@ describe('CacheableDecorator', () => {
 
     service.getDataWithMultipleUndefinedParameters('Parameter1', undefined);
     expect(mockServiceCallWithMultipleParametersSpy).toHaveBeenCalledTimes(2);
-  });
-
-  it('return the cached results from localStorage', () => {
-      /**
-       * call the service endpoint five hundred times with the same parameter
-       * but the service should only be called once, since the observable will be cached
-       */
-      for (let i = 0; i < 500; i++) {
-          service.getDataCachedInPersistentStorage('test');
-      }
-
-      expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
-      /**
-       * return the response
-       */
-      jasmine.clock().tick(1000);
-      /**
-       * call again..
-       */
-      service.getDataCachedInPersistentStorage('test');
-      /**
-       * service call count should still be 1, since we are returning from cache now
-       */
-      expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
   });
 });
 

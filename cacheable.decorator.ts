@@ -3,7 +3,7 @@ import { delay, finalize, shareReplay, tap } from 'rxjs/operators';
 import { DEFAULT_CACHE_RESOLVER, ICacheable } from './common';
 import { IObservableCacheConfig } from './common/IObservableCacheConfig';
 import { ICachePair } from './common';
-import {DomPersistenceAdapter} from "./common/DomPersistenceAdapter";
+import {DomPersistenceAdapter} from "./common";
 export const globalCacheBusterNotifier = new Subject<void>();
 const DEFAULT_CACHE_NAME = "localPersistence";
 

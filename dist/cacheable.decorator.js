@@ -3,14 +3,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var rxjs_1 = require("rxjs");
 var operators_1 = require("rxjs/operators");
 var common_1 = require("./common");
-var DomPersistenceAdapter_1 = require("./common/DomPersistenceAdapter");
+var common_2 = require("./common");
 exports.globalCacheBusterNotifier = new rxjs_1.Subject();
 var DEFAULT_CACHE_NAME = "localPersistence";
 function Cacheable(cacheConfig) {
     if (cacheConfig === void 0) { cacheConfig = {}; }
     return function (_target, _propertyKey, propertyDescriptor) {
         var oldMethod = propertyDescriptor.value;
-        var cache = cacheConfig.persistenceAdapter ? new DomPersistenceAdapter_1.DomPersistenceAdapter(cacheConfig.persistenceAdapter) : null;
+        var cache = cacheConfig.persistenceAdapter ? new common_2.DomPersistenceAdapter(cacheConfig.persistenceAdapter) : null;
         var cacheName = cacheConfig.name ? cacheConfig.name : DEFAULT_CACHE_NAME;
         if (propertyDescriptor && propertyDescriptor.value) {
             var cachePairs_1 = [];

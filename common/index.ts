@@ -1,6 +1,7 @@
 import { ICacheBusterConfig } from './ICacheBusterConfig';
 import { ICacheConfig } from './ICacheConfig';
 import { ICachePair } from './ICachePair';
+import { DomPersistenceAdapter } from './DomPersistenceAdapter';
 
 export const DEFAULT_CACHE_RESOLVER = (oldParams, newParams) =>
   JSON.stringify(oldParams) === JSON.stringify(newParams);
@@ -14,4 +15,4 @@ export type IShouldCacheDecider = (response: any) => boolean;
 
 export type ICacheable<T> = (...args) => T;
 
-export { ICacheBusterConfig, ICacheConfig, ICachePair };
+export { ICacheBusterConfig, ICacheConfig, ICachePair, DomPersistenceAdapter };

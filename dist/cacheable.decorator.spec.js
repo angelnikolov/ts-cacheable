@@ -47,8 +47,6 @@ var operators_1 = require("rxjs/operators");
 var cache_buster_decorator_1 = require("./cache-buster.decorator");
 var cacheable_decorator_1 = require("./cacheable.decorator");
 var cacheBusterNotifier = new rxjs_1.Subject();
-var cache = window.localStorage;
-var cacheName = "localStorageCache";
 var Service = /** @class */ (function () {
     function Service() {
     }
@@ -108,9 +106,6 @@ var Service = /** @class */ (function () {
         if (parameter === void 0) { parameter = 'Parameter1'; }
         if (parameter1 === void 0) { parameter1 = 'Parameter2'; }
         return this.mockServiceCallWithMultipleParameters(parameter, parameter1);
-    };
-    Service.prototype.getDataCachedInPersistentStorage = function (parameter) {
-        return this.mockServiceCall(parameter);
     };
     __decorate([
         cacheable_decorator_1.Cacheable()
@@ -185,20 +180,15 @@ var Service = /** @class */ (function () {
     __decorate([
         cacheable_decorator_1.Cacheable()
     ], Service.prototype, "getDataWithMultipleUndefinedParameters", null);
-    __decorate([
-        cacheable_decorator_1.Cacheable({ persistenceAdapter: cache, name: cacheName })
-    ], Service.prototype, "getDataCachedInPersistentStorage", null);
     return Service;
 }());
 describe('CacheableDecorator', function () {
     var service = null;
     var mockServiceCallSpy = null;
-    var mockDomPersistenceAdapter = null;
     beforeEach(function () {
         jasmine.clock().install();
         service = new Service();
         mockServiceCallSpy = spyOn(service, 'mockServiceCall').and.callThrough();
-        mockDomPersistenceAdapter = jasmine.createSpyObj('mockDomPersistenceAdapter', ['set', 'get']).and.callThrough();
     });
     afterEach(function () {
         jasmine.clock().uninstall();
@@ -693,28 +683,6 @@ describe('CacheableDecorator', function () {
         expect(mockServiceCallWithMultipleParametersSpy).toHaveBeenCalledTimes(1);
         service.getDataWithMultipleUndefinedParameters('Parameter1', undefined);
         expect(mockServiceCallWithMultipleParametersSpy).toHaveBeenCalledTimes(2);
-    });
-    it('return the cached results from localStorage', function () {
-        /**
-         * call the service endpoint five hundred times with the same parameter
-         * but the service should only be called once, since the observable will be cached
-         */
-        for (var i = 0; i < 500; i++) {
-            service.getDataCachedInPersistentStorage('test');
-        }
-        expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
-        /**
-         * return the response
-         */
-        jasmine.clock().tick(1000);
-        /**
-         * call again..
-         */
-        service.getDataCachedInPersistentStorage('test');
-        /**
-         * service call count should still be 1, since we are returning from cache now
-         */
-        expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
     });
 });
 function _timedStreamAsyncAwait(stream$, skipTime) {

@@ -21,6 +21,4 @@ export class DomPersistenceAdapter implements IPersistenceAdapter {
         }
         return this.persistenceAdapter;
     }
-
-
 }
