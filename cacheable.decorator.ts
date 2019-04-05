@@ -3,8 +3,9 @@ import { delay, finalize, shareReplay, tap } from 'rxjs/operators';
 import { DEFAULT_CACHE_RESOLVER, ICacheable } from './common';
 import { IObservableCacheConfig } from './common/IObservableCacheConfig';
 import { ICachePair } from './common';
+import {DomPersistenceAdapter} from "./common/DomPersistenceAdapter";
 export const globalCacheBusterNotifier = new Subject<void>();
-const LOCAL_STORAGE_CACHE = "localStorageCache";
+const DEFAULT_CACHE_NAME = "localPersistence";
 
 export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
   return function(
@@ -13,6 +14,8 @@ export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
     propertyDescriptor: TypedPropertyDescriptor<ICacheable<Observable<any>>>
   ) {
     const oldMethod = propertyDescriptor.value;
+    let cache = cacheConfig.persistenceAdapter ? new DomPersistenceAdapter(cacheConfig.persistenceAdapter): null;
+    const cacheName = cacheConfig.name ? cacheConfig.name : DEFAULT_CACHE_NAME;
     if (propertyDescriptor && propertyDescriptor.value) {
       const cachePairs: Array<ICachePair<Observable<any>>> = [];
       const pendingCachePairs: Array<ICachePair<Observable<any>>> = [];
@@ -29,8 +32,8 @@ export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
       ).subscribe(_ => {
         cachePairs.length = 0;
         pendingCachePairs.length = 0;
-        if(cacheConfig.localStorage) {
-          window.localStorage.setItem(LOCAL_STORAGE_CACHE, null);
+        if(cache) {
+            cache.set(cacheName, null);
         }
       });
 
@@ -48,10 +51,10 @@ export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
         const _foundPendingCachePair = pendingCachePairs.find(cp =>
            cacheConfig.cacheResolver(cp.parameters, parameters)
         );
-        if (cacheConfig.localStorage) {
-           const localStorageCachePairs = JSON.parse(window.localStorage.getItem(LOCAL_STORAGE_CACHE));
-           if (localStorageCachePairs) {
-               _foundCachePair = localStorageCachePairs.find(cp =>
+        if (cache) {
+           const persistedCachePairs = JSON.parse(cache.get(cacheName));
+           if (persistedCachePairs) {
+               _foundCachePair = persistedCachePairs.find(cp =>
                     cacheConfig.cacheResolver(cp.parameters, parameters));
            } else {
                _foundCachePair = null;
@@ -122,8 +125,8 @@ export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
                     response,
                     created: cacheConfig.maxAge ? new Date() : null
                 });
-                if(cacheConfig.localStorage) {
-                    window.localStorage.setItem(LOCAL_STORAGE_CACHE, JSON.stringify(cachePairs));
+                if(cache) {
+                    cache.set(cacheName, JSON.stringify(cachePairs));
                 }
               }
             }),

@@ -2,8 +2,9 @@ import { combineLatest, forkJoin, Observable, Subject, timer } from 'rxjs';
 import { mapTo, startWith } from 'rxjs/operators';
 import { CacheBuster } from './cache-buster.decorator';
 import { Cacheable, globalCacheBusterNotifier } from './cacheable.decorator';
-
 const cacheBusterNotifier = new Subject();
+const cache = window.localStorage;
+const cacheName = "localStorageCache";
 class Service {
   mockServiceCall(parameter) {
     return timer(1000).pipe(mapTo({ payload: parameter }));
@@ -121,8 +122,8 @@ class Service {
   getDataWithMultipleUndefinedParameters(parameter: string = 'Parameter1', parameter1: string = 'Parameter2') {
     return this.mockServiceCallWithMultipleParameters(parameter, parameter1);
   }
-  @Cacheable({localStorage: true})
-  getDataCachedInLocalStorage(parameter: string) {
+  @Cacheable({persistenceAdapter: cache, name: cacheName})
+  getDataCachedInPersistentStorage(parameter: string) {
       return this.mockServiceCall(parameter);
   }
 }
@@ -130,10 +131,12 @@ class Service {
 describe('CacheableDecorator', () => {
   let service: Service = null;
   let mockServiceCallSpy: jasmine.Spy = null;
+  let mockDomPersistenceAdapter: jasmine.Spy = null;
   beforeEach(() => {
     jasmine.clock().install();
     service = new Service();
     mockServiceCallSpy = spyOn(service, 'mockServiceCall').and.callThrough();
+    mockDomPersistenceAdapter = jasmine.createSpyObj('mockDomPersistenceAdapter', [ 'set', 'get' ]).and.callThrough();
   });
 
   afterEach(() => {
@@ -828,7 +831,7 @@ describe('CacheableDecorator', () => {
        * but the service should only be called once, since the observable will be cached
        */
       for (let i = 0; i < 500; i++) {
-          service.getDataCachedInLocalStorage('test');
+          service.getDataCachedInPersistentStorage('test');
       }
 
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
@@ -839,7 +842,7 @@ describe('CacheableDecorator', () => {
       /**
        * call again..
        */
-      service.getDataCachedInLocalStorage('test');
+      service.getDataCachedInPersistentStorage('test');
       /**
        * service call count should still be 1, since we are returning from cache now
        */

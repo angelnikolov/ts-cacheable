@@ -3,12 +3,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var rxjs_1 = require("rxjs");
 var operators_1 = require("rxjs/operators");
 var common_1 = require("./common");
+var DomPersistenceAdapter_1 = require("./common/DomPersistenceAdapter");
 exports.globalCacheBusterNotifier = new rxjs_1.Subject();
-var LOCAL_STORAGE_CACHE = "localStorageCache";
+var DEFAULT_CACHE_NAME = "localPersistence";
 function Cacheable(cacheConfig) {
     if (cacheConfig === void 0) { cacheConfig = {}; }
     return function (_target, _propertyKey, propertyDescriptor) {
         var oldMethod = propertyDescriptor.value;
+        var cache = cacheConfig.persistenceAdapter ? new DomPersistenceAdapter_1.DomPersistenceAdapter(cacheConfig.persistenceAdapter) : null;
+        var cacheName = cacheConfig.name ? cacheConfig.name : DEFAULT_CACHE_NAME;
         if (propertyDescriptor && propertyDescriptor.value) {
             var cachePairs_1 = [];
             var pendingCachePairs_1 = [];
@@ -22,8 +25,8 @@ function Cacheable(cacheConfig) {
                 : rxjs_1.EMPTY).subscribe(function (_) {
                 cachePairs_1.length = 0;
                 pendingCachePairs_1.length = 0;
-                if (cacheConfig.localStorage) {
-                    window.localStorage.setItem(LOCAL_STORAGE_CACHE, null);
+                if (cache) {
+                    cache.set(cacheName, null);
                 }
             });
             cacheConfig.cacheResolver = cacheConfig.cacheResolver
@@ -42,10 +45,10 @@ function Cacheable(cacheConfig) {
                 var _foundPendingCachePair = pendingCachePairs_1.find(function (cp) {
                     return cacheConfig.cacheResolver(cp.parameters, parameters);
                 });
-                if (cacheConfig.localStorage) {
-                    var localStorageCachePairs = JSON.parse(window.localStorage.getItem(LOCAL_STORAGE_CACHE));
-                    if (localStorageCachePairs) {
-                        _foundCachePair = localStorageCachePairs.find(function (cp) {
+                if (cache) {
+                    var persistedCachePairs = JSON.parse(cache.get(cacheName));
+                    if (persistedCachePairs) {
+                        _foundCachePair = persistedCachePairs.find(function (cp) {
                             return cacheConfig.cacheResolver(cp.parameters, parameters);
                         });
                     }
@@ -107,8 +110,8 @@ function Cacheable(cacheConfig) {
                                 response: response,
                                 created: cacheConfig.maxAge ? new Date() : null
                             });
-                            if (cacheConfig.localStorage) {
-                                window.localStorage.setItem(LOCAL_STORAGE_CACHE, JSON.stringify(cachePairs_1));
+                            if (cache) {
+                                cache.set(cacheName, JSON.stringify(cachePairs_1));
                             }
                         }
                     }), 

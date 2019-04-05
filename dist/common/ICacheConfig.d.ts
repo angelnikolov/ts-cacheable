@@ -30,8 +30,13 @@ export interface ICacheConfig {
      */
     cacheBusterObserver?: Observable<any>;
     /**
-     * cache will be maintained in localStorage instead of in-memory if this is true
-     * @description should cache be maintained in the localStorage? - cache does not clear on page refresh
+     * cache will be maintained in the provided persistence adapter instead of in-memory
+     * @description the type of persistence that you need to cache into
      */
-    localStorage?: boolean;
+    persistenceAdapter?: any;
+    /**
+     * cache will be named according to what is provided in this config
+     * @description the name of the cache to be maintained
+     */
+    name?: string;
 }
