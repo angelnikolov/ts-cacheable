@@ -5,11 +5,16 @@ module.exports = function (config) {
     reporters: ['progress', 'karma-typescript'],
     files: [
       './common/index.ts',
+      './common/IStorageStrategy.ts',
+      './common/InMemoryStorageStrategy.ts',
+      './common/DOMStorageStrategy.ts',
       './cacheable.decorator.ts',
       './cache-buster.decorator.ts',
       './cacheable.decorator.spec.ts',
+      './ls-cacheable.decorator.spec.ts',
       './promise.cache-buster.decorator.ts',
       './promise.cacheable.decorator.ts',
+      './promise.cacheable.decorator.spec.ts',
       './promise.cacheable.decorator.spec.ts',
     ],
     preprocessors: {

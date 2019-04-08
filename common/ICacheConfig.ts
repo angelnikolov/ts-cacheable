@@ -1,5 +1,6 @@
 import { Observable } from 'rxjs';
 import { ICacheRequestResolver, IShouldCacheDecider } from './index';
+import { IStorageStrategy } from './IStorageStrategy';
 export interface ICacheConfig {
   /**
    * @description request cache resolver which will get old and new paramaters passed to and based on those
@@ -30,4 +31,15 @@ export interface ICacheConfig {
    * pass an Observable upon whose emission all caches will be busted
    */
   cacheBusterObserver?: Observable<any>;
+
+  /**
+   * storage strategy
+   */
+  storageStrategy?: IStorageStrategy;
+
+  /**
+   * property name under which to store the cached pairs for this method
+   * if not provided a combination of class name + method name will be used
+   */
+  storageKey?: string;
 }

@@ -6,7 +6,7 @@
     "declaration": true,
     "outDir": "./dist",
     "experimentalDecorators": true,
-    "lib": ["es2016"],
+    "lib": ["es2016", "dom"],
     "noUnusedLocals": true
   },
   "include": ["**/*.ts"]

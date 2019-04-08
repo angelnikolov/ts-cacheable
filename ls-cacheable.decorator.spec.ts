@@ -1,9 +1,11 @@
 import { combineLatest, forkJoin, Observable, Subject, timer } from 'rxjs';
 import { mapTo, startWith } from 'rxjs/operators';
 import { CacheBuster } from './cache-buster.decorator';
-import { Cacheable, globalCacheBusterNotifier } from './cacheable.decorator';
+import { Cacheable, globalCacheBusterNotifier, GlobalCacheConfig } from './cacheable.decorator';
+import { DOMStorageStrategy } from './common/DOMStorageStrategy';
 
 const cacheBusterNotifier = new Subject();
+GlobalCacheConfig.storageStrategy = DOMStorageStrategy;
 class Service {
   mockServiceCall(parameter) {
     return timer(1000).pipe(mapTo({ payload: parameter }));
@@ -122,7 +124,6 @@ class Service {
     return this.mockServiceCallWithMultipleParameters(parameter, parameter1);
   }
 }
-
 describe('CacheableDecorator', () => {
   let service: Service = null;
   let mockServiceCallSpy: jasmine.Spy = null;
@@ -134,6 +135,7 @@ describe('CacheableDecorator', () => {
 
   afterEach(() => {
     jasmine.clock().uninstall();
+    localStorage.clear();
   });
 
   /**

@@ -3,6 +3,8 @@ import { delay, finalize, shareReplay, tap } from 'rxjs/operators';
 import { DEFAULT_CACHE_RESOLVER, ICacheable } from './common';
 import { IObservableCacheConfig } from './common/IObservableCacheConfig';
 import { ICachePair } from './common/ICachePair';
+import { InMemoryStorageStrategy } from './common/InMemoryStorageStrategy';
+import { IStorageStrategy } from './common/IStorageStrategy';
 export const globalCacheBusterNotifier = new Subject<void>();
 
 export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
@@ -11,9 +13,12 @@ export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
     _propertyKey: string,
     propertyDescriptor: TypedPropertyDescriptor<ICacheable<Observable<any>>>
   ) {
+    const cacheKey = _target.constructor.name + '#' + _propertyKey;
     const oldMethod = propertyDescriptor.value;
     if (propertyDescriptor && propertyDescriptor.value) {
-      const cachePairs: Array<ICachePair<Observable<any>>> = [];
+      if (!cacheConfig.storageStrategy) {
+        cacheConfig.storageStrategy = new GlobalCacheConfig.storageStrategy();
+      }
       const pendingCachePairs: Array<ICachePair<Observable<any>>> = [];
       /**
        * subscribe to the globalCacheBuster
@@ -26,7 +31,7 @@ export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
           ? cacheConfig.cacheBusterObserver
           : empty()
       ).subscribe(_ => {
-        cachePairs.length = 0;
+        cacheConfig.storageStrategy.removeAll(cacheKey);
         pendingCachePairs.length = 0;
       });
 
@@ -36,10 +41,10 @@ export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
 
       /* use function instead of an arrow function to keep context of invocation */
       (propertyDescriptor.value as any) = function (..._parameters) {
+        const cachePairs: Array<ICachePair<Observable<any>>> = cacheConfig.storageStrategy.getAll(cacheKey);
         let parameters = _parameters.map(param => param !== undefined ? JSON.parse(JSON.stringify(param)) : param);
         let _foundCachePair = cachePairs.find(cp =>
-          cacheConfig.cacheResolver(cp.parameters, parameters)
-        );
+          cacheConfig.cacheResolver(cp.parameters, parameters));
         const _foundPendingCachePair = pendingCachePairs.find(cp =>
           cacheConfig.cacheResolver(cp.parameters, parameters)
         );
@@ -48,19 +53,20 @@ export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
          */
         if (cacheConfig.maxAge && _foundCachePair && _foundCachePair.created) {
           if (
-            new Date().getTime() - _foundCachePair.created.getTime() >
+            new Date().getTime() - new Date(_foundCachePair.created).getTime() >
             cacheConfig.maxAge
           ) {
             /**
              * cache duration has expired - remove it from the cachePairs array
              */
-            cachePairs.splice(cachePairs.indexOf(_foundCachePair), 1);
+            cacheConfig.storageStrategy.removeAtIndex(cachePairs.indexOf(_foundCachePair), cacheKey);
             _foundCachePair = null;
           } else if (cacheConfig.slidingExpiration) {
             /**
              * renew cache duration
              */
             _foundCachePair.created = new Date();
+            cacheConfig.storageStrategy.updateAtIndex(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey);
           }
         }
 
@@ -101,13 +107,13 @@ export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
                   (cacheConfig.maxCacheCount &&
                     cacheConfig.maxCacheCount < cachePairs.length + 1)
                 ) {
-                  cachePairs.shift();
+                  cacheConfig.storageStrategy.removeAtIndex(0, cacheKey);
                 }
-                cachePairs.push({
+                cacheConfig.storageStrategy.add({
                   parameters,
                   response,
                   created: cacheConfig.maxAge ? new Date() : null
-                });
+                }, cacheKey);
               }
             }),
             /**
@@ -130,3 +136,11 @@ export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
     return propertyDescriptor;
   }
 };
+
+export const GlobalCacheConfig: {
+  storageStrategy: new () => IStorageStrategy,
+  globalCacheKey: string
+} = {
+  storageStrategy: InMemoryStorageStrategy,
+  globalCacheKey: 'CACHE_STORAGE'
+}
