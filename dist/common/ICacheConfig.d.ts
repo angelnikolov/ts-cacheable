@@ -38,5 +38,5 @@ export interface ICacheConfig {
      * property name under which to store the cached pairs for this method
      * if not provided a combination of class name + method name will be used
      */
-    storageKey?: string;
+    cacheKey?: string;
 }

@@ -11,12 +11,12 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var IStorageStrategy_1 = require("./IStorageStrategy");
-var cacheable_decorator_1 = require("../cacheable.decorator");
+var _1 = require(".");
 var DOMStorageStrategy = /** @class */ (function (_super) {
     __extends(DOMStorageStrategy, _super);
     function DOMStorageStrategy() {
         var _this = _super.call(this) || this;
-        _this.masterCacheKey = cacheable_decorator_1.GlobalCacheConfig.globalCacheKey;
+        _this.masterCacheKey = _1.GlobalCacheConfig.globalCacheKey;
         if (typeof localStorage == 'undefined') {
             throw new Error('Platform not supported.');
         }
