@@ -1,131 +1,150 @@
-import { combineLatest, forkJoin, Observable, Subject, timer } from 'rxjs';
-import { mapTo, startWith } from 'rxjs/operators';
+import { combineLatest, forkJoin, Observable } from 'rxjs';
+import {  startWith } from 'rxjs/operators';
+import { globalCacheBusterNotifier } from './cacheable.decorator';
+import { Cacheable } from './cacheable.decorator';
 import { CacheBuster } from './cache-buster.decorator';
-import { Cacheable, globalCacheBusterNotifier, GlobalCacheConfig } from './cacheable.decorator';
+import { timer, Subject } from 'rxjs';
+import { mapTo } from 'rxjs/operators';
 import { DOMStorageStrategy } from './common/DOMStorageStrategy';
+import { GlobalCacheConfig } from './common';
 
-const cacheBusterNotifier = new Subject();
-GlobalCacheConfig.storageStrategy = DOMStorageStrategy;
-class Service {
-  mockServiceCall(parameter) {
-    return timer(1000).pipe(mapTo({ payload: parameter }));
-  }
-  mockSaveServiceCall() {
-    return timer(1000).pipe(mapTo('SAVED'));
-  }
-
-  mockServiceCallWithMultipleParameters(parameter1, parameter2) {
-    return timer(1000).pipe(mapTo({ payload: [parameter1, parameter2] }));
-  }
-
-  @Cacheable()
-  getData(parameter: string) {
-    return this.mockServiceCall(parameter);
-  }
-
-  @Cacheable()
-  getDataWithParamsObj(parameter: any) {
-    return this.mockServiceCall(parameter);
-  }
-
-  @Cacheable()
-  getDataAndReturnCachedStream(parameter: string) {
-    return this.mockServiceCall(parameter);
-  }
-
-  @Cacheable({
-    async: true
-  })
-  getDataAsync(parameter: string) {
-    return this.mockServiceCall(parameter);
-  }
-
-  @Cacheable({
-    maxAge: 7500
-  })
-  getDataWithExpiration(parameter: string) {
-    return this.mockServiceCall(parameter);
-  }
-
-  @Cacheable({
-    maxAge: 7500,
-    slidingExpiration: true
-  })
-  getDataWithSlidingExpiration(parameter: string) {
-    return this.mockServiceCall(parameter);
-  }
-
-  @Cacheable({
-    maxCacheCount: 5
-  })
-  getDataWithMaxCacheCount(parameter: string) {
-    return this.mockServiceCall(parameter);
-  }
-
-  @Cacheable({
-    maxAge: 7500,
-    maxCacheCount: 5
-  })
-  getDataWithMaxCacheCountAndExpiration(parameter: string) {
-    return this.mockServiceCall(parameter);
-  }
-
-  @Cacheable({
-    maxAge: 7500,
-    maxCacheCount: 5,
-    slidingExpiration: true
-  })
-  getDataWithMaxCacheCountAndSlidingExpiration(parameter: string) {
-    return this.mockServiceCall(parameter);
-  }
-
-  @Cacheable({
-    cacheResolver: (_oldParameters, newParameters) => {
-      return newParameters.find(param => !!param.straightToLastCache);
+describe('LSCacheableDecorator', () => {
+  const cacheBusterNotifier = new Subject();
+  GlobalCacheConfig.storageStrategy = DOMStorageStrategy;
+  class Service {
+    mockServiceCall(parameter) {
+      return timer(1000).pipe(mapTo({ payload: parameter }));
     }
-  })
-  getDataWithCustomCacheResolver(
-    parameter: string,
-    _cacheRerouterParameter?: { straightToLastCache: boolean }
-  ) {
-    return this.mockServiceCall(parameter);
-  }
-
-  @Cacheable({
-    shouldCacheDecider: (response: { payload: string }) => {
-      return response.payload === 'test';
+    mockSaveServiceCall() {
+      return timer(1000).pipe(mapTo('SAVED'));
     }
-  })
-  getDataWithCustomCacheDecider(parameter: string) {
-    return this.mockServiceCall(parameter);
+  
+    mockServiceCallWithMultipleParameters(parameter1, parameter2) {
+      return timer(1000).pipe(mapTo({ payload: [parameter1, parameter2] }));
+    }
+  
+    @Cacheable()
+    getData(parameter: string) {
+      return this.mockServiceCall(parameter);
+    }
+  
+    @Cacheable()
+    getDataWithParamsObj(parameter: any) {
+      return this.mockServiceCall(parameter);
+    }
+  
+    @Cacheable()
+    getDataAndReturnCachedStream(parameter: string) {
+      return this.mockServiceCall(parameter);
+    }
+  
+    @Cacheable({
+      async: true
+    })
+    getDataAsync(parameter: string) {
+      return this.mockServiceCall(parameter);
+    }
+  
+    @Cacheable({
+      maxAge: 7500
+    })
+    getDataWithExpiration(parameter: string) {
+      return this.mockServiceCall(parameter);
+    }
+  
+    @Cacheable({
+      maxAge: 7500,
+      slidingExpiration: true
+    })
+    getDataWithSlidingExpiration(parameter: string) {
+      return this.mockServiceCall(parameter);
+    }
+  
+    @Cacheable({
+      maxCacheCount: 5
+    })
+    getDataWithMaxCacheCount(parameter: string) {
+      return this.mockServiceCall(parameter);
+    }
+  
+    @Cacheable({
+      maxAge: 7500,
+      maxCacheCount: 5
+    })
+    getDataWithMaxCacheCountAndExpiration(parameter: string) {
+      return this.mockServiceCall(parameter);
+    }
+  
+    @Cacheable({
+      maxAge: 7500,
+      maxCacheCount: 5,
+      slidingExpiration: true
+    })
+    getDataWithMaxCacheCountAndSlidingExpiration(parameter: string) {
+      return this.mockServiceCall(parameter);
+    }
+  
+    @Cacheable({
+      cacheResolver: (_oldParameters, newParameters) => {
+        return newParameters.find(param => !!param.straightToLastCache);
+      }
+    })
+    getDataWithCustomCacheResolver(
+      parameter: string,
+      _cacheRerouterParameter?: { straightToLastCache: boolean }
+    ) {
+      return this.mockServiceCall(parameter);
+    }
+  
+    @Cacheable({
+      shouldCacheDecider: (response: { payload: string }) => {
+        return response.payload === 'test';
+      }
+    })
+    getDataWithCustomCacheDecider(parameter: string) {
+      return this.mockServiceCall(parameter);
+    }
+  
+    @CacheBuster({
+      cacheBusterNotifier: cacheBusterNotifier
+    })
+    saveDataAndCacheBust() {
+      return this.mockSaveServiceCall();
+    }
+  
+    @Cacheable({
+      cacheBusterObserver: cacheBusterNotifier.asObservable()
+    })
+    getDataWithCacheBusting(parameter: string) {
+      return this.mockServiceCall(parameter);
+    }
+  
+    @Cacheable()
+    getDataWithUndefinedParameter(parameter: string = '') {
+      return this.mockServiceCall(parameter);
+    }
+  
+    @Cacheable()
+    getDataWithMultipleUndefinedParameters(parameter: string = 'Parameter1', parameter1: string = 'Parameter2') {
+      return this.mockServiceCallWithMultipleParameters(parameter, parameter1);
+    }
+    
+    @Cacheable()
+    getData1(parameter: string) {
+      return this.mockServiceCall(parameter);
+    }
+  
+    @Cacheable()
+    getData2(parameter: string) {
+      return this.mockServiceCall(parameter);
+    }
+  
+    @Cacheable()
+    getData3(parameter: string) {
+      return this.mockServiceCall(parameter);
+    }
   }
-
-  @CacheBuster({
-    cacheBusterNotifier: cacheBusterNotifier
-  })
-  saveDataAndCacheBust() {
-    return this.mockSaveServiceCall();
-  }
-
-  @Cacheable({
-    cacheBusterObserver: cacheBusterNotifier.asObservable()
-  })
-  getDataWithCacheBusting(parameter: string) {
-    return this.mockServiceCall(parameter);
-  }
-
-  @Cacheable()
-  getDataWithUndefinedParameter(parameter: string = '') {
-    return this.mockServiceCall(parameter);
-  }
-
-  @Cacheable()
-  getDataWithMultipleUndefinedParameters(parameter: string = 'Parameter1', parameter1: string = 'Parameter2') {
-    return this.mockServiceCallWithMultipleParameters(parameter, parameter1);
-  }
-}
-describe('CacheableDecorator', () => {
-  let service: Service = null;
+  let service = null;
   let mockServiceCallSpy: jasmine.Spy = null;
   beforeEach(() => {
     jasmine.clock().install();
@@ -135,7 +154,6 @@ describe('CacheableDecorator', () => {
 
   afterEach(() => {
     jasmine.clock().uninstall();
-    localStorage.clear();
   });
 
   /**
@@ -709,31 +727,6 @@ describe('CacheableDecorator', () => {
   });
 
   it('should clear all caches when the global cache buster is called', () => {
-    /**
-     * set up a service with multiple cached methods
-     */
-    class Service {
-      mockServiceCall(parameter) {
-        return timer(1000).pipe(mapTo({ payload: parameter }));
-      }
-
-      @Cacheable()
-      getData1(parameter: string) {
-        return this.mockServiceCall(parameter);
-      }
-
-      @Cacheable()
-      getData2(parameter: string) {
-        return this.mockServiceCall(parameter);
-      }
-
-      @Cacheable()
-      getData3(parameter: string) {
-        return this.mockServiceCall(parameter);
-      }
-    }
-
-    const service = new Service();
     mockServiceCallSpy = spyOn(service, 'mockServiceCall').and.callThrough();
     /**
      * call the first method and cache it

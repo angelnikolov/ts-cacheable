@@ -1,10 +1,8 @@
 import { empty, merge, Observable, of, Subject } from 'rxjs';
 import { delay, finalize, shareReplay, tap } from 'rxjs/operators';
-import { DEFAULT_CACHE_RESOLVER, ICacheable } from './common';
+import { DEFAULT_CACHE_RESOLVER, ICacheable, GlobalCacheConfig } from './common';
 import { IObservableCacheConfig } from './common/IObservableCacheConfig';
 import { ICachePair } from './common/ICachePair';
-import { InMemoryStorageStrategy } from './common/InMemoryStorageStrategy';
-import { IStorageStrategy } from './common/IStorageStrategy';
 export const globalCacheBusterNotifier = new Subject<void>();
 
 export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
@@ -13,7 +11,7 @@ export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
     _propertyKey: string,
     propertyDescriptor: TypedPropertyDescriptor<ICacheable<Observable<any>>>
   ) {
-    const cacheKey = _target.constructor.name + '#' + _propertyKey;
+    const cacheKey = cacheConfig.cacheKey || _target.constructor.name + '#' + _propertyKey;
     const oldMethod = propertyDescriptor.value;
     if (propertyDescriptor && propertyDescriptor.value) {
       if (!cacheConfig.storageStrategy) {
@@ -136,11 +134,3 @@ export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
     return propertyDescriptor;
   }
 };
-
-export const GlobalCacheConfig: {
-  storageStrategy: new () => IStorageStrategy,
-  globalCacheKey: string
-} = {
-  storageStrategy: InMemoryStorageStrategy,
-  globalCacheKey: 'CACHE_STORAGE'
-}

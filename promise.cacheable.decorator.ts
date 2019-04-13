@@ -1,5 +1,5 @@
 import { empty, merge, Subject } from 'rxjs';
-import { DEFAULT_CACHE_RESOLVER, ICacheable } from './common';
+import { DEFAULT_CACHE_RESOLVER, ICacheable, GlobalCacheConfig } from './common';
 import { ICacheConfig } from './common/ICacheConfig';
 import { ICachePair } from './common/ICachePair';
 export const promiseGlobalCacheBusterNotifier = new Subject<void>();
@@ -24,9 +24,12 @@ export function PCacheable(cacheConfig: ICacheConfig = {}) {
     _propertyKey: string,
     propertyDescriptor: TypedPropertyDescriptor<ICacheable<Promise<any>>>
   ) {
+    const cacheKey = cacheConfig.cacheKey || _target.constructor.name + '#' + _propertyKey;
     const oldMethod = propertyDescriptor.value;
     if (propertyDescriptor && propertyDescriptor.value) {
-      const cachePairs: Array<ICachePair<Promise<any>>> = [];
+      if (!cacheConfig.storageStrategy) {
+        cacheConfig.storageStrategy = new GlobalCacheConfig.storageStrategy();
+      }
       const pendingCachePairs: Array<ICachePair<Promise<any>>> = [];
       /**
        * subscribe to the promiseGlobalCacheBusterNotifier
@@ -39,7 +42,7 @@ export function PCacheable(cacheConfig: ICacheConfig = {}) {
           ? cacheConfig.cacheBusterObserver
           : empty()
       ).subscribe(_ => {
-        cachePairs.length = 0;
+        cacheConfig.storageStrategy.removeAll(cacheKey);
         pendingCachePairs.length = 0;
       });
 
@@ -49,6 +52,7 @@ export function PCacheable(cacheConfig: ICacheConfig = {}) {
 
       /* use function instead of an arrow function to keep context of invocation */
       (propertyDescriptor.value as any) = function (..._parameters) {
+        const cachePairs: Array<ICachePair<Promise<any>>> = cacheConfig.storageStrategy.getAll(cacheKey);
         let parameters = _parameters.map(param => param !== undefined ? JSON.parse(JSON.stringify(param)) : param);
         let _foundCachePair = cachePairs.find(cp =>
           cacheConfig.cacheResolver(cp.parameters, parameters)
@@ -61,19 +65,20 @@ export function PCacheable(cacheConfig: ICacheConfig = {}) {
          */
         if (cacheConfig.maxAge && _foundCachePair && _foundCachePair.created) {
           if (
-            new Date().getTime() - _foundCachePair.created.getTime() >
+            new Date().getTime() - new Date(_foundCachePair.created).getTime() >
             cacheConfig.maxAge
           ) {
             /**
              * cache duration has expired - remove it from the cachePairs array
              */
-            cachePairs.splice(cachePairs.indexOf(_foundCachePair), 1);
+            cacheConfig.storageStrategy.removeAtIndex(cachePairs.indexOf(_foundCachePair), cacheKey);
             _foundCachePair = null;
           } else if (cacheConfig.slidingExpiration) {
             /**
              * renew cache duration
              */
             _foundCachePair.created = new Date();
+            cacheConfig.storageStrategy.updateAtIndex(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey);
           }
         }
 
@@ -99,13 +104,13 @@ export function PCacheable(cacheConfig: ICacheConfig = {}) {
                   (cacheConfig.maxCacheCount &&
                     cacheConfig.maxCacheCount < cachePairs.length + 1)
                 ) {
-                  cachePairs.shift();
+                  cacheConfig.storageStrategy.removeAtIndex(0, cacheKey);
                 }
-                cachePairs.push({
+                cacheConfig.storageStrategy.add({
                   parameters,
                   response,
                   created: cacheConfig.maxAge ? new Date() : null
-                });
+                }, cacheKey);
               }
               removeCachePair(pendingCachePairs, parameters, cacheConfig);
 

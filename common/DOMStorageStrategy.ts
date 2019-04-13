@@ -1,6 +1,5 @@
 import { IStorageStrategy } from './IStorageStrategy';
-import { ICachePair } from '.';
-import { GlobalCacheConfig } from '../cacheable.decorator';
+import { ICachePair, GlobalCacheConfig } from '.';
 
 export class DOMStorageStrategy extends IStorageStrategy {
   private masterCacheKey: string = GlobalCacheConfig.globalCacheKey;

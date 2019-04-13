@@ -1,9 +1,15 @@
-import { combineLatest, forkJoin, Observable, Subject, timer } from 'rxjs';
-import { mapTo, startWith } from 'rxjs/operators';
+import { combineLatest, forkJoin, Observable } from 'rxjs';
+import {  startWith } from 'rxjs/operators';
+import { globalCacheBusterNotifier } from './cacheable.decorator';
+import { Cacheable } from './cacheable.decorator';
 import { CacheBuster } from './cache-buster.decorator';
-import { Cacheable, globalCacheBusterNotifier } from './cacheable.decorator';
+import { timer, Subject } from 'rxjs';
+import { mapTo } from 'rxjs/operators';
 
+
+describe('CacheableDecorator', () => {
 const cacheBusterNotifier = new Subject();
+
 class Service {
   mockServiceCall(parameter) {
     return timer(1000).pipe(mapTo({ payload: parameter }));
@@ -121,10 +127,23 @@ class Service {
   getDataWithMultipleUndefinedParameters(parameter: string = 'Parameter1', parameter1: string = 'Parameter2') {
     return this.mockServiceCallWithMultipleParameters(parameter, parameter1);
   }
-}
+  
+  @Cacheable()
+  getData1(parameter: string) {
+    return this.mockServiceCall(parameter);
+  }
 
-describe('CacheableDecorator', () => {
-  let service: Service = null;
+  @Cacheable()
+  getData2(parameter: string) {
+    return this.mockServiceCall(parameter);
+  }
+
+  @Cacheable()
+  getData3(parameter: string) {
+    return this.mockServiceCall(parameter);
+  }
+}
+  let service = null;
   let mockServiceCallSpy: jasmine.Spy = null;
   beforeEach(() => {
     jasmine.clock().install();
@@ -707,31 +726,6 @@ describe('CacheableDecorator', () => {
   });
 
   it('should clear all caches when the global cache buster is called', () => {
-    /**
-     * set up a service with multiple cached methods
-     */
-    class Service {
-      mockServiceCall(parameter) {
-        return timer(1000).pipe(mapTo({ payload: parameter }));
-      }
-
-      @Cacheable()
-      getData1(parameter: string) {
-        return this.mockServiceCall(parameter);
-      }
-
-      @Cacheable()
-      getData2(parameter: string) {
-        return this.mockServiceCall(parameter);
-      }
-
-      @Cacheable()
-      getData3(parameter: string) {
-        return this.mockServiceCall(parameter);
-      }
-    }
-
-    const service = new Service();
     mockServiceCallSpy = spyOn(service, 'mockServiceCall').and.callThrough();
     /**
      * call the first method and cache it
