@@ -49,12 +49,12 @@ var cacheable_decorator_2 = require("../cacheable.decorator");
 var cache_buster_decorator_1 = require("../cache-buster.decorator");
 var rxjs_2 = require("rxjs");
 var operators_2 = require("rxjs/operators");
-var common_1 = require("../common");
+var _1 = require("../");
 var DOMStorageStrategy_1 = require("../common/DOMStorageStrategy");
 var strategies = [null, DOMStorageStrategy_1.DOMStorageStrategy];
 strategies.forEach(function (s) {
     if (s) {
-        common_1.GlobalCacheConfig.storageStrategy = s;
+        _1.GlobalCacheConfig.storageStrategy = s;
     }
     var cacheBusterNotifier = new rxjs_2.Subject();
     var Service = /** @class */ (function () {
@@ -217,7 +217,7 @@ strategies.forEach(function (s) {
             jasmine.clock().install();
             service = new Service();
             mockServiceCallSpy = spyOn(service, 'mockServiceCall').and.callThrough();
-            if (common_1.GlobalCacheConfig.storageStrategy === DOMStorageStrategy_1.DOMStorageStrategy) {
+            if (_1.GlobalCacheConfig.storageStrategy === DOMStorageStrategy_1.DOMStorageStrategy) {
                 localStorage.clear();
             }
         });

@@ -4,10 +4,11 @@ module.exports = function (config) {
     browsers: ['ChromeHeadlessNoSandbox'],
     reporters: ['progress', 'karma-typescript'],
     files: [
+      './index.ts',
       './common/index.ts',
       './common/IStorageStrategy.ts',
-      './common/InMemoryStorageStrategy.ts',
       './common/DOMStorageStrategy.ts',
+      './common/InMemoryStorageStrategy.ts',
       './cacheable.decorator.ts',
       './cache-buster.decorator.ts',
       './promise.cache-buster.decorator.ts',

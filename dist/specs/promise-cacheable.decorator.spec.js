@@ -46,14 +46,14 @@ var rxjs_1 = require("rxjs");
 var promise_cache_buster_decorator_1 = require("../promise.cache-buster.decorator");
 var promise_cacheable_decorator_1 = require("../promise.cacheable.decorator");
 var promise_cacheable_decorator_2 = require("../promise.cacheable.decorator");
+var _1 = require("../");
 var DOMStorageStrategy_1 = require("../common/DOMStorageStrategy");
-var common_1 = require("../common");
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000;
 var strategies = [null, DOMStorageStrategy_1.DOMStorageStrategy];
 strategies.forEach(function (s) {
     var cacheBusterNotifier = new rxjs_1.Subject();
     if (s) {
-        common_1.GlobalCacheConfig.storageStrategy = s;
+        _1.GlobalCacheConfig.storageStrategy = s;
     }
     var Service = /** @class */ (function () {
         function Service() {
@@ -218,7 +218,7 @@ strategies.forEach(function (s) {
         beforeEach(function () {
             service = new Service();
             mockServiceCallSpy = spyOn(service, 'mockServiceCall').and.callThrough();
-            if (common_1.GlobalCacheConfig.storageStrategy === DOMStorageStrategy_1.DOMStorageStrategy) {
+            if (_1.GlobalCacheConfig.storageStrategy === DOMStorageStrategy_1.DOMStorageStrategy) {
                 localStorage.clear();
             }
         });

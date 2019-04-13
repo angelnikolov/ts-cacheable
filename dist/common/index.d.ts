@@ -11,3 +11,4 @@ export declare const GlobalCacheConfig: {
     storageStrategy: new () => IStorageStrategy;
     globalCacheKey: string;
 };
+export { IStorageStrategy };

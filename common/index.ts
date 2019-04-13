@@ -25,3 +25,5 @@ export const GlobalCacheConfig: {
   storageStrategy: InMemoryStorageStrategy,
   globalCacheKey: 'CACHE_STORAGE'
 }
+
+export { IStorageStrategy };
