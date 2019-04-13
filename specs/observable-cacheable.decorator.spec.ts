@@ -16,14 +16,14 @@ strategies.forEach(s => {
   const cacheBusterNotifier = new Subject();
 
   class Service {
-    mockServiceCall(parameter) {
+    mockServiceCall(parameter: any) {
       return timer(1000).pipe(mapTo({ payload: parameter }));
     }
     mockSaveServiceCall() {
       return timer(1000).pipe(mapTo('SAVED'));
     }
 
-    mockServiceCallWithMultipleParameters(parameter1, parameter2) {
+    mockServiceCallWithMultipleParameters(parameter1: any, parameter2: any) {
       return timer(1000).pipe(mapTo({ payload: [parameter1, parameter2] }));
     }
 
@@ -149,13 +149,13 @@ strategies.forEach(s => {
     }
   }
   describe('CacheableDecorator', () => {
-    let service = null;
+    let service: Service = null;
     let mockServiceCallSpy: jasmine.Spy = null;
     beforeEach(() => {
       jasmine.clock().install();
       service = new Service();
       mockServiceCallSpy = spyOn(service, 'mockServiceCall').and.callThrough();
-      if(GlobalCacheConfig.storageStrategy === DOMStorageStrategy){
+      if (GlobalCacheConfig.storageStrategy === DOMStorageStrategy) {
         localStorage.clear();
       }
     });
@@ -820,7 +820,7 @@ strategies.forEach(s => {
     });
   });
 
-  function _timedStreamAsyncAwait(stream$: Observable<any>, skipTime?: number) {
+  function _timedStreamAsyncAwait(stream$: Observable<any>, skipTime?: number): any {
     let response = null;
     stream$.subscribe(data => {
       response = data;

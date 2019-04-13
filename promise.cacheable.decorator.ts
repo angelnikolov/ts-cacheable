@@ -51,7 +51,7 @@ export function PCacheable(cacheConfig: ICacheConfig = {}) {
         : DEFAULT_CACHE_RESOLVER;
 
       /* use function instead of an arrow function to keep context of invocation */
-      (propertyDescriptor.value as any) = function (..._parameters) {
+      (propertyDescriptor.value as any) = function (..._parameters: Array<any>) {
         const cachePairs: Array<ICachePair<Promise<any>>> = cacheConfig.storageStrategy.getAll(cacheKey);
         let parameters = _parameters.map(param => param !== undefined ? JSON.parse(JSON.stringify(param)) : param);
         let _foundCachePair = cachePairs.find(cp =>
