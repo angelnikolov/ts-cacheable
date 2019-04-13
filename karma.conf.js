@@ -10,14 +10,10 @@ module.exports = function (config) {
       './common/DOMStorageStrategy.ts',
       './cacheable.decorator.ts',
       './cache-buster.decorator.ts',
-      './cacheable-tests.ts',
-      './promise-cacheable-tests.ts',
       './promise.cache-buster.decorator.ts',
       './promise.cacheable.decorator.ts',
-      './promise.cacheable.decorator.spec.ts',
-      './ls-promise.cacheable.decorator.spec.ts',
-      './cacheable.decorator.spec.ts',
-      './ls-cacheable.decorator.spec.ts',
+      './specs/promise-cacheable.decorator.spec.ts',
+      './specs/observable-cacheable.decorator.spec.ts'
     ],
     preprocessors: {
       '**/*.ts': 'karma-typescript'
