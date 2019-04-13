@@ -1,5 +1,5 @@
 import { empty, merge, Subject } from 'rxjs';
-import { DEFAULT_CACHE_RESOLVER, ICacheable, GlobalCacheConfig } from './common';
+import { DEFAULT_CACHE_RESOLVER, ICacheable, GlobalCacheConfig, IStorageStrategy } from './common';
 import { ICacheConfig } from './common/ICacheConfig';
 import { ICachePair } from './common/ICachePair';
 export const promiseGlobalCacheBusterNotifier = new Subject<void>();
@@ -27,9 +27,9 @@ export function PCacheable(cacheConfig: ICacheConfig = {}) {
     const cacheKey = cacheConfig.cacheKey || _target.constructor.name + '#' + _propertyKey;
     const oldMethod = propertyDescriptor.value;
     if (propertyDescriptor && propertyDescriptor.value) {
-      if (!cacheConfig.storageStrategy) {
-        cacheConfig.storageStrategy = new GlobalCacheConfig.storageStrategy();
-      }
+      let storageStrategy: IStorageStrategy = !cacheConfig.storageStrategy
+        ? new GlobalCacheConfig.storageStrategy()
+        : new cacheConfig.storageStrategy();
       const pendingCachePairs: Array<ICachePair<Promise<any>>> = [];
       /**
        * subscribe to the promiseGlobalCacheBusterNotifier
@@ -42,7 +42,7 @@ export function PCacheable(cacheConfig: ICacheConfig = {}) {
           ? cacheConfig.cacheBusterObserver
           : empty()
       ).subscribe(_ => {
-        cacheConfig.storageStrategy.removeAll(cacheKey);
+        storageStrategy.removeAll(cacheKey);
         pendingCachePairs.length = 0;
       });
 
@@ -52,7 +52,7 @@ export function PCacheable(cacheConfig: ICacheConfig = {}) {
 
       /* use function instead of an arrow function to keep context of invocation */
       (propertyDescriptor.value as any) = function (..._parameters: Array<any>) {
-        const cachePairs: Array<ICachePair<Promise<any>>> = cacheConfig.storageStrategy.getAll(cacheKey);
+        const cachePairs: Array<ICachePair<Promise<any>>> = storageStrategy.getAll(cacheKey);
         let parameters = _parameters.map(param => param !== undefined ? JSON.parse(JSON.stringify(param)) : param);
         let _foundCachePair = cachePairs.find(cp =>
           cacheConfig.cacheResolver(cp.parameters, parameters)
@@ -71,14 +71,14 @@ export function PCacheable(cacheConfig: ICacheConfig = {}) {
             /**
              * cache duration has expired - remove it from the cachePairs array
              */
-            cacheConfig.storageStrategy.removeAtIndex(cachePairs.indexOf(_foundCachePair), cacheKey);
+            storageStrategy.removeAtIndex(cachePairs.indexOf(_foundCachePair), cacheKey);
             _foundCachePair = null;
           } else if (cacheConfig.slidingExpiration) {
             /**
              * renew cache duration
              */
             _foundCachePair.created = new Date();
-            cacheConfig.storageStrategy.updateAtIndex(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey);
+            storageStrategy.updateAtIndex(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey);
           }
         }
 
@@ -89,6 +89,7 @@ export function PCacheable(cacheConfig: ICacheConfig = {}) {
         } else {
           const response$ = (oldMethod.call(this, ...parameters) as Promise<any>)
             .then(response => {
+              removeCachePair(pendingCachePairs, parameters, cacheConfig);
               /**
                * if no maxCacheCount has been passed
                * if maxCacheCount has not been passed, just shift the cachePair to make room for the new one
@@ -104,15 +105,14 @@ export function PCacheable(cacheConfig: ICacheConfig = {}) {
                   (cacheConfig.maxCacheCount &&
                     cacheConfig.maxCacheCount < cachePairs.length + 1)
                 ) {
-                  cacheConfig.storageStrategy.removeAtIndex(0, cacheKey);
+                  storageStrategy.removeAtIndex(0, cacheKey);
                 }
-                cacheConfig.storageStrategy.add({
+                storageStrategy.add({
                   parameters,
                   response,
                   created: cacheConfig.maxAge ? new Date() : null
                 }, cacheKey);
               }
-              removeCachePair(pendingCachePairs, parameters, cacheConfig);
 
               return response;
             })

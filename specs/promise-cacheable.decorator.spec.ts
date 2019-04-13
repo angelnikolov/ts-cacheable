@@ -4,6 +4,7 @@ import { PCacheable } from '../promise.cacheable.decorator';
 import { promiseGlobalCacheBusterNotifier } from '../promise.cacheable.decorator';
 import { GlobalCacheConfig } from '../common';
 import { DOMStorageStrategy } from '../common/DOMStorageStrategy';
+import { InMemoryStorageStrategy } from '../common/InMemoryStorageStrategy';
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000;
 
 const strategies = [null, DOMStorageStrategy];
@@ -146,6 +147,15 @@ strategies.forEach(s => {
 
     @PCacheable()
     getData3(parameter: string) {
+      return this.mockServiceCall(parameter);
+    }
+
+    @PCacheable({
+      maxAge: 400,
+      slidingExpiration: true,
+      storageStrategy: InMemoryStorageStrategy
+    })
+    getDateWithCustomStorageStrategyProvided(parameter: string) {
       return this.mockServiceCall(parameter);
     }
   }
@@ -572,6 +582,35 @@ strategies.forEach(s => {
       service.getDataWithMultipleUndefinedParameters('Parameter1', undefined);
       expect(mockServiceCallWithMultipleParametersSpy).toHaveBeenCalledTimes(2);
     });
-  });
 
-})
+    it('should work correctly with a custom storage strategy', async (done) => {
+      //for some reason we cant rely on expectations on the other methods here
+      const getAllSpy = spyOn(InMemoryStorageStrategy.prototype, 'getAll').and.callThrough();
+      const asyncFreshData = await service.getDateWithCustomStorageStrategyProvided('test');
+      expect(asyncFreshData).toEqual({ payload: 'test' });
+      expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+      // one add call, one getAll call
+      expect(getAllSpy).toHaveBeenCalledTimes(1);
+
+      const cachedResponse = await service.getDateWithCustomStorageStrategyProvided('test');
+      expect(cachedResponse).toEqual({ payload: 'test' });
+      expect(getAllSpy).toHaveBeenCalledTimes(2);
+      /**
+       * call count should still be one, since we rerouted to cache, instead of service call
+       */
+      expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+
+      setTimeout(() => {
+        service.getDateWithCustomStorageStrategyProvided('test');
+        expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+        // three getAll calls since every time we call the decorated method, we check the cache first
+        expect(getAllSpy).toHaveBeenCalledTimes(3);
+        setTimeout(() => {
+          service.getDateWithCustomStorageStrategyProvided('test');
+          expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
+          done();
+        }, 500);
+      }, 200);
+    })
+  });
+});
