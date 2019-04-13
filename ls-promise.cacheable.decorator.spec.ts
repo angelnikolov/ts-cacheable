@@ -136,7 +136,7 @@ describe('LSPCacheableDecorator', () => {
       getDataWithMultipleUndefinedParameters(parameter: string = 'Parameter1', parameter1: string = 'Parameter2') {
         return this.mockServiceCallWithMultipleParameters(parameter, parameter1);
       }
-      
+
       @PCacheable()
       getData1(parameter: string) {
         return this.mockServiceCall(parameter);
@@ -498,7 +498,6 @@ describe('LSPCacheableDecorator', () => {
   });
 
   it('should clear all caches when the global cache buster is called', async () => {
-    mockServiceCallSpy = spyOn(service, 'mockServiceCall').and.callThrough();
     /**
      * call the first method and cache it
      */

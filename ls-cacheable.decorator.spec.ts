@@ -727,7 +727,6 @@ describe('LSCacheableDecorator', () => {
   });
 
   it('should clear all caches when the global cache buster is called', () => {
-    mockServiceCallSpy = spyOn(service, 'mockServiceCall').and.callThrough();
     /**
      * call the first method and cache it
      */
