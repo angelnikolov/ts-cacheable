@@ -9,10 +9,7 @@
     "lib": ["es2016", "dom"],
     "noUnusedLocals": true,
     "noImplicitAny": true,
-    "baseUrl": "./",
-    "paths": {
-      "ngx-cacheable/common/*": ["./dist/common/*"]
-    }
+    "baseUrl": "./"
   },
   "include": ["**/*.ts"]
 }
