@@ -156,6 +156,7 @@ describe('LSPCacheableDecorator', () => {
     
     service = new Service();
     mockServiceCallSpy = spyOn(service, 'mockServiceCall').and.callThrough();
+    localStorage.clear();
   });
 
   it('return cached data up until a new parameter is passed and the cache is busted', async () => {

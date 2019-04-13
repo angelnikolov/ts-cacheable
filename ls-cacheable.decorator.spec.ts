@@ -150,6 +150,7 @@ describe('LSCacheableDecorator', () => {
     jasmine.clock().install();
     service = new Service();
     mockServiceCallSpy = spyOn(service, 'mockServiceCall').and.callThrough();
+    localStorage.clear();
   });
 
   afterEach(() => {
