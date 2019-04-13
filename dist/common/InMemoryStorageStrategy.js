@@ -22,7 +22,9 @@ var InMemoryStorageStrategy = /** @class */ (function (_super) {
         this.cachePairs.push(cachePair);
     };
     ;
-    InMemoryStorageStrategy.prototype.updateAtIndex = function () {
+    InMemoryStorageStrategy.prototype.updateAtIndex = function (index, entity) {
+        var updatee = this.cachePairs[index];
+        Object.assign(updatee, entity);
     };
     InMemoryStorageStrategy.prototype.getAll = function () {
         return this.cachePairs;

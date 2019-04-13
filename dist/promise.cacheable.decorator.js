@@ -18,9 +18,9 @@ function PCacheable(cacheConfig) {
         var cacheKey = cacheConfig.cacheKey || _target.constructor.name + '#' + _propertyKey;
         var oldMethod = propertyDescriptor.value;
         if (propertyDescriptor && propertyDescriptor.value) {
-            if (!cacheConfig.storageStrategy) {
-                cacheConfig.storageStrategy = new common_1.GlobalCacheConfig.storageStrategy();
-            }
+            var storageStrategy_1 = !cacheConfig.storageStrategy
+                ? new common_1.GlobalCacheConfig.storageStrategy()
+                : new cacheConfig.storageStrategy();
             var pendingCachePairs_1 = [];
             /**
              * subscribe to the promiseGlobalCacheBusterNotifier
@@ -30,7 +30,7 @@ function PCacheable(cacheConfig) {
             rxjs_1.merge(exports.promiseGlobalCacheBusterNotifier.asObservable(), cacheConfig.cacheBusterObserver
                 ? cacheConfig.cacheBusterObserver
                 : rxjs_1.empty()).subscribe(function (_) {
-                cacheConfig.storageStrategy.removeAll(cacheKey);
+                storageStrategy_1.removeAll(cacheKey);
                 pendingCachePairs_1.length = 0;
             });
             cacheConfig.cacheResolver = cacheConfig.cacheResolver
@@ -42,7 +42,7 @@ function PCacheable(cacheConfig) {
                 for (var _i = 0; _i < arguments.length; _i++) {
                     _parameters[_i] = arguments[_i];
                 }
-                var cachePairs = cacheConfig.storageStrategy.getAll(cacheKey);
+                var cachePairs = storageStrategy_1.getAll(cacheKey);
                 var parameters = _parameters.map(function (param) { return param !== undefined ? JSON.parse(JSON.stringify(param)) : param; });
                 var _foundCachePair = cachePairs.find(function (cp) {
                     return cacheConfig.cacheResolver(cp.parameters, parameters);
@@ -59,7 +59,7 @@ function PCacheable(cacheConfig) {
                         /**
                          * cache duration has expired - remove it from the cachePairs array
                          */
-                        cacheConfig.storageStrategy.removeAtIndex(cachePairs.indexOf(_foundCachePair), cacheKey);
+                        storageStrategy_1.removeAtIndex(cachePairs.indexOf(_foundCachePair), cacheKey);
                         _foundCachePair = null;
                     }
                     else if (cacheConfig.slidingExpiration) {
@@ -67,7 +67,7 @@ function PCacheable(cacheConfig) {
                          * renew cache duration
                          */
                         _foundCachePair.created = new Date();
-                        cacheConfig.storageStrategy.updateAtIndex(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey);
+                        storageStrategy_1.updateAtIndex(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey);
                     }
                 }
                 if (_foundCachePair) {
@@ -79,6 +79,7 @@ function PCacheable(cacheConfig) {
                 else {
                     var response$ = oldMethod.call.apply(oldMethod, [this].concat(parameters))
                         .then(function (response) {
+                        removeCachePair(pendingCachePairs_1, parameters, cacheConfig);
                         /**
                          * if no maxCacheCount has been passed
                          * if maxCacheCount has not been passed, just shift the cachePair to make room for the new one
@@ -90,15 +91,14 @@ function PCacheable(cacheConfig) {
                                 cacheConfig.maxCacheCount === 1 ||
                                 (cacheConfig.maxCacheCount &&
                                     cacheConfig.maxCacheCount < cachePairs.length + 1)) {
-                                cacheConfig.storageStrategy.removeAtIndex(0, cacheKey);
+                                storageStrategy_1.removeAtIndex(0, cacheKey);
                             }
-                            cacheConfig.storageStrategy.add({
+                            storageStrategy_1.add({
                                 parameters: parameters,
                                 response: response,
                                 created: cacheConfig.maxAge ? new Date() : null
                             }, cacheKey);
                         }
-                        removeCachePair(pendingCachePairs_1, parameters, cacheConfig);
                         return response;
                     })
                         .catch(function (_) {

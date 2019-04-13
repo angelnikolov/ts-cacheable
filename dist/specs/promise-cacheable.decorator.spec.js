@@ -48,6 +48,7 @@ var promise_cacheable_decorator_1 = require("../promise.cacheable.decorator");
 var promise_cacheable_decorator_2 = require("../promise.cacheable.decorator");
 var common_1 = require("../common");
 var DOMStorageStrategy_1 = require("../common/DOMStorageStrategy");
+var InMemoryStorageStrategy_1 = require("../common/InMemoryStorageStrategy");
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000;
 var strategies = [null, DOMStorageStrategy_1.DOMStorageStrategy];
 strategies.forEach(function (s) {
@@ -133,6 +134,9 @@ strategies.forEach(function (s) {
         Service.prototype.getData3 = function (parameter) {
             return this.mockServiceCall(parameter);
         };
+        Service.prototype.getDateWithCustomStorageStrategyProvided = function (parameter) {
+            return this.mockServiceCall(parameter);
+        };
         __decorate([
             promise_cacheable_decorator_1.PCacheable()
         ], Service.prototype, "getData", null);
@@ -210,6 +214,13 @@ strategies.forEach(function (s) {
         __decorate([
             promise_cacheable_decorator_1.PCacheable()
         ], Service.prototype, "getData3", null);
+        __decorate([
+            promise_cacheable_decorator_1.PCacheable({
+                maxAge: 400,
+                slidingExpiration: true,
+                storageStrategy: InMemoryStorageStrategy_1.InMemoryStorageStrategy
+            })
+        ], Service.prototype, "getDateWithCustomStorageStrategyProvided", null);
         return Service;
     }());
     describe('PCacheableDecorator', function () {
@@ -691,6 +702,43 @@ strategies.forEach(function (s) {
                         expect(mockServiceCallWithMultipleParametersSpy).toHaveBeenCalledTimes(1);
                         service.getDataWithMultipleUndefinedParameters('Parameter1', undefined);
                         expect(mockServiceCallWithMultipleParametersSpy).toHaveBeenCalledTimes(2);
+                        return [2 /*return*/];
+                }
+            });
+        }); });
+        it('should work correctly with a custom storage strategy', function (done) { return __awaiter(_this, void 0, void 0, function () {
+            var getAllSpy, asyncFreshData, cachedResponse;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        getAllSpy = spyOn(InMemoryStorageStrategy_1.InMemoryStorageStrategy.prototype, 'getAll').and.callThrough();
+                        return [4 /*yield*/, service.getDateWithCustomStorageStrategyProvided('test')];
+                    case 1:
+                        asyncFreshData = _a.sent();
+                        expect(asyncFreshData).toEqual({ payload: 'test' });
+                        expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+                        // one add call, one getAll call
+                        expect(getAllSpy).toHaveBeenCalledTimes(1);
+                        return [4 /*yield*/, service.getDateWithCustomStorageStrategyProvided('test')];
+                    case 2:
+                        cachedResponse = _a.sent();
+                        expect(cachedResponse).toEqual({ payload: 'test' });
+                        expect(getAllSpy).toHaveBeenCalledTimes(2);
+                        /**
+                         * call count should still be one, since we rerouted to cache, instead of service call
+                         */
+                        expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+                        setTimeout(function () {
+                            service.getDateWithCustomStorageStrategyProvided('test');
+                            expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+                            // three getAll calls since every time we call the decorated method, we check the cache first
+                            expect(getAllSpy).toHaveBeenCalledTimes(3);
+                            setTimeout(function () {
+                                service.getDateWithCustomStorageStrategyProvided('test');
+                                expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
+                                done();
+                            }, 500);
+                        }, 200);
                         return [2 /*return*/];
                 }
             });

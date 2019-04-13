@@ -33,7 +33,7 @@ export interface ICacheConfig {
     /**
      * storage strategy
      */
-    storageStrategy?: IStorageStrategy;
+    storageStrategy?: new () => IStorageStrategy;
     /**
      * property name under which to store the cached pairs for this method
      * if not provided a combination of class name + method name will be used

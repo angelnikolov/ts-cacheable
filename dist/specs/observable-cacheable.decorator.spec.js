@@ -51,6 +51,7 @@ var rxjs_2 = require("rxjs");
 var operators_2 = require("rxjs/operators");
 var common_1 = require("../common");
 var DOMStorageStrategy_1 = require("../common/DOMStorageStrategy");
+var InMemoryStorageStrategy_1 = require("../common/InMemoryStorageStrategy");
 var strategies = [null, DOMStorageStrategy_1.DOMStorageStrategy];
 strategies.forEach(function (s) {
     if (s) {
@@ -124,6 +125,9 @@ strategies.forEach(function (s) {
             return this.mockServiceCall(parameter);
         };
         Service.prototype.getData3 = function (parameter) {
+            return this.mockServiceCall(parameter);
+        };
+        Service.prototype.getDateWithCustomStorageStrategyProvided = function (parameter) {
             return this.mockServiceCall(parameter);
         };
         __decorate([
@@ -208,6 +212,13 @@ strategies.forEach(function (s) {
         __decorate([
             cacheable_decorator_2.Cacheable()
         ], Service.prototype, "getData3", null);
+        __decorate([
+            cacheable_decorator_2.Cacheable({
+                maxAge: 7500,
+                slidingExpiration: true,
+                storageStrategy: InMemoryStorageStrategy_1.InMemoryStorageStrategy
+            })
+        ], Service.prototype, "getDateWithCustomStorageStrategyProvided", null);
         return Service;
     }());
     describe('CacheableDecorator', function () {
@@ -683,6 +694,84 @@ strategies.forEach(function (s) {
             expect(mockServiceCallWithMultipleParametersSpy).toHaveBeenCalledTimes(1);
             service.getDataWithMultipleUndefinedParameters('Parameter1', undefined);
             expect(mockServiceCallWithMultipleParametersSpy).toHaveBeenCalledTimes(2);
+        });
+        it('should work correctly with a custom storage strategy', function () {
+            var addSpy = spyOn(InMemoryStorageStrategy_1.InMemoryStorageStrategy.prototype, 'add').and.callThrough();
+            var updateAtIndexSpy = spyOn(InMemoryStorageStrategy_1.InMemoryStorageStrategy.prototype, 'updateAtIndex').and.callThrough();
+            var getAllSpy = spyOn(InMemoryStorageStrategy_1.InMemoryStorageStrategy.prototype, 'getAll').and.callThrough();
+            var removeAtIndexSpy = spyOn(InMemoryStorageStrategy_1.InMemoryStorageStrategy.prototype, 'removeAtIndex').and.callThrough();
+            var removeAllSpy = spyOn(InMemoryStorageStrategy_1.InMemoryStorageStrategy.prototype, 'removeAll').and.callThrough();
+            jasmine.clock().mockDate();
+            var asyncFreshData = _timedStreamAsyncAwait(service.getDateWithCustomStorageStrategyProvided('test'), 1000);
+            // called removeAtIndex once, because of how the cache works, it always removes the last cached pair with this method
+            expect(removeAtIndexSpy).toHaveBeenCalledTimes(1);
+            expect(asyncFreshData).toEqual({ payload: 'test' });
+            expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+            // one add call, one getAll call
+            expect(getAllSpy).toHaveBeenCalledTimes(1);
+            expect(addSpy).toHaveBeenCalledTimes(1);
+            var cachedResponse = _timedStreamAsyncAwait(service.getDateWithCustomStorageStrategyProvided('test'));
+            // this call will renew the updateAtIndex call count since it's used to renew the cache
+            expect(updateAtIndexSpy).toHaveBeenCalledTimes(1);
+            expect(cachedResponse).toEqual({ payload: 'test' });
+            /**
+             * call count should still be one, since we rerouted to cache, instead of service call
+             */
+            expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+            // two getAll calls because we checked for the cache twice, and only one add call, because cache existed
+            expect(getAllSpy).toHaveBeenCalledTimes(2);
+            expect(addSpy).toHaveBeenCalledTimes(1);
+            /**
+             * travel through 3000ms of time
+             */
+            jasmine.clock().tick(3000);
+            /**
+             * calling the method again should renew expiration for 7500 more milliseconds
+             */
+            service.getDateWithCustomStorageStrategyProvided('test').subscribe();
+            // this call will renew the updateAtIndex call count since it's used to renew the cache
+            expect(updateAtIndexSpy).toHaveBeenCalledTimes(2);
+            // one more getAll cache and it is renewed
+            expect(getAllSpy).toHaveBeenCalledTimes(3);
+            expect(addSpy).toHaveBeenCalledTimes(1);
+            jasmine.clock().tick(4501);
+            /**
+             * this should have returned null, if the cache didnt renew
+             */
+            var cachedResponse2 = _timedStreamAsyncAwait(service.getDateWithCustomStorageStrategyProvided('test'));
+            // this call will renew the updateAtIndex call count since it's used to renew the cache
+            expect(updateAtIndexSpy).toHaveBeenCalledTimes(3);
+            // one more getAll call, and still just one add call, since the cache was renewed due to sliding expiration
+            expect(getAllSpy).toHaveBeenCalledTimes(4);
+            expect(addSpy).toHaveBeenCalledTimes(1);
+            expect(cachedResponse2).toEqual({ payload: 'test' });
+            /**
+             * call count is still one, because we renewed the cache 4501ms ago
+             */
+            expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+            /**
+             * expire cache, shouldn't renew since 7501 ms have ellapsed
+             */
+            jasmine.clock().tick(7501);
+            var cachedResponse3 = _timedStreamAsyncAwait(service.getDateWithCustomStorageStrategyProvided('test'));
+            // cache has expired so the currently cached pair should have been swapped by now by calling the removeAtIndex method first
+            expect(removeAtIndexSpy).toHaveBeenCalledTimes(2);
+            expect(getAllSpy).toHaveBeenCalledTimes(5);
+            expect(addSpy).toHaveBeenCalledTimes(1);
+            /**
+             * cached has expired, request hasn't returned yet but still - the service was called
+             */
+            expect(cachedResponse3).toEqual(null);
+            expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
+            /**
+             * call the global cache buster just so we can test if removeAll was called
+             */
+            cacheable_decorator_1.globalCacheBusterNotifier.next();
+            expect(addSpy).toHaveBeenCalledTimes(1);
+            expect(updateAtIndexSpy).toHaveBeenCalledTimes(3);
+            expect(getAllSpy).toHaveBeenCalledTimes(5);
+            expect(removeAtIndexSpy).toHaveBeenCalledTimes(2);
+            expect(removeAllSpy).toHaveBeenCalled();
         });
     });
     function _timedStreamAsyncAwait(stream$, skipTime) {
