@@ -8,7 +8,11 @@
     "experimentalDecorators": true,
     "lib": ["es2016", "dom"],
     "noUnusedLocals": true,
-    "noImplicitAny": true
+    "noImplicitAny": true,
+    "baseUrl": "./",
+    "paths": {
+      "ngx-cacheable/common/*": ["./dist/common/*"]
+    }
   },
   "include": ["**/*.ts"]
 }

@@ -2,7 +2,7 @@ import { Subject } from 'rxjs';
 import { PCacheBuster } from '../promise.cache-buster.decorator';
 import { PCacheable } from '../promise.cacheable.decorator';
 import { promiseGlobalCacheBusterNotifier } from '../promise.cacheable.decorator';
-import { GlobalCacheConfig } from '../';
+import { GlobalCacheConfig } from '../common';
 import { DOMStorageStrategy } from '../common/DOMStorageStrategy';
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000;
 

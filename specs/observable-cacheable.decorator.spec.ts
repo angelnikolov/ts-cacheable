@@ -5,7 +5,7 @@ import { Cacheable } from '../cacheable.decorator';
 import { CacheBuster } from '../cache-buster.decorator';
 import { timer, Subject } from 'rxjs';
 import { mapTo } from 'rxjs/operators';
-import { GlobalCacheConfig } from '../';
+import { GlobalCacheConfig } from '../common';
 import { DOMStorageStrategy } from '../common/DOMStorageStrategy';
 
 const strategies = [null, DOMStorageStrategy];
