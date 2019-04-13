@@ -19,14 +19,14 @@ describe('LSPCacheableDecorator', () => {
         return new Promise(resolve => {
           setTimeout(() => {
             resolve({ payload: parameter });
-          }, 1000);
+          }, 300);
         });
       }
       mockSaveServiceCall() {
         return new Promise(resolve => {
           setTimeout(() => {
             resolve('SAVED');
-          }, 1000);
+          }, 300);
         });
       }
     
@@ -34,7 +34,7 @@ describe('LSPCacheableDecorator', () => {
         return new Promise(resolve => {
           setTimeout(() => {
             resolve({ payload: [parameter1, parameter2] });
-          }, 1000);
+          }, 300);
         });
       }
     
@@ -54,14 +54,14 @@ describe('LSPCacheableDecorator', () => {
       }
     
       @PCacheable({
-        maxAge: 1500
+        maxAge: 400
       })
       getDataWithExpiration(parameter: string) {
         return this.mockServiceCall(parameter);
       }
     
       @PCacheable({
-        maxAge: 1500,
+        maxAge: 400,
         slidingExpiration: true
       })
       getDataWithSlidingExpiration(parameter: string) {
@@ -76,7 +76,7 @@ describe('LSPCacheableDecorator', () => {
       }
     
       @PCacheable({
-        maxAge: 1500,
+        maxAge: 400,
         maxCacheCount: 5
       })
       getDataWithMaxCacheCountAndExpiration(parameter: string) {
@@ -84,7 +84,7 @@ describe('LSPCacheableDecorator', () => {
       }
     
       @PCacheable({
-        maxAge: 1500,
+        maxAge: 400,
         maxCacheCount: 5,
         slidingExpiration: true
       })
@@ -206,7 +206,7 @@ describe('LSPCacheableDecorator', () => {
     /**
      * return the response
      */
-    jasmine.clock().tick(1000);
+    jasmine.clock().tick(300);
 
     /**
      * change params object values
@@ -237,7 +237,7 @@ describe('LSPCacheableDecorator', () => {
     /**
      * return the response
      */
-    jasmine.clock().tick(1000);
+    jasmine.clock().tick(300);
     /**
      * call again..
      */
@@ -261,12 +261,12 @@ describe('LSPCacheableDecorator', () => {
 
     setTimeout(() => {
       /**
-       * after 1501ms the cache would've expired and we will bail to the data source
+       * after 500ms the cache would've expired and we will bail to the data source
        */
       service.getDataWithExpiration('test');
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
       done();
-    }, 1501);
+    }, 500);
   });
 
   it('return cached data up until the maxAge period but renew the expiration if called within the period', async done => {
@@ -288,8 +288,8 @@ describe('LSPCacheableDecorator', () => {
         service.getDataWithSlidingExpiration('test');
         expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
         done();
-      }, 1501);
-    }, 500);
+      }, 500);
+    }, 200);
   });
 
   it('return cached data for 5 unique requests, then should bail to data source', async () => {
@@ -298,7 +298,7 @@ describe('LSPCacheableDecorator', () => {
      */
     const parameters = ['test1', 'test2', 'test3', 'test4', 'test5'];
     parameters.forEach(
-      async param => await (service.getDataWithMaxCacheCount(param), 1000)
+      async param => await (service.getDataWithMaxCacheCount(param), 300)
     );
     /**
      * data for all endpoints should be available through cache by now
@@ -353,7 +353,7 @@ describe('LSPCacheableDecorator', () => {
       { payload: 'test6' }
     ]);
 
-    /** no service calls will be made, since we have all the responses still cached even after 1s (1000ms) */
+    /** no service calls will be made, since we have all the responses still cached even after 1s (300ms) */
     expect(mockServiceCallSpy).toHaveBeenCalledTimes(6);
     /**
      * fetch and cache the test7 response
@@ -404,7 +404,7 @@ describe('LSPCacheableDecorator', () => {
        */
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(6);
       done();
-    }, 1501);
+    }, 500);
   });
 
   it('return cached data up until new parameters are passed WITH a custom resolver function', async () => {

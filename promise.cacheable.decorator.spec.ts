@@ -10,14 +10,14 @@ class Service {
     return new Promise(resolve => {
       setTimeout(() => {
         resolve({ payload: parameter });
-      }, 1000);
+      }, 300);
     });
   }
   mockSaveServiceCall() {
     return new Promise(resolve => {
       setTimeout(() => {
         resolve('SAVED');
-      }, 1000);
+      }, 300);
     });
   }
 
@@ -25,7 +25,7 @@ class Service {
     return new Promise(resolve => {
       setTimeout(() => {
         resolve({ payload: [parameter1, parameter2] });
-      }, 1000);
+      }, 300);
     });
   }
 
@@ -45,14 +45,14 @@ class Service {
   }
 
   @PCacheable({
-    maxAge: 1500
+    maxAge: 400
   })
   getDataWithExpiration(parameter: string) {
     return this.mockServiceCall(parameter);
   }
 
   @PCacheable({
-    maxAge: 1500,
+    maxAge: 400,
     slidingExpiration: true
   })
   getDataWithSlidingExpiration(parameter: string) {
@@ -67,7 +67,7 @@ class Service {
   }
 
   @PCacheable({
-    maxAge: 1500,
+    maxAge: 400,
     maxCacheCount: 5
   })
   getDataWithMaxCacheCountAndExpiration(parameter: string) {
@@ -75,7 +75,7 @@ class Service {
   }
 
   @PCacheable({
-    maxAge: 1500,
+    maxAge: 400,
     maxCacheCount: 5,
     slidingExpiration: true
   })
@@ -254,12 +254,12 @@ describe('PCacheableDecorator', () => {
 
     setTimeout(() => {
       /**
-       * after 1501ms the cache would've expired and we will bail to the data source
+       * after 500ms the cache would've expired and we will bail to the data source
        */
       service.getDataWithExpiration('test');
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
       done();
-    }, 1501);
+    }, 500);
   });
 
   it('return cached data up until the maxAge period but renew the expiration if called within the period', async done => {
@@ -281,8 +281,8 @@ describe('PCacheableDecorator', () => {
         service.getDataWithSlidingExpiration('test');
         expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
         done();
-      }, 1501);
-    }, 500);
+      }, 500);
+    }, 200);
   });
 
   it('return cached data for 5 unique requests, then should bail to data source', async () => {
@@ -397,7 +397,7 @@ describe('PCacheableDecorator', () => {
        */
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(6);
       done();
-    }, 1501);
+    }, 500);
   });
 
   it('return cached data up until new parameters are passed WITH a custom resolver function', async () => {
