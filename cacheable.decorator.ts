@@ -1,6 +1,6 @@
 import { empty, merge, Observable, of, Subject } from 'rxjs';
 import { delay, finalize, shareReplay, tap } from 'rxjs/operators';
-import { DEFAULT_CACHE_RESOLVER, ICacheable } from './common';
+import { DEFAULT_CACHE_RESOLVER, ICacheable, GlobalCacheConfig, IStorageStrategy } from './common';
 import { IObservableCacheConfig } from './common/IObservableCacheConfig';
 import { ICachePair } from './common/ICachePair';
 export const globalCacheBusterNotifier = new Subject<void>();
@@ -11,9 +11,12 @@ export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
     _propertyKey: string,
     propertyDescriptor: TypedPropertyDescriptor<ICacheable<Observable<any>>>
   ) {
+    const cacheKey = cacheConfig.cacheKey || _target.constructor.name + '#' + _propertyKey;
     const oldMethod = propertyDescriptor.value;
     if (propertyDescriptor && propertyDescriptor.value) {
-      const cachePairs: Array<ICachePair<Observable<any>>> = [];
+      let storageStrategy: IStorageStrategy = !cacheConfig.storageStrategy
+        ? new GlobalCacheConfig.storageStrategy()
+        : new cacheConfig.storageStrategy();
       const pendingCachePairs: Array<ICachePair<Observable<any>>> = [];
       /**
        * subscribe to the globalCacheBuster
@@ -26,7 +29,7 @@ export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
           ? cacheConfig.cacheBusterObserver
           : empty()
       ).subscribe(_ => {
-        cachePairs.length = 0;
+        storageStrategy.removeAll(cacheKey);
         pendingCachePairs.length = 0;
       });
 
@@ -35,11 +38,11 @@ export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
         : DEFAULT_CACHE_RESOLVER;
 
       /* use function instead of an arrow function to keep context of invocation */
-      (propertyDescriptor.value as any) = function (..._parameters) {
+      (propertyDescriptor.value as any) = function (..._parameters: Array<any>) {
+        const cachePairs: Array<ICachePair<Observable<any>>> = storageStrategy.getAll(cacheKey);
         let parameters = _parameters.map(param => param !== undefined ? JSON.parse(JSON.stringify(param)) : param);
         let _foundCachePair = cachePairs.find(cp =>
-          cacheConfig.cacheResolver(cp.parameters, parameters)
-        );
+          cacheConfig.cacheResolver(cp.parameters, parameters));
         const _foundPendingCachePair = pendingCachePairs.find(cp =>
           cacheConfig.cacheResolver(cp.parameters, parameters)
         );
@@ -48,19 +51,20 @@ export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
          */
         if (cacheConfig.maxAge && _foundCachePair && _foundCachePair.created) {
           if (
-            new Date().getTime() - _foundCachePair.created.getTime() >
+            new Date().getTime() - new Date(_foundCachePair.created).getTime() >
             cacheConfig.maxAge
           ) {
             /**
              * cache duration has expired - remove it from the cachePairs array
              */
-            cachePairs.splice(cachePairs.indexOf(_foundCachePair), 1);
+            storageStrategy.removeAtIndex(cachePairs.indexOf(_foundCachePair), cacheKey);
             _foundCachePair = null;
           } else if (cacheConfig.slidingExpiration) {
             /**
              * renew cache duration
              */
             _foundCachePair.created = new Date();
+            storageStrategy.updateAtIndex(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey);
           }
         }
 
@@ -87,7 +91,6 @@ export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
             }),
             tap(response => {
               /**
-               * if no maxCacheCount has been passed
                * if maxCacheCount has not been passed, just shift the cachePair to make room for the new one
                * if maxCacheCount has been passed, respect that and only shift the cachePairs if the new cachePair will make them exceed the count
                */
@@ -101,13 +104,13 @@ export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
                   (cacheConfig.maxCacheCount &&
                     cacheConfig.maxCacheCount < cachePairs.length + 1)
                 ) {
-                  cachePairs.shift();
+                  storageStrategy.removeAtIndex(0, cacheKey);
                 }
-                cachePairs.push({
+                storageStrategy.add({
                   parameters,
                   response,
                   created: cacheConfig.maxAge ? new Date() : null
-                });
+                }, cacheKey);
               }
             }),
             /**

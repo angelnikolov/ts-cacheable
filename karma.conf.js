@@ -4,13 +4,17 @@ module.exports = function (config) {
     browsers: ['ChromeHeadlessNoSandbox'],
     reporters: ['progress', 'karma-typescript'],
     files: [
+      './index.ts',
       './common/index.ts',
+      './common/IStorageStrategy.ts',
+      './common/DOMStorageStrategy.ts',
+      './common/InMemoryStorageStrategy.ts',
       './cacheable.decorator.ts',
       './cache-buster.decorator.ts',
-      './cacheable.decorator.spec.ts',
       './promise.cache-buster.decorator.ts',
       './promise.cacheable.decorator.ts',
-      './promise.cacheable.decorator.spec.ts',
+      './specs/promise-cacheable.decorator.spec.ts',
+      './specs/observable-cacheable.decorator.spec.ts'
     ],
     preprocessors: {
       '**/*.ts': 'karma-typescript'

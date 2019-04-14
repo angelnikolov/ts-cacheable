@@ -1,8 +1,10 @@
 import { ICacheBusterConfig } from './ICacheBusterConfig';
 import { ICacheConfig } from './ICacheConfig';
 import { ICachePair } from './ICachePair';
+import { IStorageStrategy } from './IStorageStrategy';
+import { InMemoryStorageStrategy } from './InMemoryStorageStrategy';
 
-export const DEFAULT_CACHE_RESOLVER = (oldParams, newParams) =>
+export const DEFAULT_CACHE_RESOLVER = (oldParams: Array<any>, newParams: Array<any>) =>
   JSON.stringify(oldParams) === JSON.stringify(newParams);
 
 export type ICacheRequestResolver = (
@@ -12,6 +14,16 @@ export type ICacheRequestResolver = (
 
 export type IShouldCacheDecider = (response: any) => boolean;
 
-export type ICacheable<T> = (...args) => T;
+export type ICacheable<T> = (...args: Array<any>) => T;
 
 export { ICacheBusterConfig, ICacheConfig, ICachePair };
+
+export const GlobalCacheConfig: {
+  storageStrategy: new () => IStorageStrategy,
+  globalCacheKey: string
+} = {
+  storageStrategy: InMemoryStorageStrategy,
+  globalCacheKey: 'CACHE_STORAGE'
+}
+
+export { IStorageStrategy };

@@ -6,8 +6,10 @@
     "declaration": true,
     "outDir": "./dist",
     "experimentalDecorators": true,
-    "lib": ["es2016"],
-    "noUnusedLocals": true
+    "lib": ["es2016", "dom"],
+    "noUnusedLocals": true,
+    "noImplicitAny": true,
+    "baseUrl": "./"
   },
   "include": ["**/*.ts"]
 }

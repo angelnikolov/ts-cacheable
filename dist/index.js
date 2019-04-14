@@ -7,4 +7,6 @@ __export(require("./cache-buster.decorator"));
 __export(require("./cacheable.decorator"));
 __export(require("./promise.cache-buster.decorator"));
 __export(require("./promise.cacheable.decorator"));
+__export(require("./common"));
+__export(require("./common/InMemoryStorageStrategy"));
 //# sourceMappingURL=index.js.map

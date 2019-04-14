@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var rxjs_1 = require("rxjs");
-var cacheable_decorator_1 = require("./cacheable.decorator");
 var common_1 = require("./common");
+exports.promiseGlobalCacheBusterNotifier = new rxjs_1.Subject();
 var removeCachePair = function (cachePairs, parameters, cacheConfig) {
     /**
      * if there has been an pending cache pair for these parameters, when it completes or errors, remove it
@@ -15,19 +15,22 @@ var removeCachePair = function (cachePairs, parameters, cacheConfig) {
 function PCacheable(cacheConfig) {
     if (cacheConfig === void 0) { cacheConfig = {}; }
     return function (_target, _propertyKey, propertyDescriptor) {
+        var cacheKey = cacheConfig.cacheKey || _target.constructor.name + '#' + _propertyKey;
         var oldMethod = propertyDescriptor.value;
         if (propertyDescriptor && propertyDescriptor.value) {
-            var cachePairs_1 = [];
+            var storageStrategy_1 = !cacheConfig.storageStrategy
+                ? new common_1.GlobalCacheConfig.storageStrategy()
+                : new cacheConfig.storageStrategy();
             var pendingCachePairs_1 = [];
             /**
-             * subscribe to the globalCacheBuster
+             * subscribe to the promiseGlobalCacheBusterNotifier
              * if a custom cacheBusterObserver is passed, subscribe to it as well
              * subscribe to the cacheBusterObserver and upon emission, clear all caches
              */
-            rxjs_1.merge(cacheable_decorator_1.globalCacheBusterNotifier.asObservable(), cacheConfig.cacheBusterObserver
+            rxjs_1.merge(exports.promiseGlobalCacheBusterNotifier.asObservable(), cacheConfig.cacheBusterObserver
                 ? cacheConfig.cacheBusterObserver
                 : rxjs_1.empty()).subscribe(function (_) {
-                cachePairs_1.length = 0;
+                storageStrategy_1.removeAll(cacheKey);
                 pendingCachePairs_1.length = 0;
             });
             cacheConfig.cacheResolver = cacheConfig.cacheResolver
@@ -39,8 +42,9 @@ function PCacheable(cacheConfig) {
                 for (var _i = 0; _i < arguments.length; _i++) {
                     _parameters[_i] = arguments[_i];
                 }
+                var cachePairs = storageStrategy_1.getAll(cacheKey);
                 var parameters = _parameters.map(function (param) { return param !== undefined ? JSON.parse(JSON.stringify(param)) : param; });
-                var _foundCachePair = cachePairs_1.find(function (cp) {
+                var _foundCachePair = cachePairs.find(function (cp) {
                     return cacheConfig.cacheResolver(cp.parameters, parameters);
                 });
                 var _foundPendingCachePair = pendingCachePairs_1.find(function (cp) {
@@ -50,12 +54,12 @@ function PCacheable(cacheConfig) {
                  * check if maxAge is passed and cache has actually expired
                  */
                 if (cacheConfig.maxAge && _foundCachePair && _foundCachePair.created) {
-                    if (new Date().getTime() - _foundCachePair.created.getTime() >
+                    if (new Date().getTime() - new Date(_foundCachePair.created).getTime() >
                         cacheConfig.maxAge) {
                         /**
                          * cache duration has expired - remove it from the cachePairs array
                          */
-                        cachePairs_1.splice(cachePairs_1.indexOf(_foundCachePair), 1);
+                        storageStrategy_1.removeAtIndex(cachePairs.indexOf(_foundCachePair), cacheKey);
                         _foundCachePair = null;
                     }
                     else if (cacheConfig.slidingExpiration) {
@@ -63,6 +67,7 @@ function PCacheable(cacheConfig) {
                          * renew cache duration
                          */
                         _foundCachePair.created = new Date();
+                        storageStrategy_1.updateAtIndex(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey);
                     }
                 }
                 if (_foundCachePair) {
@@ -74,6 +79,7 @@ function PCacheable(cacheConfig) {
                 else {
                     var response$ = oldMethod.call.apply(oldMethod, [this].concat(parameters))
                         .then(function (response) {
+                        removeCachePair(pendingCachePairs_1, parameters, cacheConfig);
                         /**
                          * if no maxCacheCount has been passed
                          * if maxCacheCount has not been passed, just shift the cachePair to make room for the new one
@@ -84,16 +90,15 @@ function PCacheable(cacheConfig) {
                             if (!cacheConfig.maxCacheCount ||
                                 cacheConfig.maxCacheCount === 1 ||
                                 (cacheConfig.maxCacheCount &&
-                                    cacheConfig.maxCacheCount < cachePairs_1.length + 1)) {
-                                cachePairs_1.shift();
+                                    cacheConfig.maxCacheCount < cachePairs.length + 1)) {
+                                storageStrategy_1.removeAtIndex(0, cacheKey);
                             }
-                            cachePairs_1.push({
+                            storageStrategy_1.add({
                                 parameters: parameters,
                                 response: response,
                                 created: cacheConfig.maxAge ? new Date() : null
-                            });
+                            }, cacheKey);
                         }
-                        removeCachePair(pendingCachePairs_1, parameters, cacheConfig);
                         return response;
                     })
                         .catch(function (_) {
