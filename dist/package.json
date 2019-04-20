@@ -7,7 +7,7 @@
   "scripts": {
     "test": "karma start",
     "test:watch": "karma start --auto-watch",
-    "build": "rm -rf dist && tsc && cp package.json ./dist"
+    "build": "rm -rf dist && tsc && cp package.json ./dist && cp README.md ./dist/README.md"
   },
   "repository": {
     "type": "git",
