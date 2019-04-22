@@ -279,58 +279,92 @@ strategies.forEach(function (s) {
                 }
             });
         }); });
-        it('returns promises in cache with a referential type params', function () {
-            jasmine.clock().install();
-            var params = {
-                number: [1]
-            };
-            /**
-             * call the service endpoint with current params values
-             */
-            service.getDataWithParamsObj(params);
-            /**
-             * return the response
-             */
-            jasmine.clock().tick(1000);
-            /**
-             * change params object values
-             */
-            params.number.push(2);
-            /**
-             * call again..
-             */
-            service.getDataWithParamsObj(params);
-            /**
-             * service call count should still be 2, since param object has changed
-             */
-            expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
-            jasmine.clock().uninstall();
-        });
-        it('return the cached observable up until it completes or errors', function () {
-            jasmine.clock().install();
-            /**
-             * call the service endpoint five hundred times with the same parameter
-             * but the service should only be called once, since the observable will be cached
-             */
-            for (var i = 0; i < 500; i++) {
-                service.getDataAndReturnCachedStream('test');
-            }
-            expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
-            /**
-             * return the response
-             */
-            jasmine.clock().tick(1000);
-            /**
-             * call again..
-             */
-            service.getDataAndReturnCachedStream('test');
-            /**
-             * service call count should still be 1, since we are returning from cache now
-             */
-            expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
-            jasmine.clock().uninstall();
-        });
+        it('returns promises in cache with a referential type params', function (done) { return __awaiter(_this, void 0, void 0, function () {
+            var params;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        params = {
+                            number: [1]
+                        };
+                        /**
+                         * call the service endpoint with current params values
+                         */
+                        return [4 /*yield*/, service.getDataWithParamsObj(params)];
+                    case 1:
+                        /**
+                         * call the service endpoint with current params values
+                         */
+                        _a.sent();
+                        /**
+                         * change params object values
+                         */
+                        params.number.push(2);
+                        /**
+                         * call again..
+                         */
+                        return [4 /*yield*/, service.getDataWithParamsObj(params)];
+                    case 2:
+                        /**
+                         * call again..
+                         */
+                        _a.sent();
+                        /**
+                         * service call count should still be 2, since param object has changed
+                         */
+                        expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
+                        done();
+                        return [2 /*return*/];
+                }
+            });
+        }); });
+        it('return the cached observable up until it completes or errors', function (done) { return __awaiter(_this, void 0, void 0, function () {
+            var _this = this;
+            var i;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        i = 0;
+                        _a.label = 1;
+                    case 1:
+                        if (!(i < 500)) return [3 /*break*/, 4];
+                        return [4 /*yield*/, service.getDataAndReturnCachedStream('test')];
+                    case 2:
+                        _a.sent();
+                        _a.label = 3;
+                    case 3:
+                        i++;
+                        return [3 /*break*/, 1];
+                    case 4:
+                        expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+                        setTimeout(function () { return __awaiter(_this, void 0, void 0, function () {
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: 
+                                    /**
+                                     * call again..
+                                     */
+                                    return [4 /*yield*/, service.getDataAndReturnCachedStream('test')];
+                                    case 1:
+                                        /**
+                                         * call again..
+                                         */
+                                        _a.sent();
+                                        /**
+                                         * service call count should still be 1, since we are returning from cache now
+                                         */
+                                        expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+                                        done();
+                                        return [2 /*return*/];
+                                }
+                            });
+                        }); }, 1000);
+                        return [2 /*return*/];
+                }
+            });
+        }); });
         it('return cached date up until the maxAge period has passed and then bail out to data source', function (done) { return __awaiter(_this, void 0, void 0, function () {
+            var _this = this;
             var asyncFreshData, cachedResponse;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -344,19 +378,31 @@ strategies.forEach(function (s) {
                         cachedResponse = _a.sent();
                         expect(cachedResponse).toEqual({ payload: 'test' });
                         expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
-                        setTimeout(function () {
-                            /**
-                             * after 500ms the cache would've expired and we will bail to the data source
-                             */
-                            service.getDataWithExpiration('test');
-                            expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
-                            done();
-                        }, 500);
+                        setTimeout(function () { return __awaiter(_this, void 0, void 0, function () {
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: 
+                                    /**
+                                     * after 500ms the cache would've expired and we will bail to the data source
+                                     */
+                                    return [4 /*yield*/, service.getDataWithExpiration('test')];
+                                    case 1:
+                                        /**
+                                         * after 500ms the cache would've expired and we will bail to the data source
+                                         */
+                                        _a.sent();
+                                        expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
+                                        done();
+                                        return [2 /*return*/];
+                                }
+                            });
+                        }); }, 500);
                         return [2 /*return*/];
                 }
             });
         }); });
         it('return cached data up until the maxAge period but renew the expiration if called within the period', function (done) { return __awaiter(_this, void 0, void 0, function () {
+            var _this = this;
             var asyncFreshData, cachedResponse;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -373,44 +419,59 @@ strategies.forEach(function (s) {
                          * call count should still be one, since we rerouted to cache, instead of service call
                          */
                         expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
-                        setTimeout(function () {
-                            service.getDataWithSlidingExpiration('test');
-                            expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
-                            setTimeout(function () {
-                                service.getDataWithSlidingExpiration('test');
-                                expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
-                                done();
-                            }, 500);
-                        }, 200);
+                        setTimeout(function () { return __awaiter(_this, void 0, void 0, function () {
+                            var _this = this;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, service.getDataWithSlidingExpiration('test')];
+                                    case 1:
+                                        _a.sent();
+                                        expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+                                        setTimeout(function () { return __awaiter(_this, void 0, void 0, function () {
+                                            return __generator(this, function (_a) {
+                                                switch (_a.label) {
+                                                    case 0: return [4 /*yield*/, service.getDataWithSlidingExpiration('test')];
+                                                    case 1:
+                                                        _a.sent();
+                                                        expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
+                                                        done();
+                                                        return [2 /*return*/];
+                                                }
+                                            });
+                                        }); }, 500);
+                                        return [2 /*return*/];
+                                }
+                            });
+                        }); }, 200);
                         return [2 /*return*/];
                 }
             });
         }); });
         it('return cached data for 5 unique requests, then should bail to data source', function () { return __awaiter(_this, void 0, void 0, function () {
-            var _this = this;
             var parameters, cachedResponse, cachedResponseAll, asyncData, newParameters, cachedResponseAll2, nonCachedResponse;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         parameters = ['test1', 'test2', 'test3', 'test4', 'test5'];
-                        parameters.forEach(function (param) { return __awaiter(_this, void 0, void 0, function () { return __generator(this, function (_a) {
-                            switch (_a.label) {
-                                case 0: return [4 /*yield*/, (service.getDataWithMaxCacheCount(param), 1000)];
-                                case 1: return [2 /*return*/, _a.sent()];
-                            }
-                        }); }); });
+                        return [4 /*yield*/, Promise.all(parameters.map(function (param) { return (service.getDataWithMaxCacheCount(param)); }))
+                            /**
+                             * data for all endpoints should be available through cache by now
+                             */
+                        ];
+                    case 1:
+                        _a.sent();
                         /**
                          * data for all endpoints should be available through cache by now
                          */
                         expect(mockServiceCallSpy).toHaveBeenCalledTimes(5);
                         return [4 /*yield*/, service.getDataWithMaxCacheCount('test1')];
-                    case 1:
+                    case 2:
                         cachedResponse = _a.sent();
                         expect(cachedResponse).toEqual({ payload: 'test1' });
                         /** call count still 5 */
                         expect(mockServiceCallSpy).toHaveBeenCalledTimes(5);
                         return [4 /*yield*/, Promise.all(parameters.map(function (param) { return service.getDataWithMaxCacheCount(param); }))];
-                    case 2:
+                    case 3:
                         cachedResponseAll = _a.sent();
                         expect(cachedResponseAll).toEqual([
                             { payload: 'test1' },
@@ -422,14 +483,14 @@ strategies.forEach(function (s) {
                         /** call count still 5 */
                         expect(mockServiceCallSpy).toHaveBeenCalledTimes(5);
                         return [4 /*yield*/, service.getDataWithMaxCacheCount('test6')];
-                    case 3:
+                    case 4:
                         asyncData = _a.sent();
                         expect(asyncData).toEqual({ payload: 'test6' });
                         /** call count incremented by one */
                         expect(mockServiceCallSpy).toHaveBeenCalledTimes(6);
                         newParameters = ['test2', 'test3', 'test4', 'test5', 'test6'];
                         return [4 /*yield*/, Promise.all(newParameters.map(function (param) { return service.getDataWithMaxCacheCount(param); }))];
-                    case 4:
+                    case 5:
                         cachedResponseAll2 = _a.sent();
                         expect(cachedResponseAll2).toEqual([
                             { payload: 'test2' },
@@ -441,7 +502,7 @@ strategies.forEach(function (s) {
                         /** no service calls will be made, since we have all the responses still cached even after 1s (1000ms) */
                         expect(mockServiceCallSpy).toHaveBeenCalledTimes(6);
                         return [4 /*yield*/, service.getDataWithMaxCacheCount('test7')];
-                    case 5:
+                    case 6:
                         nonCachedResponse = _a.sent();
                         expect(nonCachedResponse).toEqual({ payload: 'test7' });
                         expect(mockServiceCallSpy).toHaveBeenCalledTimes(7);
@@ -449,7 +510,7 @@ strategies.forEach(function (s) {
                          * since the cached response for 'test2' was now removed from cache by 'test7',
                          */
                         return [4 /*yield*/, service.getDataWithMaxCacheCount('test2')];
-                    case 6:
+                    case 7:
                         /**
                          * since the cached response for 'test2' was now removed from cache by 'test7',
                          */
@@ -463,15 +524,12 @@ strategies.forEach(function (s) {
             });
         }); });
         it('return cached data for 5 unique requests all available for 7500ms', function (done) { return __awaiter(_this, void 0, void 0, function () {
+            var _this = this;
             var parameters, cachedResponse2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         parameters = ['test1', 'test2', 'test3', 'test4', 'test5'];
-                        parameters.forEach(function (param) {
-                            return service.getDataWithMaxCacheCountAndExpiration(param);
-                        });
-                        expect(mockServiceCallSpy).toHaveBeenCalledTimes(5);
                         return [4 /*yield*/, Promise.all(parameters.map(function (param) {
                                 return service.getDataWithMaxCacheCountAndExpiration(param);
                             }))];
@@ -485,14 +543,21 @@ strategies.forEach(function (s) {
                             { payload: 'test4' },
                             { payload: 'test5' }
                         ]);
-                        setTimeout(function () {
-                            service.getDataWithMaxCacheCountAndExpiration('test1');
-                            /**
-                             * by now, no cache exists for the 'test1' parameter, so 1 more call will be made to the service
-                             */
-                            expect(mockServiceCallSpy).toHaveBeenCalledTimes(6);
-                            done();
-                        }, 500);
+                        setTimeout(function () { return __awaiter(_this, void 0, void 0, function () {
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, service.getDataWithMaxCacheCountAndExpiration('test1')];
+                                    case 1:
+                                        _a.sent();
+                                        /**
+                                         * by now, no cache exists for the 'test1' parameter, so 1 more call will be made to the service
+                                         */
+                                        expect(mockServiceCallSpy).toHaveBeenCalledTimes(6);
+                                        done();
+                                        return [2 /*return*/];
+                                }
+                            });
+                        }); }, 500);
                         return [2 /*return*/];
                 }
             });
@@ -685,28 +750,38 @@ strategies.forEach(function (s) {
             var mockServiceCallWithMultipleParametersSpy, asyncData;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0:
-                        service.getDataWithUndefinedParameter(undefined);
+                    case 0: return [4 /*yield*/, service.getDataWithUndefinedParameter(undefined)];
+                    case 1:
+                        _a.sent();
                         expect(mockServiceCallSpy).toHaveBeenCalledWith('');
-                        service.getDataWithUndefinedParameter();
+                        return [4 /*yield*/, service.getDataWithUndefinedParameter()];
+                    case 2:
+                        _a.sent();
                         expect(mockServiceCallSpy).toHaveBeenCalledWith('');
                         mockServiceCallWithMultipleParametersSpy = spyOn(service, 'mockServiceCallWithMultipleParameters').and.callThrough();
-                        service.getDataWithMultipleUndefinedParameters(undefined, undefined);
+                        return [4 /*yield*/, service.getDataWithMultipleUndefinedParameters(undefined, undefined)];
+                    case 3:
+                        _a.sent();
                         expect(mockServiceCallWithMultipleParametersSpy).toHaveBeenCalledWith('Parameter1', 'Parameter2');
                         return [4 /*yield*/, service.getDataWithMultipleUndefinedParameters(undefined, undefined)];
-                    case 1:
+                    case 4:
                         asyncData = _a.sent();
                         expect(asyncData).toEqual({ payload: ['Parameter1', 'Parameter2'] });
                         expect(mockServiceCallWithMultipleParametersSpy).toHaveBeenCalledWith('Parameter1', 'Parameter2');
-                        service.getDataWithMultipleUndefinedParameters(undefined, undefined);
+                        return [4 /*yield*/, service.getDataWithMultipleUndefinedParameters(undefined, undefined)];
+                    case 5:
+                        _a.sent();
                         expect(mockServiceCallWithMultipleParametersSpy).toHaveBeenCalledTimes(1);
-                        service.getDataWithMultipleUndefinedParameters('Parameter1', undefined);
+                        return [4 /*yield*/, service.getDataWithMultipleUndefinedParameters('Parameter1', undefined)];
+                    case 6:
+                        _a.sent();
                         expect(mockServiceCallWithMultipleParametersSpy).toHaveBeenCalledTimes(2);
                         return [2 /*return*/];
                 }
             });
         }); });
         it('should work correctly with a custom storage strategy', function (done) { return __awaiter(_this, void 0, void 0, function () {
+            var _this = this;
             var getAllSpy, asyncFreshData, cachedResponse;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -728,17 +803,32 @@ strategies.forEach(function (s) {
                          * call count should still be one, since we rerouted to cache, instead of service call
                          */
                         expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
-                        setTimeout(function () {
-                            service.getDateWithCustomStorageStrategyProvided('test');
-                            expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
-                            // three getAll calls since every time we call the decorated method, we check the cache first
-                            expect(getAllSpy).toHaveBeenCalledTimes(3);
-                            setTimeout(function () {
-                                service.getDateWithCustomStorageStrategyProvided('test');
-                                expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
-                                done();
-                            }, 500);
-                        }, 200);
+                        setTimeout(function () { return __awaiter(_this, void 0, void 0, function () {
+                            var _this = this;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, service.getDateWithCustomStorageStrategyProvided('test')];
+                                    case 1:
+                                        _a.sent();
+                                        expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+                                        // three getAll calls since every time we call the decorated method, we check the cache first
+                                        expect(getAllSpy).toHaveBeenCalledTimes(3);
+                                        setTimeout(function () { return __awaiter(_this, void 0, void 0, function () {
+                                            return __generator(this, function (_a) {
+                                                switch (_a.label) {
+                                                    case 0: return [4 /*yield*/, service.getDateWithCustomStorageStrategyProvided('test')];
+                                                    case 1:
+                                                        _a.sent();
+                                                        expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
+                                                        done();
+                                                        return [2 /*return*/];
+                                                }
+                                            });
+                                        }); }, 500);
+                                        return [2 /*return*/];
+                                }
+                            });
+                        }); }, 200);
                         return [2 /*return*/];
                 }
             });

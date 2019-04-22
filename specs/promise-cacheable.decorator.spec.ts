@@ -206,20 +206,14 @@ strategies.forEach(s => {
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(4);
     });
 
-    it('returns promises in cache with a referential type params', () => {
-      jasmine.clock().install();
+    it('returns promises in cache with a referential type params', async (done) => {
       let params = {
         number: [1]
       };
       /**
        * call the service endpoint with current params values
        */
-      service.getDataWithParamsObj(params);
-
-      /**
-       * return the response
-       */
-      jasmine.clock().tick(1000);
+      await service.getDataWithParamsObj(params);
 
       /**
        * change params object values
@@ -228,38 +222,35 @@ strategies.forEach(s => {
       /**
        * call again..
        */
-      service.getDataWithParamsObj(params);
+      await service.getDataWithParamsObj(params);
       /**
        * service call count should still be 2, since param object has changed
        */
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
-      jasmine.clock().uninstall();
+      done();
     });
 
-    it('return the cached observable up until it completes or errors', () => {
-      jasmine.clock().install();
+    it('return the cached observable up until it completes or errors', async (done) => {
       /**
        * call the service endpoint five hundred times with the same parameter
        * but the service should only be called once, since the observable will be cached
        */
       for (let i = 0; i < 500; i++) {
-        service.getDataAndReturnCachedStream('test');
+        await service.getDataAndReturnCachedStream('test');
       }
 
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
-      /**
-       * return the response
-       */
-      jasmine.clock().tick(1000);
-      /**
-       * call again..
-       */
-      service.getDataAndReturnCachedStream('test');
-      /**
-       * service call count should still be 1, since we are returning from cache now
-       */
-      expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
-      jasmine.clock().uninstall();
+      setTimeout(async () => {
+        /**
+         * call again..
+         */
+        await service.getDataAndReturnCachedStream('test');
+        /**
+         * service call count should still be 1, since we are returning from cache now
+         */
+        expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+        done();
+      }, 1000);
     });
 
     it('return cached date up until the maxAge period has passed and then bail out to data source', async done => {
@@ -272,11 +263,11 @@ strategies.forEach(s => {
       expect(cachedResponse).toEqual({ payload: 'test' });
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
 
-      setTimeout(() => {
+      setTimeout(async () => {
         /**
          * after 500ms the cache would've expired and we will bail to the data source
          */
-        service.getDataWithExpiration('test');
+        await service.getDataWithExpiration('test');
         expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
         done();
       }, 500);
@@ -294,11 +285,11 @@ strategies.forEach(s => {
        */
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
 
-      setTimeout(() => {
-        service.getDataWithSlidingExpiration('test');
+      setTimeout(async () => {
+        await service.getDataWithSlidingExpiration('test');
         expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
-        setTimeout(() => {
-          service.getDataWithSlidingExpiration('test');
+        setTimeout(async () => {
+          await service.getDataWithSlidingExpiration('test');
           expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
           done();
         }, 500);
@@ -310,9 +301,9 @@ strategies.forEach(s => {
        * call the same endpoint with 5 different parameters and cache all 5 responses, based on the maxCacheCount parameter
        */
       const parameters = ['test1', 'test2', 'test3', 'test4', 'test5'];
-      parameters.forEach(
-        async param => await (service.getDataWithMaxCacheCount(param), 1000)
-      );
+      await Promise.all(parameters.map(
+        param => (service.getDataWithMaxCacheCount(param))
+      ))
       /**
        * data for all endpoints should be available through cache by now
        */
@@ -385,16 +376,11 @@ strategies.forEach(s => {
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(8);
     });
 
-    it('return cached data for 5 unique requests all available for 7500ms', async done => {
+    it('return cached data for 5 unique requests all available for 7500ms', async (done) => {
       /**
        * call the same endpoint with 5 different parameters and cache all 5 responses, based on the maxCacheCount parameter
        */
       const parameters = ['test1', 'test2', 'test3', 'test4', 'test5'];
-      parameters.forEach(param =>
-        service.getDataWithMaxCacheCountAndExpiration(param)
-      );
-      expect(mockServiceCallSpy).toHaveBeenCalledTimes(5);
-
       const cachedResponse2 = await Promise.all(
         parameters.map(param =>
           service.getDataWithMaxCacheCountAndExpiration(param)
@@ -410,8 +396,8 @@ strategies.forEach(s => {
         { payload: 'test5' }
       ]);
 
-      setTimeout(() => {
-        service.getDataWithMaxCacheCountAndExpiration('test1');
+      setTimeout(async () => {
+        await service.getDataWithMaxCacheCountAndExpiration('test1');
         /**
          * by now, no cache exists for the 'test1' parameter, so 1 more call will be made to the service
          */
@@ -561,13 +547,13 @@ strategies.forEach(s => {
     });
 
     it('should not change undefined parameters to null', async () => {
-      service.getDataWithUndefinedParameter(undefined);
+      await service.getDataWithUndefinedParameter(undefined);
       expect(mockServiceCallSpy).toHaveBeenCalledWith('');
-      service.getDataWithUndefinedParameter();
+      await service.getDataWithUndefinedParameter();
       expect(mockServiceCallSpy).toHaveBeenCalledWith('');
 
       let mockServiceCallWithMultipleParametersSpy = spyOn(service, 'mockServiceCallWithMultipleParameters').and.callThrough();
-      service.getDataWithMultipleUndefinedParameters(undefined, undefined);
+      await service.getDataWithMultipleUndefinedParameters(undefined, undefined);
       expect(mockServiceCallWithMultipleParametersSpy).toHaveBeenCalledWith('Parameter1', 'Parameter2');
 
 
@@ -576,10 +562,10 @@ strategies.forEach(s => {
       expect(asyncData).toEqual({ payload: ['Parameter1', 'Parameter2'] });
       expect(mockServiceCallWithMultipleParametersSpy).toHaveBeenCalledWith('Parameter1', 'Parameter2');
 
-      service.getDataWithMultipleUndefinedParameters(undefined, undefined);
+      await service.getDataWithMultipleUndefinedParameters(undefined, undefined);
       expect(mockServiceCallWithMultipleParametersSpy).toHaveBeenCalledTimes(1);
 
-      service.getDataWithMultipleUndefinedParameters('Parameter1', undefined);
+      await service.getDataWithMultipleUndefinedParameters('Parameter1', undefined);
       expect(mockServiceCallWithMultipleParametersSpy).toHaveBeenCalledTimes(2);
     });
 
@@ -600,13 +586,13 @@ strategies.forEach(s => {
        */
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
 
-      setTimeout(() => {
-        service.getDateWithCustomStorageStrategyProvided('test');
+      setTimeout(async () => {
+        await service.getDateWithCustomStorageStrategyProvided('test');
         expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
         // three getAll calls since every time we call the decorated method, we check the cache first
         expect(getAllSpy).toHaveBeenCalledTimes(3);
-        setTimeout(() => {
-          service.getDateWithCustomStorageStrategyProvided('test');
+        setTimeout(async () => {
+          await service.getDateWithCustomStorageStrategyProvided('test');
           expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
           done();
         }, 500);

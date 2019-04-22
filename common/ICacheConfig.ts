@@ -1,6 +1,7 @@
 import { Observable } from 'rxjs';
 import { ICacheRequestResolver, IShouldCacheDecider } from './index';
 import { IStorageStrategy } from './IStorageStrategy';
+import { IAsyncStorageStrategy } from './IAsyncStorageStrategy';
 export interface ICacheConfig {
   /**
    * @description request cache resolver which will get old and new paramaters passed to and based on those
@@ -35,7 +36,7 @@ export interface ICacheConfig {
   /**
    * storage strategy
    */
-  storageStrategy?: new () => IStorageStrategy;
+  storageStrategy?: new () => IStorageStrategy | IAsyncStorageStrategy;
 
   /**
    * property name under which to store the cached pairs for this method

@@ -1,5 +1,5 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 var rxjs_1 = require("rxjs");
 var common_1 = require("./common");
 exports.promiseGlobalCacheBusterNotifier = new rxjs_1.Subject();
@@ -15,6 +15,7 @@ var removeCachePair = function (cachePairs, parameters, cacheConfig) {
 function PCacheable(cacheConfig) {
     if (cacheConfig === void 0) { cacheConfig = {}; }
     return function (_target, _propertyKey, propertyDescriptor) {
+      console.log(_propertyKey)
         var cacheKey = cacheConfig.cacheKey || _target.constructor.name + '#' + _propertyKey;
         var oldMethod = propertyDescriptor.value;
         if (propertyDescriptor && propertyDescriptor.value) {
@@ -105,8 +106,7 @@ function PCacheable(cacheConfig) {
                                 }, cacheKey);
                             }
                             return response;
-                        })
-                            .catch(function (_) {
+                        })["catch"](function (_) {
                             removeCachePair(pendingCachePairs_1, parameters, cacheConfig);
                         });
                         /**
@@ -127,4 +127,3 @@ function PCacheable(cacheConfig) {
 }
 exports.PCacheable = PCacheable;
 ;
-//# sourceMappingURL=promise.cacheable.decorator.js.map

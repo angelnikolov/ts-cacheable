@@ -1,4 +1,5 @@
 import { ICacheConfig } from './ICacheConfig';
+import { IStorageStrategy } from '.';
 
 export interface IObservableCacheConfig extends ICacheConfig {
   /**
@@ -6,4 +7,9 @@ export interface IObservableCacheConfig extends ICacheConfig {
    * @description should cache be resolved asynchronously? - helps with declarative forms and two-way databinding via ngModel
    */
   async?: boolean;
+
+  /**
+   * storage strategy
+   */
+  storageStrategy?: new () => IStorageStrategy;
 }

@@ -1,11 +1,10 @@
 import { IStorageStrategy } from './IStorageStrategy';
-import { Observable } from 'rxjs';
 import { ICachePair } from '.';
 
 export class InMemoryStorageStrategy extends IStorageStrategy {
-  private cachePairs: Array<ICachePair<Observable<any>>> = [];
+  private cachePairs: Array<ICachePair<any>> = [];
 
-  add(cachePair: ICachePair<Observable<any>>) {
+  add(cachePair: ICachePair<any>) {
     this.cachePairs.push(cachePair)
   };
 
