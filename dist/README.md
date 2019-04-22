@@ -132,7 +132,9 @@ export abstract class IStorageStrategy {
 
 and then provide it to your decorators as in the example above.
 
-**Right now, we only support synchronous strategies since adding async strategies to the mix will require a large refactor of both decorators. I will most probably add async strategies for the Promise decorator, since it's highly likely that only it will be used with async caching like Redis, FileSystem or databases anyway.**
+For the `PCacheable` decorator, we also support async promise-based caching strategies. Just extend the `IAsyncStorageStrategy` and provide it to your promise decorators and voila. You can use that to implement Redis caching, IndexDB or whatever async caching you might desire.
+
+**IMPORTANT: Right now, we only support async strategies as a configuration for our promise decorators**
 ## Running the tests
 
 Just run `npm test`.
