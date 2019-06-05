@@ -106,8 +106,9 @@ function PCacheable(cacheConfig) {
                             }
                             return response;
                         })
-                            .catch(function (_) {
+                            .catch(function (error) {
                             removeCachePair(pendingCachePairs_1, parameters, cacheConfig);
+                            return Promise.reject(error);
                         });
                         /**
                          * cache the stream

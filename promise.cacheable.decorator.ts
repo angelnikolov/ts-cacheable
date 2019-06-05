@@ -121,8 +121,9 @@ export function PCacheable(cacheConfig: ICacheConfig = {}) {
 
                 return response;
               })
-              .catch(_ => {
+              .catch(error => {
                 removeCachePair(pendingCachePairs, parameters, cacheConfig);
+                return Promise.reject(error);
               });
             /**
              * cache the stream
