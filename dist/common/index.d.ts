@@ -10,5 +10,6 @@ export { ICacheBusterConfig, ICacheConfig, ICachePair };
 export declare const GlobalCacheConfig: {
     storageStrategy: new () => IStorageStrategy;
     globalCacheKey: string;
+    promiseImplementation: (() => PromiseConstructorLike) | PromiseConstructorLike;
 };
 export { IStorageStrategy };

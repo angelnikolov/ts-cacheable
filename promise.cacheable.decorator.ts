@@ -53,11 +53,14 @@ export function PCacheable(cacheConfig: ICacheConfig = {}) {
 
       /* use function instead of an arrow function to keep context of invocation */
       (propertyDescriptor.value as any) = function (..._parameters: Array<any>) {
+        const promiseImplementation = typeof GlobalCacheConfig.promiseImplementation === 'function' && (GlobalCacheConfig.promiseImplementation !== Promise) ?
+          (GlobalCacheConfig.promiseImplementation as () => PromiseConstructorLike).call(this)
+          : GlobalCacheConfig.promiseImplementation as PromiseConstructorLike;
         let cachePairs = storageStrategy.getAll(cacheKey);
-        if (!(cachePairs instanceof Promise)) {
-          cachePairs = Promise.resolve(cachePairs);
+        if (!(cachePairs instanceof promiseImplementation)) {
+          cachePairs = promiseImplementation.resolve(cachePairs);
         }
-        return cachePairs.then(cachePairs => {
+        return (cachePairs as Promise<ICachePair<any>[]>).then(cachePairs => {
           let parameters = _parameters.map(param => param !== undefined ? JSON.parse(JSON.stringify(param)) : param);
           let _foundCachePair = cachePairs.find(cp =>
             cacheConfig.cacheResolver(cp.parameters, parameters)
@@ -88,7 +91,7 @@ export function PCacheable(cacheConfig: ICacheConfig = {}) {
           }
 
           if (_foundCachePair) {
-            return Promise.resolve(_foundCachePair.response);
+            return promiseImplementation.resolve(_foundCachePair.response);
           } else if (_foundPendingCachePair) {
             return _foundPendingCachePair.response;
           } else {

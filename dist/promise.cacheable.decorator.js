@@ -43,9 +43,12 @@ function PCacheable(cacheConfig) {
                 for (var _i = 0; _i < arguments.length; _i++) {
                     _parameters[_i] = arguments[_i];
                 }
+                var promiseImplementation = typeof common_1.GlobalCacheConfig.promiseImplementation === 'function' && (common_1.GlobalCacheConfig.promiseImplementation !== Promise) ?
+                    common_1.GlobalCacheConfig.promiseImplementation.call(this)
+                    : common_1.GlobalCacheConfig.promiseImplementation;
                 var cachePairs = storageStrategy_1.getAll(cacheKey);
-                if (!(cachePairs instanceof Promise)) {
-                    cachePairs = Promise.resolve(cachePairs);
+                if (!(cachePairs instanceof promiseImplementation)) {
+                    cachePairs = promiseImplementation.resolve(cachePairs);
                 }
                 return cachePairs.then(function (cachePairs) {
                     var parameters = _parameters.map(function (param) { return param !== undefined ? JSON.parse(JSON.stringify(param)) : param; });
@@ -76,7 +79,7 @@ function PCacheable(cacheConfig) {
                         }
                     }
                     if (_foundCachePair) {
-                        return Promise.resolve(_foundCachePair.response);
+                        return promiseImplementation.resolve(_foundCachePair.response);
                     }
                     else if (_foundPendingCachePair) {
                         return _foundPendingCachePair.response;
