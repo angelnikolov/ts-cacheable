@@ -8,6 +8,7 @@ exports.DEFAULT_CACHE_RESOLVER = function (oldParams, newParams) {
 };
 exports.GlobalCacheConfig = {
     storageStrategy: InMemoryStorageStrategy_1.InMemoryStorageStrategy,
-    globalCacheKey: 'CACHE_STORAGE'
+    globalCacheKey: 'CACHE_STORAGE',
+    promiseImplementation: Promise
 };
 //# sourceMappingURL=index.js.map
