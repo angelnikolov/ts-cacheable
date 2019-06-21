@@ -2,12 +2,41 @@ import { Subject } from 'rxjs';
 import { PCacheBuster } from '../promise.cache-buster.decorator';
 import { PCacheable } from '../promise.cacheable.decorator';
 import { promiseGlobalCacheBusterNotifier } from '../promise.cacheable.decorator';
-import { GlobalCacheConfig } from '../common';
+import { GlobalCacheConfig, ICachePair } from '../common';
 import { DOMStorageStrategy } from '../common/DOMStorageStrategy';
 import { InMemoryStorageStrategy } from '../common/InMemoryStorageStrategy';
+import { IAsyncStorageStrategy } from '../common/IAsyncStorageStrategy';
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000;
 
-const strategies = [null, DOMStorageStrategy];
+class AsyncStorageStrategy extends IAsyncStorageStrategy {
+  private cachePairs: Array<ICachePair<any>> = [];
+
+  add(cachePair: ICachePair<any>) {
+    this.cachePairs.push(cachePair);
+    return Promise.resolve();
+  };
+
+  updateAtIndex(index: number, entity: ICachePair<any>) {
+    const updatee = this.cachePairs[index];
+    Object.assign(updatee, entity);
+    return Promise.resolve();
+  }
+
+  getAll() {
+    return Promise.resolve(this.cachePairs);
+  };
+
+  removeAtIndex(index: number) {
+    this.cachePairs.splice(index, 1);
+    return Promise.resolve();
+  }
+
+  removeAll() {
+    this.cachePairs.length = 0;
+    return Promise.resolve();
+  }
+}
+const strategies = [null, AsyncStorageStrategy, DOMStorageStrategy];
 strategies.forEach(s => {
   const cacheBusterNotifier = new Subject();
   if (s) {

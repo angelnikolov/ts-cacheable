@@ -6,6 +6,7 @@ module.exports = function (config) {
     files: [
       './index.ts',
       './common/index.ts',
+      './common/IAsyncStorageStrategy.ts',
       './common/IStorageStrategy.ts',
       './common/DOMStorageStrategy.ts',
       './common/InMemoryStorageStrategy.ts',
@@ -13,8 +14,8 @@ module.exports = function (config) {
       './cache-buster.decorator.ts',
       './promise.cache-buster.decorator.ts',
       './promise.cacheable.decorator.ts',
-      './specs/promise-cacheable.decorator.spec.ts',
-      './specs/observable-cacheable.decorator.spec.ts'
+      './specs/observable-cacheable.decorator.spec.ts',
+      './specs/promise-cacheable.decorator.spec.ts'
     ],
     preprocessors: {
       '**/*.ts': 'karma-typescript'

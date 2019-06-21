@@ -1,4 +1,14 @@
 "use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -49,8 +59,40 @@ var promise_cacheable_decorator_2 = require("../promise.cacheable.decorator");
 var common_1 = require("../common");
 var DOMStorageStrategy_1 = require("../common/DOMStorageStrategy");
 var InMemoryStorageStrategy_1 = require("../common/InMemoryStorageStrategy");
+var IAsyncStorageStrategy_1 = require("../common/IAsyncStorageStrategy");
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000;
-var strategies = [null, DOMStorageStrategy_1.DOMStorageStrategy];
+var AsyncStorageStrategy = /** @class */ (function (_super) {
+    __extends(AsyncStorageStrategy, _super);
+    function AsyncStorageStrategy() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.cachePairs = [];
+        return _this;
+    }
+    AsyncStorageStrategy.prototype.add = function (cachePair) {
+        this.cachePairs.push(cachePair);
+        return Promise.resolve();
+    };
+    ;
+    AsyncStorageStrategy.prototype.updateAtIndex = function (index, entity) {
+        var updatee = this.cachePairs[index];
+        Object.assign(updatee, entity);
+        return Promise.resolve();
+    };
+    AsyncStorageStrategy.prototype.getAll = function () {
+        return Promise.resolve(this.cachePairs);
+    };
+    ;
+    AsyncStorageStrategy.prototype.removeAtIndex = function (index) {
+        this.cachePairs.splice(index, 1);
+        return Promise.resolve();
+    };
+    AsyncStorageStrategy.prototype.removeAll = function () {
+        this.cachePairs.length = 0;
+        return Promise.resolve();
+    };
+    return AsyncStorageStrategy;
+}(IAsyncStorageStrategy_1.IAsyncStorageStrategy));
+var strategies = [null, AsyncStorageStrategy, DOMStorageStrategy_1.DOMStorageStrategy];
 strategies.forEach(function (s) {
     var cacheBusterNotifier = new rxjs_1.Subject();
     if (s) {

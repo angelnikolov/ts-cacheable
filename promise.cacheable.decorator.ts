@@ -5,6 +5,87 @@ import { ICachePair } from './common/ICachePair';
 import { IAsyncStorageStrategy } from './common/IAsyncStorageStrategy';
 export const promiseGlobalCacheBusterNotifier = new Subject<void>();
 
+
+const getResponse = (oldMethod: Function, cacheKey: string, cacheConfig: ICacheConfig, context: any, cachePairs: ICachePair<any>[], _parameters: any[], pendingCachePairs: ICachePair<Promise<any>>[] | { parameters: any; response: Promise<any>; created: Date; }[], storageStrategy: IStorageStrategy | IAsyncStorageStrategy, promiseImplementation: any) => {
+  let parameters = _parameters.map(param => param !== undefined ? JSON.parse(JSON.stringify(param)) : param);
+  let _foundCachePair = cachePairs.find(cp =>
+    cacheConfig.cacheResolver(cp.parameters, parameters)
+  );
+  const _foundPendingCachePair = pendingCachePairs.find(cp =>
+    cacheConfig.cacheResolver(cp.parameters, parameters)
+  );
+  /**
+   * check if maxAge is passed and cache has actually expired
+   */
+  if (cacheConfig.maxAge && _foundCachePair && _foundCachePair.created) {
+    if (
+      new Date().getTime() - new Date(_foundCachePair.created).getTime() >
+      cacheConfig.maxAge
+    ) {
+      /**
+       * cache duration has expired - remove it from the cachePairs array
+       */
+      storageStrategy.removeAtIndex(cachePairs.indexOf(_foundCachePair), cacheKey);
+      _foundCachePair = null;
+    } else if (cacheConfig.slidingExpiration) {
+      /**
+       * renew cache duration
+       */
+      _foundCachePair.created = new Date();
+      storageStrategy.updateAtIndex(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey);
+    }
+  }
+
+  if (_foundCachePair) {
+    return promiseImplementation.resolve(_foundCachePair.response);
+  } else if (_foundPendingCachePair) {
+    return _foundPendingCachePair.response;
+  } else {
+    const response$ = (oldMethod.call(context, ...parameters) as Promise<any>)
+      .then(response => {
+        removeCachePair(pendingCachePairs, parameters, cacheConfig);
+        /**
+         * if no maxCacheCount has been passed
+         * if maxCacheCount has not been passed, just shift the cachePair to make room for the new one
+         * if maxCacheCount has been passed, respect that and only shift the cachePairs if the new cachePair will make them exceed the count
+         */
+        if (
+          !cacheConfig.shouldCacheDecider ||
+          cacheConfig.shouldCacheDecider(response)
+        ) {
+          if (
+            !cacheConfig.maxCacheCount ||
+            cacheConfig.maxCacheCount === 1 ||
+            (cacheConfig.maxCacheCount &&
+              cacheConfig.maxCacheCount < cachePairs.length + 1)
+          ) {
+            storageStrategy.removeAtIndex(0, cacheKey);
+          }
+          storageStrategy.add({
+            parameters,
+            response,
+            created: cacheConfig.maxAge ? new Date() : null
+          }, cacheKey);
+        }
+
+        return response;
+      })
+      .catch(error => {
+        removeCachePair(pendingCachePairs, parameters, cacheConfig);
+        return promiseImplementation.reject(error);
+      });
+    /**
+     * cache the stream
+     */
+    pendingCachePairs.push({
+      parameters: parameters,
+      response: response$,
+      created: new Date()
+    });
+    return response$;
+  }
+}
+
 const removeCachePair = <T>(
   cachePairs: Array<ICachePair<T>>,
   parameters: any,
@@ -58,89 +139,13 @@ export function PCacheable(cacheConfig: ICacheConfig = {}) {
           : GlobalCacheConfig.promiseImplementation as PromiseConstructorLike;
         let cachePairs = storageStrategy.getAll(cacheKey);
         if (!(cachePairs instanceof promiseImplementation)) {
-          cachePairs = promiseImplementation.resolve(cachePairs);
+          return getResponse(oldMethod, cacheKey, cacheConfig, this, cachePairs as ICachePair<any>[], _parameters, pendingCachePairs, storageStrategy, promiseImplementation)
+        } else {
+          return (cachePairs as Promise<ICachePair<any>[]>).then(cachePairs => getResponse(oldMethod, cacheKey, cacheConfig, this, cachePairs, _parameters, pendingCachePairs, storageStrategy, promiseImplementation))
         }
-        return (cachePairs as Promise<ICachePair<any>[]>).then(cachePairs => {
-          let parameters = _parameters.map(param => param !== undefined ? JSON.parse(JSON.stringify(param)) : param);
-          let _foundCachePair = cachePairs.find(cp =>
-            cacheConfig.cacheResolver(cp.parameters, parameters)
-          );
-          const _foundPendingCachePair = pendingCachePairs.find(cp =>
-            cacheConfig.cacheResolver(cp.parameters, parameters)
-          );
-          /**
-           * check if maxAge is passed and cache has actually expired
-           */
-          if (cacheConfig.maxAge && _foundCachePair && _foundCachePair.created) {
-            if (
-              new Date().getTime() - new Date(_foundCachePair.created).getTime() >
-              cacheConfig.maxAge
-            ) {
-              /**
-               * cache duration has expired - remove it from the cachePairs array
-               */
-              storageStrategy.removeAtIndex(cachePairs.indexOf(_foundCachePair), cacheKey);
-              _foundCachePair = null;
-            } else if (cacheConfig.slidingExpiration) {
-              /**
-               * renew cache duration
-               */
-              _foundCachePair.created = new Date();
-              storageStrategy.updateAtIndex(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey);
-            }
-          }
-
-          if (_foundCachePair) {
-            return promiseImplementation.resolve(_foundCachePair.response);
-          } else if (_foundPendingCachePair) {
-            return _foundPendingCachePair.response;
-          } else {
-            const response$ = (oldMethod.call(this, ...parameters) as Promise<any>)
-              .then(response => {
-                removeCachePair(pendingCachePairs, parameters, cacheConfig);
-                /**
-                 * if no maxCacheCount has been passed
-                 * if maxCacheCount has not been passed, just shift the cachePair to make room for the new one
-                 * if maxCacheCount has been passed, respect that and only shift the cachePairs if the new cachePair will make them exceed the count
-                 */
-                if (
-                  !cacheConfig.shouldCacheDecider ||
-                  cacheConfig.shouldCacheDecider(response)
-                ) {
-                  if (
-                    !cacheConfig.maxCacheCount ||
-                    cacheConfig.maxCacheCount === 1 ||
-                    (cacheConfig.maxCacheCount &&
-                      cacheConfig.maxCacheCount < cachePairs.length + 1)
-                  ) {
-                    storageStrategy.removeAtIndex(0, cacheKey);
-                  }
-                  storageStrategy.add({
-                    parameters,
-                    response,
-                    created: cacheConfig.maxAge ? new Date() : null
-                  }, cacheKey);
-                }
-
-                return response;
-              })
-              .catch(error => {
-                removeCachePair(pendingCachePairs, parameters, cacheConfig);
-                return Promise.reject(error);
-              });
-            /**
-             * cache the stream
-             */
-            pendingCachePairs.push({
-              parameters: parameters,
-              response: response$,
-              created: new Date()
-            });
-            return response$;
-          }
-        });
       };
     }
+
     return propertyDescriptor;
   };
 };
