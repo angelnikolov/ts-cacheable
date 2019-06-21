@@ -15,7 +15,7 @@ export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
     const oldMethod = propertyDescriptor.value;
     if (propertyDescriptor && propertyDescriptor.value) {
       let storageStrategy: IStorageStrategy = !cacheConfig.storageStrategy
-        ? new GlobalCacheConfig.storageStrategy()
+        ? new GlobalCacheConfig.storageStrategy() as IStorageStrategy
         : new cacheConfig.storageStrategy();
       const pendingCachePairs: Array<ICachePair<Observable<any>>> = [];
       /**

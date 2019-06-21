@@ -3,6 +3,80 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var rxjs_1 = require("rxjs");
 var common_1 = require("./common");
 exports.promiseGlobalCacheBusterNotifier = new rxjs_1.Subject();
+var getResponse = function (oldMethod, cacheKey, cacheConfig, context, cachePairs, _parameters, pendingCachePairs, storageStrategy, promiseImplementation) {
+    var parameters = _parameters.map(function (param) { return param !== undefined ? JSON.parse(JSON.stringify(param)) : param; });
+    var _foundCachePair = cachePairs.find(function (cp) {
+        return cacheConfig.cacheResolver(cp.parameters, parameters);
+    });
+    var _foundPendingCachePair = pendingCachePairs.find(function (cp) {
+        return cacheConfig.cacheResolver(cp.parameters, parameters);
+    });
+    /**
+     * check if maxAge is passed and cache has actually expired
+     */
+    if (cacheConfig.maxAge && _foundCachePair && _foundCachePair.created) {
+        if (new Date().getTime() - new Date(_foundCachePair.created).getTime() >
+            cacheConfig.maxAge) {
+            /**
+             * cache duration has expired - remove it from the cachePairs array
+             */
+            storageStrategy.removeAtIndex(cachePairs.indexOf(_foundCachePair), cacheKey);
+            _foundCachePair = null;
+        }
+        else if (cacheConfig.slidingExpiration) {
+            /**
+             * renew cache duration
+             */
+            _foundCachePair.created = new Date();
+            storageStrategy.updateAtIndex(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey);
+        }
+    }
+    if (_foundCachePair) {
+        return promiseImplementation.resolve(_foundCachePair.response);
+    }
+    else if (_foundPendingCachePair) {
+        return _foundPendingCachePair.response;
+    }
+    else {
+        var response$ = oldMethod.call.apply(oldMethod, [context].concat(parameters))
+            .then(function (response) {
+            removeCachePair(pendingCachePairs, parameters, cacheConfig);
+            /**
+             * if no maxCacheCount has been passed
+             * if maxCacheCount has not been passed, just shift the cachePair to make room for the new one
+             * if maxCacheCount has been passed, respect that and only shift the cachePairs if the new cachePair will make them exceed the count
+             */
+            if (!cacheConfig.shouldCacheDecider ||
+                cacheConfig.shouldCacheDecider(response)) {
+                if (!cacheConfig.maxCacheCount ||
+                    cacheConfig.maxCacheCount === 1 ||
+                    (cacheConfig.maxCacheCount &&
+                        cacheConfig.maxCacheCount < cachePairs.length + 1)) {
+                    storageStrategy.removeAtIndex(0, cacheKey);
+                }
+                storageStrategy.add({
+                    parameters: parameters,
+                    response: response,
+                    created: cacheConfig.maxAge ? new Date() : null
+                }, cacheKey);
+            }
+            return response;
+        })
+            .catch(function (error) {
+            removeCachePair(pendingCachePairs, parameters, cacheConfig);
+            return promiseImplementation.reject(error);
+        });
+        /**
+         * cache the stream
+         */
+        pendingCachePairs.push({
+            parameters: parameters,
+            response: response$,
+            created: new Date()
+        });
+        return response$;
+    }
+};
 var removeCachePair = function (cachePairs, parameters, cacheConfig) {
     /**
      * if there has been an pending cache pair for these parameters, when it completes or errors, remove it
@@ -48,82 +122,11 @@ function PCacheable(cacheConfig) {
                     : common_1.GlobalCacheConfig.promiseImplementation;
                 var cachePairs = storageStrategy_1.getAll(cacheKey);
                 if (!(cachePairs instanceof promiseImplementation)) {
-                    cachePairs = promiseImplementation.resolve(cachePairs);
+                    return getResponse(oldMethod, cacheKey, cacheConfig, this, cachePairs, _parameters, pendingCachePairs_1, storageStrategy_1, promiseImplementation);
                 }
-                return cachePairs.then(function (cachePairs) {
-                    var parameters = _parameters.map(function (param) { return param !== undefined ? JSON.parse(JSON.stringify(param)) : param; });
-                    var _foundCachePair = cachePairs.find(function (cp) {
-                        return cacheConfig.cacheResolver(cp.parameters, parameters);
-                    });
-                    var _foundPendingCachePair = pendingCachePairs_1.find(function (cp) {
-                        return cacheConfig.cacheResolver(cp.parameters, parameters);
-                    });
-                    /**
-                     * check if maxAge is passed and cache has actually expired
-                     */
-                    if (cacheConfig.maxAge && _foundCachePair && _foundCachePair.created) {
-                        if (new Date().getTime() - new Date(_foundCachePair.created).getTime() >
-                            cacheConfig.maxAge) {
-                            /**
-                             * cache duration has expired - remove it from the cachePairs array
-                             */
-                            storageStrategy_1.removeAtIndex(cachePairs.indexOf(_foundCachePair), cacheKey);
-                            _foundCachePair = null;
-                        }
-                        else if (cacheConfig.slidingExpiration) {
-                            /**
-                             * renew cache duration
-                             */
-                            _foundCachePair.created = new Date();
-                            storageStrategy_1.updateAtIndex(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey);
-                        }
-                    }
-                    if (_foundCachePair) {
-                        return promiseImplementation.resolve(_foundCachePair.response);
-                    }
-                    else if (_foundPendingCachePair) {
-                        return _foundPendingCachePair.response;
-                    }
-                    else {
-                        var response$ = oldMethod.call.apply(oldMethod, [_this].concat(parameters))
-                            .then(function (response) {
-                            removeCachePair(pendingCachePairs_1, parameters, cacheConfig);
-                            /**
-                             * if no maxCacheCount has been passed
-                             * if maxCacheCount has not been passed, just shift the cachePair to make room for the new one
-                             * if maxCacheCount has been passed, respect that and only shift the cachePairs if the new cachePair will make them exceed the count
-                             */
-                            if (!cacheConfig.shouldCacheDecider ||
-                                cacheConfig.shouldCacheDecider(response)) {
-                                if (!cacheConfig.maxCacheCount ||
-                                    cacheConfig.maxCacheCount === 1 ||
-                                    (cacheConfig.maxCacheCount &&
-                                        cacheConfig.maxCacheCount < cachePairs.length + 1)) {
-                                    storageStrategy_1.removeAtIndex(0, cacheKey);
-                                }
-                                storageStrategy_1.add({
-                                    parameters: parameters,
-                                    response: response,
-                                    created: cacheConfig.maxAge ? new Date() : null
-                                }, cacheKey);
-                            }
-                            return response;
-                        })
-                            .catch(function (error) {
-                            removeCachePair(pendingCachePairs_1, parameters, cacheConfig);
-                            return Promise.reject(error);
-                        });
-                        /**
-                         * cache the stream
-                         */
-                        pendingCachePairs_1.push({
-                            parameters: parameters,
-                            response: response$,
-                            created: new Date()
-                        });
-                        return response$;
-                    }
-                });
+                else {
+                    return cachePairs.then(function (cachePairs) { return getResponse(oldMethod, cacheKey, cacheConfig, _this, cachePairs, _parameters, pendingCachePairs_1, storageStrategy_1, promiseImplementation); });
+                }
             };
         }
         return propertyDescriptor;
