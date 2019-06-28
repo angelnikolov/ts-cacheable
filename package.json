@@ -1,6 +1,6 @@
 {
   "name": "ngx-cacheable",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "description": "Promise/Observable cache decorators",
   "main": "./index.js",
   "types": "./index.d.ts",
@@ -22,11 +22,11 @@
     "@types/jasmine": "^2.8.6",
     "@types/node": "^11.11.3",
     "jasmine": "^3.1.0",
-    "karma": "^4.0.1",
+    "karma": "^4.1.0",
     "karma-chrome-launcher": "^2.2.0",
     "karma-commonjs": "^1.0.0",
     "karma-jasmine": "^2.0.1",
-    "karma-typescript": "^4.0.0",
+    "karma-typescript": "^4.1.0",
     "typescript": "^2.8.1"
   }
 }
