@@ -1,5 +1,5 @@
 import { empty, merge, Observable, of, Subject } from 'rxjs';
-import { delay, finalize, shareReplay, tap } from 'rxjs/operators';
+import { delay, finalize, tap } from 'rxjs/operators';
 import { DEFAULT_CACHE_RESOLVER, ICacheable, GlobalCacheConfig, IStorageStrategy } from './common';
 import { IObservableCacheConfig } from './common/IObservableCacheConfig';
 import { ICachePair } from './common/ICachePair';
@@ -112,11 +112,7 @@ export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
                   created: cacheConfig.maxAge ? new Date() : null
                 }, cacheKey);
               }
-            }),
-            /**
-             * replay cached observable, so we don't enter finalize and tap for every cached observable subscription
-             */
-            shareReplay()
+            })
           );
           /**
            * cache the stream

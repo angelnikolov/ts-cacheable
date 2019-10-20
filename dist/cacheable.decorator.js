@@ -97,11 +97,7 @@ function Cacheable(cacheConfig) {
                                 created: cacheConfig.maxAge ? new Date() : null
                             }, cacheKey);
                         }
-                    }), 
-                    /**
-                     * replay cached observable, so we don't enter finalize and tap for every cached observable subscription
-                     */
-                    operators_1.shareReplay());
+                    }));
                     /**
                      * cache the stream
                      */
