@@ -97,7 +97,7 @@ function Cacheable(cacheConfig) {
                                 created: cacheConfig.maxAge ? new Date() : null
                             }, cacheKey);
                         }
-                    }));
+                    }), operators_1.publishReplay(1), operators_1.refCount());
                     /**
                      * cache the stream
                      */

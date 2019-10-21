@@ -1,5 +1,5 @@
 import { empty, merge, Observable, of, Subject } from 'rxjs';
-import { delay, finalize, tap } from 'rxjs/operators';
+import { delay, finalize, tap, publishReplay, refCount } from 'rxjs/operators';
 import { DEFAULT_CACHE_RESOLVER, ICacheable, GlobalCacheConfig, IStorageStrategy } from './common';
 import { IObservableCacheConfig } from './common/IObservableCacheConfig';
 import { ICachePair } from './common/ICachePair';
@@ -112,7 +112,9 @@ export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
                   created: cacheConfig.maxAge ? new Date() : null
                 }, cacheKey);
               }
-            })
+            }),
+            publishReplay(1),
+            refCount()
           );
           /**
            * cache the stream
