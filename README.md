@@ -49,6 +49,10 @@ export interface ICacheConfig {
    */
   cacheResolver?: ICacheRequestResolver;
   /**
+   * @description cache hasher which will be called to hash the parameters into a cache key
+   */
+  cacheHasher?: ICacheHasher;
+  /**
    * @description cache decider that will figure out if the response should be cached or not, based on it
    */
   shouldCacheDecider?: IShouldCacheDecider;
