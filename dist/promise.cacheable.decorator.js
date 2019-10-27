@@ -3,13 +3,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var rxjs_1 = require("rxjs");
 var common_1 = require("./common");
 exports.promiseGlobalCacheBusterNotifier = new rxjs_1.Subject();
-var getResponse = function (oldMethod, cacheKey, cacheConfig, context, cachePairs, _parameters, pendingCachePairs, storageStrategy, promiseImplementation) {
-    var parameters = _parameters.map(function (param) { return param !== undefined ? JSON.parse(JSON.stringify(param)) : param; });
+var getResponse = function (oldMethod, cacheKey, cacheConfig, context, cachePairs, parameters, pendingCachePairs, storageStrategy, promiseImplementation) {
+    var cacheParameters = cacheConfig.cacheHasher(parameters);
     var _foundCachePair = cachePairs.find(function (cp) {
-        return cacheConfig.cacheResolver(cp.parameters, parameters);
+        return cacheConfig.cacheResolver(cp.parameters, cacheParameters);
     });
     var _foundPendingCachePair = pendingCachePairs.find(function (cp) {
-        return cacheConfig.cacheResolver(cp.parameters, parameters);
+        return cacheConfig.cacheResolver(cp.parameters, cacheParameters);
     });
     /**
      * check if maxAge is passed and cache has actually expired
@@ -55,7 +55,7 @@ var getResponse = function (oldMethod, cacheKey, cacheConfig, context, cachePair
                     storageStrategy.removeAtIndex(0, cacheKey);
                 }
                 storageStrategy.add({
-                    parameters: parameters,
+                    parameters: cacheParameters,
                     response: response,
                     created: cacheConfig.maxAge ? new Date() : null
                 }, cacheKey);
@@ -70,7 +70,7 @@ var getResponse = function (oldMethod, cacheKey, cacheConfig, context, cachePair
          * cache the stream
          */
         pendingCachePairs.push({
-            parameters: parameters,
+            parameters: cacheParameters,
             response: response$,
             created: new Date()
         });
@@ -78,11 +78,12 @@ var getResponse = function (oldMethod, cacheKey, cacheConfig, context, cachePair
     }
 };
 var removeCachePair = function (cachePairs, parameters, cacheConfig) {
+    var cacheParameters = cacheConfig.cacheHasher(parameters);
     /**
      * if there has been an pending cache pair for these parameters, when it completes or errors, remove it
      */
     var _pendingCachePairToRemove = cachePairs.find(function (cp) {
-        return cacheConfig.cacheResolver(cp.parameters, parameters);
+        return cacheConfig.cacheResolver(cp.parameters, cacheParameters);
     });
     cachePairs.splice(cachePairs.indexOf(_pendingCachePairToRemove), 1);
 };
@@ -107,25 +108,30 @@ function PCacheable(cacheConfig) {
                 storageStrategy_1.removeAll(cacheKey);
                 pendingCachePairs_1.length = 0;
             });
-            cacheConfig.cacheResolver = cacheConfig.cacheResolver
-                ? cacheConfig.cacheResolver
+            var cacheResolver = cacheConfig.cacheResolver || common_1.GlobalCacheConfig.cacheResolver;
+            cacheConfig.cacheResolver = cacheResolver
+                ? cacheResolver
                 : common_1.DEFAULT_CACHE_RESOLVER;
+            var cacheHasher = cacheConfig.cacheHasher || common_1.GlobalCacheConfig.cacheHasher;
+            cacheConfig.cacheHasher = cacheHasher
+                ? cacheHasher
+                : common_1.DEFAULT_HASHER;
             /* use function instead of an arrow function to keep context of invocation */
             propertyDescriptor.value = function () {
                 var _this = this;
-                var _parameters = [];
+                var parameters = [];
                 for (var _i = 0; _i < arguments.length; _i++) {
-                    _parameters[_i] = arguments[_i];
+                    parameters[_i] = arguments[_i];
                 }
                 var promiseImplementation = typeof common_1.GlobalCacheConfig.promiseImplementation === 'function' && (common_1.GlobalCacheConfig.promiseImplementation !== Promise) ?
                     common_1.GlobalCacheConfig.promiseImplementation.call(this)
                     : common_1.GlobalCacheConfig.promiseImplementation;
                 var cachePairs = storageStrategy_1.getAll(cacheKey);
                 if (!(cachePairs instanceof promiseImplementation)) {
-                    return getResponse(oldMethod, cacheKey, cacheConfig, this, cachePairs, _parameters, pendingCachePairs_1, storageStrategy_1, promiseImplementation);
+                    return getResponse(oldMethod, cacheKey, cacheConfig, this, cachePairs, parameters, pendingCachePairs_1, storageStrategy_1, promiseImplementation);
                 }
                 else {
-                    return cachePairs.then(function (cachePairs) { return getResponse(oldMethod, cacheKey, cacheConfig, _this, cachePairs, _parameters, pendingCachePairs_1, storageStrategy_1, promiseImplementation); });
+                    return cachePairs.then(function (cachePairs) { return getResponse(oldMethod, cacheKey, cacheConfig, _this, cachePairs, parameters, pendingCachePairs_1, storageStrategy_1, promiseImplementation); });
                 }
             };
         }
