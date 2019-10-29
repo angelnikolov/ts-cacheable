@@ -1,13 +1,17 @@
 import { Observable } from 'rxjs';
-import { ICacheRequestResolver, IShouldCacheDecider } from './index';
+import { ICacheResolver, IShouldCacheDecider, ICacheHasher } from './index';
 import { IStorageStrategy } from './IStorageStrategy';
 import { IAsyncStorageStrategy } from './IAsyncStorageStrategy';
 export interface ICacheConfig {
   /**
-   * @description request cache resolver which will get old and new paramaters passed to and based on those
+   * @description cache resolver which will get old and new paramaters passed to and based on those
    * will figure out if we need to bail out of cache or not
    */
-  cacheResolver?: ICacheRequestResolver;
+  cacheResolver?: ICacheResolver;
+  /**
+   * @description cache hasher which will be called to hash the parameters into a cache key
+   */
+  cacheHasher?: ICacheHasher;
   /**
    * @description cache decider that will figure out if the response should be cached or not, based on it
    */

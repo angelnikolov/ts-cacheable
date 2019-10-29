@@ -58,6 +58,13 @@ strategies.forEach(function (s) {
         common_1.GlobalCacheConfig.storageStrategy = s;
     }
     var cacheBusterNotifier = new rxjs_2.Subject();
+    var Cat = /** @class */ (function () {
+        function Cat() {
+        }
+        Cat.prototype.meow = function (phrase) { return this.name + ' says ' + phrase; };
+        ;
+        return Cat;
+    }());
     var Service = /** @class */ (function () {
         function Service() {
         }
@@ -98,6 +105,12 @@ strategies.forEach(function (s) {
             return this.mockServiceCall(parameter);
         };
         Service.prototype.getDataWithCustomCacheResolver = function (parameter, _cacheRerouterParameter) {
+            return this.mockServiceCall(parameter);
+        };
+        Service.prototype.getDataWithCustomCacheResolverAndHasher = function (parameter) {
+            return this.mockServiceCall(parameter);
+        };
+        Service.prototype.getWithAComplexType = function (parameter) {
             return this.mockServiceCall(parameter);
         };
         Service.prototype.getDataWithCustomCacheDecider = function (parameter) {
@@ -180,6 +193,17 @@ strategies.forEach(function (s) {
                 }
             })
         ], Service.prototype, "getDataWithCustomCacheResolver", null);
+        __decorate([
+            cacheable_decorator_2.Cacheable({
+                cacheHasher: function (_parameters) { return _parameters[0] * 2; },
+                cacheResolver: function (oldParameter, newParameter) {
+                    return newParameter > 5;
+                }
+            })
+        ], Service.prototype, "getDataWithCustomCacheResolverAndHasher", null);
+        __decorate([
+            cacheable_decorator_2.Cacheable()
+        ], Service.prototype, "getWithAComplexType", null);
         __decorate([
             cacheable_decorator_2.Cacheable({
                 shouldCacheDecider: function (response) {
@@ -586,6 +610,63 @@ strategies.forEach(function (s) {
             _timedStreamAsyncAwait(service.getDataWithCustomCacheResolver('test3'));
             /**no cache reerouter -> bail to service call -> increment call counter*/
             expect(mockServiceCallSpy).toHaveBeenCalledTimes(3);
+        });
+        it('return cached data up until new parameters are passed WITH a custom resolver and hasher function', function () {
+            // call once and cache with 3
+            _timedStreamAsyncAwait(service.getDataWithCustomCacheResolverAndHasher(3), 1000);
+            // call twice with 3 and reuse the cached values because of 
+            // the custom cache resolver passed to the decorator, i.e - 3 * 2 > 5
+            service.getDataWithCustomCacheResolverAndHasher(3);
+            service.getDataWithCustomCacheResolverAndHasher(3);
+            // call 4 times with an uncashed parameter 2
+            service.getDataWithCustomCacheResolverAndHasher(2);
+            service.getDataWithCustomCacheResolverAndHasher(2);
+            service.getDataWithCustomCacheResolverAndHasher(2);
+            service.getDataWithCustomCacheResolverAndHasher(2);
+            expect(mockServiceCallSpy).toHaveBeenCalledTimes(5);
+        });
+        it('return cached data up until new parameters are passed WITH a custom GLOBAL resolver and hasher function', function () {
+            common_1.GlobalCacheConfig.cacheHasher = function (_parameters) { return _parameters[0] + '__wehoo'; };
+            common_1.GlobalCacheConfig.cacheResolver = function (oldParameter, newParameter) {
+                return newParameter === 'cached__wehoo';
+            };
+            var Service = /** @class */ (function () {
+                function Service() {
+                }
+                Service.prototype.mockServiceCall = function (parameter) {
+                    return rxjs_2.timer(1000).pipe(operators_2.mapTo({ payload: parameter }));
+                };
+                Service.prototype.getData = function (parameter) {
+                    return this.mockServiceCall(parameter);
+                };
+                __decorate([
+                    cacheable_decorator_2.Cacheable()
+                ], Service.prototype, "getData", null);
+                return Service;
+            }());
+            var service = new Service();
+            mockServiceCallSpy = spyOn(service, 'mockServiceCall').and.callThrough();
+            // call once and cache with cached
+            _timedStreamAsyncAwait(service.getData('cached'), 1000);
+            // call twice with cached and reuse the cached values
+            service.getData('cached');
+            service.getData('cached');
+            // call 4 times with an uncashed parameter 2
+            service.getData('not-cached');
+            service.getData('not-cached');
+            service.getData('not-cached');
+            service.getData('not-cached');
+            expect(mockServiceCallSpy).toHaveBeenCalledTimes(5);
+            common_1.GlobalCacheConfig.cacheHasher = undefined;
+            common_1.GlobalCacheConfig.cacheResolver = undefined;
+        });
+        it('should call a function with a complex instance which should not be touched and passed to the original method as it is', function () {
+            var complexObject = new Cat();
+            complexObject.name = 'Felix';
+            var response = _timedStreamAsyncAwait(service.getWithAComplexType(complexObject), 1000);
+            expect(service.mockServiceCall).toHaveBeenCalledWith(complexObject);
+            // object method would not exist if we have mutated the parameter through the DEFAULT_CACHE_RESOLVER
+            expect(response.payload.meow("I am hungry!")).toBe("Felix says I am hungry!");
         });
         it('only cache data when a specific response is returned, otherwise it should bail to service call', function () {
             var asyncData = _timedStreamAsyncAwait(service.getDataWithCustomCacheDecider('test1'), 1000);

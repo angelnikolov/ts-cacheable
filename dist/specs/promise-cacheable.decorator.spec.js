@@ -59,7 +59,7 @@ var promise_cacheable_decorator_2 = require("../promise.cacheable.decorator");
 var common_1 = require("../common");
 var DOMStorageStrategy_1 = require("../common/DOMStorageStrategy");
 var InMemoryStorageStrategy_1 = require("../common/InMemoryStorageStrategy");
-var IAsyncStorageStrategy_1 = require("../common/IAsyncStorageStrategy");
+var IAsyncStorageStrategy_1 = require("common/IAsyncStorageStrategy");
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000;
 var AsyncStorageStrategy = /** @class */ (function (_super) {
     __extends(AsyncStorageStrategy, _super);
@@ -98,6 +98,13 @@ strategies.forEach(function (s) {
     if (s) {
         common_1.GlobalCacheConfig.storageStrategy = s;
     }
+    var Cat = /** @class */ (function () {
+        function Cat() {
+        }
+        Cat.prototype.meow = function (phrase) { return this.name + ' says ' + phrase; };
+        ;
+        return Cat;
+    }());
     var Service = /** @class */ (function () {
         function Service() {
         }
@@ -147,6 +154,12 @@ strategies.forEach(function (s) {
             return this.mockServiceCall(parameter);
         };
         Service.prototype.getDataWithCustomCacheResolver = function (parameter, _cacheRerouterParameter) {
+            return this.mockServiceCall(parameter);
+        };
+        Service.prototype.getDataWithCustomCacheResolverAndHasher = function (parameter) {
+            return this.mockServiceCall(parameter);
+        };
+        Service.prototype.getWithAComplexType = function (parameter) {
             return this.mockServiceCall(parameter);
         };
         Service.prototype.getDataWithCustomCacheDecider = function (parameter) {
@@ -224,6 +237,17 @@ strategies.forEach(function (s) {
                 }
             })
         ], Service.prototype, "getDataWithCustomCacheResolver", null);
+        __decorate([
+            promise_cacheable_decorator_1.PCacheable({
+                cacheHasher: function (_parameters) { return _parameters[0] * 2; },
+                cacheResolver: function (oldParameter, newParameter) {
+                    return newParameter > 5;
+                }
+            })
+        ], Service.prototype, "getDataWithCustomCacheResolverAndHasher", null);
+        __decorate([
+            promise_cacheable_decorator_1.PCacheable()
+        ], Service.prototype, "getWithAComplexType", null);
         __decorate([
             promise_cacheable_decorator_1.PCacheable({
                 shouldCacheDecider: function (response) {
@@ -871,6 +895,124 @@ strategies.forEach(function (s) {
                                 }
                             });
                         }); }, 200);
+                        return [2 /*return*/];
+                }
+            });
+        }); });
+        it('return cached data up until new parameters are passed WITH a custom resolver and hasher function', function () { return __awaiter(_this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: 
+                    // call once and cache with 3
+                    return [4 /*yield*/, service.getDataWithCustomCacheResolverAndHasher(3)];
+                    case 1:
+                        // call once and cache with 3
+                        _a.sent();
+                        // call twice with 3 and reuse the cached values because of 
+                        // the custom cache resolver passed to the decorator, i.e - 3 * 2 > 5
+                        return [4 /*yield*/, service.getDataWithCustomCacheResolverAndHasher(3)];
+                    case 2:
+                        // call twice with 3 and reuse the cached values because of 
+                        // the custom cache resolver passed to the decorator, i.e - 3 * 2 > 5
+                        _a.sent();
+                        return [4 /*yield*/, service.getDataWithCustomCacheResolverAndHasher(3)];
+                    case 3:
+                        _a.sent();
+                        // call 4 times with an uncashed parameter 2
+                        return [4 /*yield*/, service.getDataWithCustomCacheResolverAndHasher(2)];
+                    case 4:
+                        // call 4 times with an uncashed parameter 2
+                        _a.sent();
+                        return [4 /*yield*/, service.getDataWithCustomCacheResolverAndHasher(2)];
+                    case 5:
+                        _a.sent();
+                        return [4 /*yield*/, service.getDataWithCustomCacheResolverAndHasher(2)];
+                    case 6:
+                        _a.sent();
+                        return [4 /*yield*/, service.getDataWithCustomCacheResolverAndHasher(2)];
+                    case 7:
+                        _a.sent();
+                        expect(mockServiceCallSpy).toHaveBeenCalledTimes(5);
+                        return [2 /*return*/];
+                }
+            });
+        }); });
+        it('return cached data up until new parameters are passed WITH a custom GLOBAL resolver and hasher function', function () { return __awaiter(_this, void 0, void 0, function () {
+            var Service, service;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        common_1.GlobalCacheConfig.cacheHasher = function (_parameters) { return _parameters[0] + '__wehoo'; };
+                        common_1.GlobalCacheConfig.cacheResolver = function (oldParameter, newParameter) {
+                            return newParameter === 'cached__wehoo';
+                        };
+                        Service = /** @class */ (function () {
+                            function Service() {
+                            }
+                            Service.prototype.mockServiceCall = function (parameter) {
+                                return new Promise(function (resolve) {
+                                    setTimeout(function () {
+                                        resolve({ payload: parameter });
+                                    }, 300);
+                                });
+                            };
+                            Service.prototype.getData = function (parameter) {
+                                return this.mockServiceCall(parameter);
+                            };
+                            __decorate([
+                                promise_cacheable_decorator_1.PCacheable()
+                            ], Service.prototype, "getData", null);
+                            return Service;
+                        }());
+                        service = new Service();
+                        mockServiceCallSpy = spyOn(service, 'mockServiceCall').and.callThrough();
+                        // call once and cache with cached
+                        return [4 /*yield*/, service.getData('cached')];
+                    case 1:
+                        // call once and cache with cached
+                        _a.sent();
+                        // call twice with cached and reuse the cached values
+                        return [4 /*yield*/, service.getData('cached')];
+                    case 2:
+                        // call twice with cached and reuse the cached values
+                        _a.sent();
+                        return [4 /*yield*/, service.getData('cached')];
+                    case 3:
+                        _a.sent();
+                        // call 4 times with an uncashed parameter 2
+                        return [4 /*yield*/, service.getData('not-cached')];
+                    case 4:
+                        // call 4 times with an uncashed parameter 2
+                        _a.sent();
+                        return [4 /*yield*/, service.getData('not-cached')];
+                    case 5:
+                        _a.sent();
+                        return [4 /*yield*/, service.getData('not-cached')];
+                    case 6:
+                        _a.sent();
+                        return [4 /*yield*/, service.getData('not-cached')];
+                    case 7:
+                        _a.sent();
+                        expect(mockServiceCallSpy).toHaveBeenCalledTimes(5);
+                        common_1.GlobalCacheConfig.cacheHasher = undefined;
+                        common_1.GlobalCacheConfig.cacheResolver = undefined;
+                        return [2 /*return*/];
+                }
+            });
+        }); });
+        it('should call a function with a complex instance which should not be touched and passed to the original method as it is', function () { return __awaiter(_this, void 0, void 0, function () {
+            var complexObject, response;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        complexObject = new Cat();
+                        complexObject.name = 'Felix';
+                        return [4 /*yield*/, service.getWithAComplexType(complexObject)];
+                    case 1:
+                        response = _a.sent();
+                        expect(service.mockServiceCall).toHaveBeenCalledWith(complexObject);
+                        // object method would not exist if we have mutated the parameter through the DEFAULT_CACHE_RESOLVER
+                        expect(response.payload.meow("I am hungry!")).toBe("Felix says I am hungry!");
                         return [2 /*return*/];
                 }
             });

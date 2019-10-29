@@ -1,18 +1,18 @@
 import { empty, merge, Subject } from 'rxjs';
-import { DEFAULT_CACHE_RESOLVER, ICacheable, GlobalCacheConfig, IStorageStrategy } from './common';
+import { DEFAULT_CACHE_RESOLVER, ICacheable, GlobalCacheConfig, IStorageStrategy, DEFAULT_HASHER } from './common';
 import { ICacheConfig } from './common/ICacheConfig';
 import { ICachePair } from './common/ICachePair';
 import { IAsyncStorageStrategy } from './common/IAsyncStorageStrategy';
 export const promiseGlobalCacheBusterNotifier = new Subject<void>();
 
 
-const getResponse = (oldMethod: Function, cacheKey: string, cacheConfig: ICacheConfig, context: any, cachePairs: ICachePair<any>[], _parameters: any[], pendingCachePairs: ICachePair<Promise<any>>[] | { parameters: any; response: Promise<any>; created: Date; }[], storageStrategy: IStorageStrategy | IAsyncStorageStrategy, promiseImplementation: any) => {
-  let parameters = _parameters.map(param => param !== undefined ? JSON.parse(JSON.stringify(param)) : param);
+const getResponse = (oldMethod: Function, cacheKey: string, cacheConfig: ICacheConfig, context: any, cachePairs: ICachePair<any>[], parameters: any[], pendingCachePairs: ICachePair<Promise<any>>[] | { parameters: any; response: Promise<any>; created: Date; }[], storageStrategy: IStorageStrategy | IAsyncStorageStrategy, promiseImplementation: any) => {
+  let cacheParameters = cacheConfig.cacheHasher(parameters);
   let _foundCachePair = cachePairs.find(cp =>
-    cacheConfig.cacheResolver(cp.parameters, parameters)
+    cacheConfig.cacheResolver(cp.parameters, cacheParameters)
   );
   const _foundPendingCachePair = pendingCachePairs.find(cp =>
-    cacheConfig.cacheResolver(cp.parameters, parameters)
+    cacheConfig.cacheResolver(cp.parameters, cacheParameters)
   );
   /**
    * check if maxAge is passed and cache has actually expired
@@ -62,7 +62,7 @@ const getResponse = (oldMethod: Function, cacheKey: string, cacheConfig: ICacheC
             storageStrategy.removeAtIndex(0, cacheKey);
           }
           storageStrategy.add({
-            parameters,
+            parameters: cacheParameters,
             response,
             created: cacheConfig.maxAge ? new Date() : null
           }, cacheKey);
@@ -78,7 +78,7 @@ const getResponse = (oldMethod: Function, cacheKey: string, cacheConfig: ICacheC
      * cache the stream
      */
     pendingCachePairs.push({
-      parameters: parameters,
+      parameters: cacheParameters,
       response: response$,
       created: new Date()
     });
@@ -91,17 +91,18 @@ const removeCachePair = <T>(
   parameters: any,
   cacheConfig: ICacheConfig
 ) => {
+  const cacheParameters = cacheConfig.cacheHasher(parameters);
   /**
    * if there has been an pending cache pair for these parameters, when it completes or errors, remove it
    */
   const _pendingCachePairToRemove = cachePairs.find(cp =>
-    cacheConfig.cacheResolver(cp.parameters, parameters)
+    cacheConfig.cacheResolver(cp.parameters, cacheParameters)
   );
   cachePairs.splice(cachePairs.indexOf(_pendingCachePairToRemove), 1);
 };
 
 export function PCacheable(cacheConfig: ICacheConfig = {}) {
-  return function (
+  return function(
     _target: Object,
     _propertyKey: string,
     propertyDescriptor: TypedPropertyDescriptor<ICacheable<Promise<any>>>
@@ -128,20 +129,25 @@ export function PCacheable(cacheConfig: ICacheConfig = {}) {
         pendingCachePairs.length = 0;
       });
 
-      cacheConfig.cacheResolver = cacheConfig.cacheResolver
-        ? cacheConfig.cacheResolver
+      const cacheResolver = cacheConfig.cacheResolver || GlobalCacheConfig.cacheResolver;
+      cacheConfig.cacheResolver = cacheResolver
+        ? cacheResolver
         : DEFAULT_CACHE_RESOLVER;
+      const cacheHasher = cacheConfig.cacheHasher || GlobalCacheConfig.cacheHasher;
+      cacheConfig.cacheHasher = cacheHasher
+        ? cacheHasher
+        : DEFAULT_HASHER;
 
       /* use function instead of an arrow function to keep context of invocation */
-      (propertyDescriptor.value as any) = function (..._parameters: Array<any>) {
+      (propertyDescriptor.value as any) = function(...parameters: Array<any>) {
         const promiseImplementation = typeof GlobalCacheConfig.promiseImplementation === 'function' && (GlobalCacheConfig.promiseImplementation !== Promise) ?
           (GlobalCacheConfig.promiseImplementation as () => PromiseConstructorLike).call(this)
           : GlobalCacheConfig.promiseImplementation as PromiseConstructorLike;
         let cachePairs = storageStrategy.getAll(cacheKey);
         if (!(cachePairs instanceof promiseImplementation)) {
-          return getResponse(oldMethod, cacheKey, cacheConfig, this, cachePairs as ICachePair<any>[], _parameters, pendingCachePairs, storageStrategy, promiseImplementation)
+          return getResponse(oldMethod, cacheKey, cacheConfig, this, cachePairs as ICachePair<any>[], parameters, pendingCachePairs, storageStrategy, promiseImplementation)
         } else {
-          return (cachePairs as Promise<ICachePair<any>[]>).then(cachePairs => getResponse(oldMethod, cacheKey, cacheConfig, this, cachePairs, _parameters, pendingCachePairs, storageStrategy, promiseImplementation))
+          return (cachePairs as Promise<ICachePair<any>[]>).then(cachePairs => getResponse(oldMethod, cacheKey, cacheConfig, this, cachePairs, parameters, pendingCachePairs, storageStrategy, promiseImplementation))
         }
       };
     }

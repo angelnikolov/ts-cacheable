@@ -25,22 +25,27 @@ function Cacheable(cacheConfig) {
                 storageStrategy_1.removeAll(cacheKey);
                 pendingCachePairs_1.length = 0;
             });
-            cacheConfig.cacheResolver = cacheConfig.cacheResolver
-                ? cacheConfig.cacheResolver
+            var cacheResolver = cacheConfig.cacheResolver || common_1.GlobalCacheConfig.cacheResolver;
+            cacheConfig.cacheResolver = cacheResolver
+                ? cacheResolver
                 : common_1.DEFAULT_CACHE_RESOLVER;
+            var cacheHasher = cacheConfig.cacheHasher || common_1.GlobalCacheConfig.cacheHasher;
+            cacheConfig.cacheHasher = cacheHasher
+                ? cacheHasher
+                : common_1.DEFAULT_HASHER;
             /* use function instead of an arrow function to keep context of invocation */
             propertyDescriptor.value = function () {
-                var _parameters = [];
+                var parameters = [];
                 for (var _i = 0; _i < arguments.length; _i++) {
-                    _parameters[_i] = arguments[_i];
+                    parameters[_i] = arguments[_i];
                 }
                 var cachePairs = storageStrategy_1.getAll(cacheKey);
-                var parameters = _parameters.map(function (param) { return param !== undefined ? JSON.parse(JSON.stringify(param)) : param; });
+                var cacheParameters = cacheConfig.cacheHasher(parameters);
                 var _foundCachePair = cachePairs.find(function (cp) {
-                    return cacheConfig.cacheResolver(cp.parameters, parameters);
+                    return cacheConfig.cacheResolver(cp.parameters, cacheParameters);
                 });
                 var _foundPendingCachePair = pendingCachePairs_1.find(function (cp) {
-                    return cacheConfig.cacheResolver(cp.parameters, parameters);
+                    return cacheConfig.cacheResolver(cp.parameters, cacheParameters);
                 });
                 /**
                  * check if maxAge is passed and cache has actually expired
@@ -75,7 +80,7 @@ function Cacheable(cacheConfig) {
                          * if there has been an observable cache pair for these parameters, when it completes or errors, remove it
                          */
                         var _pendingCachePairToRemove = pendingCachePairs_1.find(function (cp) {
-                            return cacheConfig.cacheResolver(cp.parameters, parameters);
+                            return cacheConfig.cacheResolver(cp.parameters, cacheParameters);
                         });
                         pendingCachePairs_1.splice(pendingCachePairs_1.indexOf(_pendingCachePairToRemove), 1);
                     }), operators_1.tap(function (response) {
@@ -92,7 +97,7 @@ function Cacheable(cacheConfig) {
                                 storageStrategy_1.removeAtIndex(0, cacheKey);
                             }
                             storageStrategy_1.add({
-                                parameters: parameters,
+                                parameters: cacheParameters,
                                 response: response,
                                 created: cacheConfig.maxAge ? new Date() : null
                             }, cacheKey);
@@ -102,7 +107,7 @@ function Cacheable(cacheConfig) {
                      * cache the stream
                      */
                     pendingCachePairs_1.push({
-                        parameters: parameters,
+                        parameters: cacheParameters,
                         response: response$,
                         created: new Date()
                     });
