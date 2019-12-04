@@ -6,8 +6,9 @@ import { GlobalCacheConfig, ICachePair } from '../common';
 import { DOMStorageStrategy } from '../common/DOMStorageStrategy';
 import { InMemoryStorageStrategy } from '../common/InMemoryStorageStrategy';
 import { IAsyncStorageStrategy } from 'common/IAsyncStorageStrategy';
+import { IService } from './service.interface';
+import { Cat } from './cat';
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000;
-
 class AsyncStorageStrategy extends IAsyncStorageStrategy {
   private cachePairs: Array<ICachePair<any>> = [];
 
@@ -42,179 +43,160 @@ strategies.forEach(s => {
   if (s) {
     GlobalCacheConfig.storageStrategy = s;
   }
-  class Cat {
-    meow(phrase: string) { return this.name + ' says ' + phrase };
-    name: string;
-  }
-  class Service {
-    mockServiceCall(parameter: any) {
-      return new Promise<any>(resolve => {
-        setTimeout(() => {
-          resolve({ payload: parameter });
-        }, 300);
-      });
-    }
-    mockSaveServiceCall() {
-      return new Promise(resolve => {
-        setTimeout(() => {
-          resolve('SAVED');
-        }, 300);
-      });
-    }
-
-    mockServiceCallWithMultipleParameters(parameter1: any, parameter2: any) {
-      return new Promise(resolve => {
-        setTimeout(() => {
-          resolve({ payload: [parameter1, parameter2] });
-        }, 300);
-      });
-    }
-
-    @PCacheable()
-    getData(parameter: string) {
-      return this.mockServiceCall(parameter);
-    }
-
-    @PCacheable()
-    getDataWithParamsObj(parameter: any) {
-      return this.mockServiceCall(parameter);
-    }
-
-    @PCacheable()
-    getDataAndReturnCachedStream(parameter: string) {
-      return this.mockServiceCall(parameter);
-    }
-
-    @PCacheable({
-      maxAge: 400
-    })
-    getDataWithExpiration(parameter: string) {
-      return this.mockServiceCall(parameter);
-    }
-
-    @PCacheable({
-      maxAge: 400,
-      slidingExpiration: true
-    })
-    getDataWithSlidingExpiration(parameter: string) {
-      return this.mockServiceCall(parameter);
-    }
-
-    @PCacheable({
-      maxCacheCount: 5
-    })
-    getDataWithMaxCacheCount(parameter: string) {
-      return this.mockServiceCall(parameter);
-    }
-
-    @PCacheable({
-      maxAge: 400,
-      maxCacheCount: 5
-    })
-    getDataWithMaxCacheCountAndExpiration(parameter: string) {
-      return this.mockServiceCall(parameter);
-    }
-
-    @PCacheable({
-      maxAge: 400,
-      maxCacheCount: 5,
-      slidingExpiration: true
-    })
-    getDataWithMaxCacheCountAndSlidingExpiration(parameter: string) {
-      return this.mockServiceCall(parameter);
-    }
-
-    @PCacheable({
-      cacheResolver: (_oldParameters, newParameters) => {
-        return newParameters.find((param: any) => !!param.straightToLastCache);
-      }
-    })
-    getDataWithCustomCacheResolver(
-      parameter: string,
-      _cacheRerouterParameter?: { straightToLastCache: boolean }
-    ) {
-      return this.mockServiceCall(parameter);
-    }
-
-    @PCacheable({
-      cacheHasher: (_parameters) => _parameters[0] * 2,
-      cacheResolver: (oldParameter, newParameter) => {
-        return newParameter > 5
-      }
-    })
-    getDataWithCustomCacheResolverAndHasher(
-      parameter: number
-    ) {
-      return this.mockServiceCall(parameter);
-    }
-
-    @PCacheable()
-    getWithAComplexType(
-      parameter: Cat
-    ) {
-      return this.mockServiceCall(parameter);
-    }
-
-    @PCacheable({
-      shouldCacheDecider: (response: { payload: string }) => {
-        return response.payload === 'test';
-      }
-    })
-    getDataWithCustomCacheDecider(parameter: string) {
-      return this.mockServiceCall(parameter);
-    }
-
-    @PCacheBuster({
-      cacheBusterNotifier: cacheBusterNotifier
-    })
-    saveDataAndCacheBust() {
-      return this.mockSaveServiceCall();
-    }
-
-    @PCacheable({
-      cacheBusterObserver: cacheBusterNotifier.asObservable()
-    })
-    getDataWithCacheBusting(parameter: string) {
-      return this.mockServiceCall(parameter);
-    }
-
-    @PCacheable()
-    getDataWithUndefinedParameter(parameter: string = '') {
-      return this.mockServiceCall(parameter);
-    }
-
-    @PCacheable()
-    getDataWithMultipleUndefinedParameters(parameter: string = 'Parameter1', parameter1: string = 'Parameter2') {
-      return this.mockServiceCallWithMultipleParameters(parameter, parameter1);
-    }
-    @PCacheable()
-    getData1(parameter: string) {
-      return this.mockServiceCall(parameter);
-    }
-
-    @PCacheable()
-    getData2(parameter: string) {
-      return this.mockServiceCall(parameter);
-    }
-
-    @PCacheable()
-    getData3(parameter: string) {
-      return this.mockServiceCall(parameter);
-    }
-
-    @PCacheable({
-      maxAge: 400,
-      slidingExpiration: true,
-      storageStrategy: InMemoryStorageStrategy
-    })
-    getDateWithCustomStorageStrategyProvided(parameter: string) {
-      return this.mockServiceCall(parameter);
-    }
-  }
 
   describe('PCacheableDecorator', () => {
-    let service: Service = null;
+    let service: IService<Promise<any>> = null;
     let mockServiceCallSpy: jasmine.Spy = null;
+    class Service {
+      mockServiceCall(parameter: any) {
+        return new Promise<any>(resolve => {
+          setTimeout(() => {
+            resolve({ payload: parameter });
+          }, 300);
+        });
+      }
+      mockSaveServiceCall() {
+        return new Promise(resolve => {
+          setTimeout(() => {
+            resolve('SAVED');
+          }, 300);
+        });
+      }
+
+      mockServiceCallWithMultipleParameters(parameter1: any, parameter2: any) {
+        return new Promise(resolve => {
+          setTimeout(() => {
+            resolve({ payload: [parameter1, parameter2] });
+          }, 300);
+        });
+      }
+
+      @PCacheable()
+      getData(parameter: string) {
+        return this.mockServiceCall(parameter);
+      }
+
+      @PCacheable()
+      getDataWithParamsObj(parameter: any) {
+        return this.mockServiceCall(parameter);
+      }
+
+      @PCacheable()
+      getDataAndReturnCachedStream(parameter: string) {
+        return this.mockServiceCall(parameter);
+      }
+
+      @PCacheable({
+        maxAge: 400
+      })
+      getDataWithExpiration(parameter: string) {
+        return this.mockServiceCall(parameter);
+      }
+
+      @PCacheable({
+        maxAge: 400,
+        slidingExpiration: true
+      })
+      getDataWithSlidingExpiration(parameter: string) {
+        return this.mockServiceCall(parameter);
+      }
+
+      @PCacheable({
+        maxCacheCount: 5
+      })
+      getDataWithMaxCacheCount(parameter: string) {
+        return this.mockServiceCall(parameter);
+      }
+
+      @PCacheable({
+        maxAge: 400,
+        maxCacheCount: 5
+      })
+      getDataWithMaxCacheCountAndExpiration(parameter: string) {
+        return this.mockServiceCall(parameter);
+      }
+
+      @PCacheable({
+        maxAge: 400,
+        maxCacheCount: 5,
+        slidingExpiration: true
+      })
+      getDataWithMaxCacheCountAndSlidingExpiration(parameter: string) {
+        return this.mockServiceCall(parameter);
+      }
+
+      @PCacheable({
+        cacheResolver: (_oldParameters, newParameters) => {
+          return newParameters.find((param: any) => !!param.straightToLastCache);
+        }
+      })
+      getDataWithCustomCacheResolver(
+        parameter: string,
+        _cacheRerouterParameter?: { straightToLastCache: boolean }
+      ) {
+        return this.mockServiceCall(parameter);
+      }
+
+      @PCacheable({
+        cacheHasher: (_parameters) => _parameters[0] * 2,
+        cacheResolver: (oldParameter, newParameter) => {
+          return newParameter > 5
+        }
+      })
+      getDataWithCustomCacheResolverAndHasher(
+        parameter: number
+      ) {
+        return this.mockServiceCall(parameter);
+      }
+
+      @PCacheable()
+      getWithAComplexType(
+        parameter: Cat
+      ) {
+        return this.mockServiceCall(parameter);
+      }
+
+      @PCacheable({
+        shouldCacheDecider: (response: { payload: string }) => {
+          return response.payload === 'test';
+        }
+      })
+      getDataWithCustomCacheDecider(parameter: string) {
+        return this.mockServiceCall(parameter);
+      }
+
+      @PCacheBuster({
+        cacheBusterNotifier: cacheBusterNotifier
+      })
+      saveDataAndCacheBust() {
+        return this.mockSaveServiceCall();
+      }
+
+      @PCacheable({
+        cacheBusterObserver: cacheBusterNotifier.asObservable()
+      })
+      getDataWithCacheBusting(parameter: string) {
+        return this.mockServiceCall(parameter);
+      }
+
+      @PCacheable()
+      getDataWithUndefinedParameter(parameter: string = '') {
+        return this.mockServiceCall(parameter);
+      }
+
+      @PCacheable()
+      getDataWithMultipleUndefinedParameters(parameter: string = 'Parameter1', parameter1: string = 'Parameter2') {
+        return this.mockServiceCallWithMultipleParameters(parameter, parameter1);
+      }
+      @PCacheable({
+        maxAge: 400,
+        slidingExpiration: true,
+        storageStrategy: InMemoryStorageStrategy
+      })
+      getDateWithCustomStorageStrategyProvided(parameter: string) {
+        return this.mockServiceCall(parameter);
+      }
+    }
     beforeEach(() => {
       service = new Service();
       mockServiceCallSpy = spyOn(service, 'mockServiceCall').and.callThrough();
@@ -552,34 +534,34 @@ strategies.forEach(s => {
       /**
        * call the first method and cache it
        */
-      service.getData1('test1');
+      service.getData('test1');
       const asyncFreshData1 = await (
-        service.getData1('test1')
+        service.getData('test1')
       );
 
       expect(asyncFreshData1).toEqual({ payload: 'test1' });
-      const cachedResponse1 = await (service.getData1('test1'));
+      const cachedResponse1 = await (service.getData('test1'));
       expect(cachedResponse1).toEqual({ payload: 'test1' });
       /**
-       * even though we called getData1 twice, this should only be called once
+       * even though we called getData twice, this should only be called once
        * since the second call went straight to the cache
        */
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
 
-      service.getData2('test2');
+      service.getData('test2');
       const asyncFreshData2 = await (
-        service.getData2('test2')
+        service.getData('test2')
       );
 
       expect(asyncFreshData2).toEqual({ payload: 'test2' });
-      const cachedResponse2 = await (service.getData2('test2'));
+      const cachedResponse2 = await (service.getData('test2'));
       expect(cachedResponse2).toEqual({ payload: 'test2' });
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
 
-      service.getData3('test3');
-      const asyncFreshData3 = await (service.getData3('test3'));
+      service.getData('test3');
+      const asyncFreshData3 = await (service.getData('test3'));
       expect(asyncFreshData3).toEqual({ payload: 'test3' });
-      const cachedResponse3 = await (service.getData3('test3'));
+      const cachedResponse3 = await (service.getData('test3'));
       expect(cachedResponse3).toEqual({ payload: 'test3' });
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(3);
 
@@ -588,9 +570,9 @@ strategies.forEach(s => {
        */
       promiseGlobalCacheBusterNotifier.next();
 
-      await (service.getData1('test1'));
-      await (service.getData2('test2'));
-      await (service.getData3('test3'));
+      await (service.getData('test1'));
+      await (service.getData('test2'));
+      await (service.getData('test3'));
 
       /**
        * if we didn't bust the cache, this would've been 3
@@ -711,6 +693,141 @@ strategies.forEach(s => {
       expect(service.mockServiceCall).toHaveBeenCalledWith(complexObject);
       // object method would not exist if we have mutated the parameter through the DEFAULT_CACHE_RESOLVER
       expect(response.payload.meow("I am hungry!")).toBe("Felix says I am hungry!")
+    });
+
+    it('use the maxAge and slidingExpiration from the GlobalCacheConfig', async done => {
+      GlobalCacheConfig.maxAge = 400;
+      GlobalCacheConfig.slidingExpiration = true;
+
+      const asyncFreshData = await service.getData('test');
+      expect(asyncFreshData).toEqual({ payload: 'test' });
+      expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+
+      const cachedResponse = await service.getData('test');
+      expect(cachedResponse).toEqual({ payload: 'test' });
+      /**
+       * call count should still be one, since we rerouted to cache, instead of service call
+       */
+      expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+
+      setTimeout(async () => {
+        await service.getData('test');
+        expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+        setTimeout(async () => {
+          await service.getData('test');
+          expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
+          done();
+          GlobalCacheConfig.maxAge = undefined;
+          GlobalCacheConfig.slidingExpiration;
+        }, 500);
+      }, 200);
+
+    });
+
+    it('use the maxCacheCount from the GlobalCacheConfig', async () => {
+      GlobalCacheConfig.maxCacheCount = 5;
+      /**
+       * call the same endpoint with 5 different parameters and cache all 5 responses, based on the maxCacheCount parameter
+       */
+      const parameters = ['test1', 'test2', 'test3', 'test4', 'test5'];
+      await Promise.all(parameters.map(
+        param => (service.getDataWithMaxCacheCount(param))
+      ))
+      /**
+       * data for all endpoints should be available through cache by now
+       */
+      expect(mockServiceCallSpy).toHaveBeenCalledTimes(5);
+
+      const cachedResponse = await service.getDataWithMaxCacheCount('test1');
+      expect(cachedResponse).toEqual({ payload: 'test1' });
+      /** call count still 5 */
+      expect(mockServiceCallSpy).toHaveBeenCalledTimes(5);
+
+      /**
+       * this should return a maximum of 5 different cached responses
+       */
+      const cachedResponseAll = await Promise.all(
+        parameters.map(param => service.getDataWithMaxCacheCount(param))
+      );
+
+      expect(cachedResponseAll).toEqual([
+        { payload: 'test1' },
+        { payload: 'test2' },
+        { payload: 'test3' },
+        { payload: 'test4' },
+        { payload: 'test5' }
+      ]);
+      /** call count still 5 */
+      expect(mockServiceCallSpy).toHaveBeenCalledTimes(5);
+
+      const asyncData = await service.getDataWithMaxCacheCount('test6');
+
+      expect(asyncData).toEqual({ payload: 'test6' });
+      /** call count incremented by one */
+      expect(mockServiceCallSpy).toHaveBeenCalledTimes(6);
+
+      /**
+       * by now the response for test6 should be cached and the one for test1 should be free for GC..
+       */
+      const newParameters = ['test2', 'test3', 'test4', 'test5', 'test6'];
+
+      /**
+       * this should return a maximum of 5 different cached responses, with the latest one in the end
+       */
+      const cachedResponseAll2 = await Promise.all(
+        newParameters.map(param => service.getDataWithMaxCacheCount(param))
+      );
+
+      expect(cachedResponseAll2).toEqual([
+        { payload: 'test2' },
+        { payload: 'test3' },
+        { payload: 'test4' },
+        { payload: 'test5' },
+        { payload: 'test6' }
+      ]);
+
+      /** no service calls will be made, since we have all the responses still cached even after 1s (1000ms) */
+      expect(mockServiceCallSpy).toHaveBeenCalledTimes(6);
+      /**
+       * fetch and cache the test7 response
+       */
+      const nonCachedResponse = await service.getDataWithMaxCacheCount('test7');
+      expect(nonCachedResponse).toEqual({ payload: 'test7' });
+      expect(mockServiceCallSpy).toHaveBeenCalledTimes(7);
+
+      /**
+       * since the cached response for 'test2' was now removed from cache by 'test7',
+       */
+      await service.getDataWithMaxCacheCount('test2');
+      /**
+       * test2 is not in cache anymore and a service call will be made
+       */
+      expect(mockServiceCallSpy).toHaveBeenCalledTimes(8);
+      GlobalCacheConfig.maxCacheCount = undefined;
+    });
+
+
+    it('use the maxAge from the GlobalCacheConfig', async done => {
+      GlobalCacheConfig.maxAge = 10000;
+      const asyncFreshData = await service.getDataWithExpiration('test');
+
+      expect(asyncFreshData).toEqual({ payload: 'test' });
+      expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+
+      const cachedResponse = await service.getDataWithExpiration('test');
+      expect(cachedResponse).toEqual({ payload: 'test' });
+      expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+
+      setTimeout(async () => {
+        /**
+         * after 500ms the cache would've expired and we will bail to the data source
+         */
+        await service.getDataWithExpiration('test');
+        expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
+        GlobalCacheConfig.maxAge = undefined;
+        done();
+      }, 500);
+
     });
   });
 });

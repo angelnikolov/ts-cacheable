@@ -15,7 +15,9 @@ module.exports = function (config) {
       './promise.cache-buster.decorator.ts',
       './promise.cacheable.decorator.ts',
       './specs/observable-cacheable.decorator.spec.ts',
-      './specs/promise-cacheable.decorator.spec.ts'
+      './specs/promise-cacheable.decorator.spec.ts',
+      './specs/cat.ts',
+      './specs/service.interface.ts',
     ],
     preprocessors: {
       '**/*.ts': 'karma-typescript'

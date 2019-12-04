@@ -17,17 +17,17 @@ const getResponse = (oldMethod: Function, cacheKey: string, cacheConfig: ICacheC
   /**
    * check if maxAge is passed and cache has actually expired
    */
-  if (cacheConfig.maxAge && _foundCachePair && _foundCachePair.created) {
+  if ((cacheConfig.maxAge || GlobalCacheConfig.maxAge) && _foundCachePair && _foundCachePair.created) {
     if (
       new Date().getTime() - new Date(_foundCachePair.created).getTime() >
-      cacheConfig.maxAge
+      (cacheConfig.maxAge || GlobalCacheConfig.maxAge)
     ) {
       /**
        * cache duration has expired - remove it from the cachePairs array
        */
       storageStrategy.removeAtIndex(cachePairs.indexOf(_foundCachePair), cacheKey);
       _foundCachePair = null;
-    } else if (cacheConfig.slidingExpiration) {
+    } else if (cacheConfig.slidingExpiration || GlobalCacheConfig.slidingExpiration) {
       /**
        * renew cache duration
        */
@@ -54,17 +54,17 @@ const getResponse = (oldMethod: Function, cacheKey: string, cacheConfig: ICacheC
           cacheConfig.shouldCacheDecider(response)
         ) {
           if (
-            !cacheConfig.maxCacheCount ||
-            cacheConfig.maxCacheCount === 1 ||
-            (cacheConfig.maxCacheCount &&
-              cacheConfig.maxCacheCount < cachePairs.length + 1)
+            !(cacheConfig.maxCacheCount || GlobalCacheConfig.maxCacheCount) ||
+            (cacheConfig.maxCacheCount || GlobalCacheConfig.maxCacheCount) === 1 ||
+            ((cacheConfig.maxCacheCount || GlobalCacheConfig.maxCacheCount) &&
+              (cacheConfig.maxCacheCount || GlobalCacheConfig.maxCacheCount) < cachePairs.length + 1)
           ) {
             storageStrategy.removeAtIndex(0, cacheKey);
           }
           storageStrategy.add({
             parameters: cacheParameters,
             response,
-            created: cacheConfig.maxAge ? new Date() : null
+            created: (cacheConfig.maxAge || GlobalCacheConfig.maxAge) ? new Date() : null
           }, cacheKey);
         }
 
