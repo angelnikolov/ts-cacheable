@@ -50,16 +50,16 @@ function Cacheable(cacheConfig) {
                 /**
                  * check if maxAge is passed and cache has actually expired
                  */
-                if (cacheConfig.maxAge && _foundCachePair && _foundCachePair.created) {
+                if ((cacheConfig.maxAge || common_1.GlobalCacheConfig.maxAge) && _foundCachePair && _foundCachePair.created) {
                     if (new Date().getTime() - new Date(_foundCachePair.created).getTime() >
-                        cacheConfig.maxAge) {
+                        (cacheConfig.maxAge || common_1.GlobalCacheConfig.maxAge)) {
                         /**
                          * cache duration has expired - remove it from the cachePairs array
                          */
                         storageStrategy_1.removeAtIndex(cachePairs.indexOf(_foundCachePair), cacheKey);
                         _foundCachePair = null;
                     }
-                    else if (cacheConfig.slidingExpiration) {
+                    else if (cacheConfig.slidingExpiration || common_1.GlobalCacheConfig.slidingExpiration) {
                         /**
                          * renew cache duration
                          */
@@ -90,16 +90,16 @@ function Cacheable(cacheConfig) {
                          */
                         if (!cacheConfig.shouldCacheDecider ||
                             cacheConfig.shouldCacheDecider(response)) {
-                            if (!cacheConfig.maxCacheCount ||
-                                cacheConfig.maxCacheCount === 1 ||
-                                (cacheConfig.maxCacheCount &&
-                                    cacheConfig.maxCacheCount < cachePairs.length + 1)) {
+                            if (!(cacheConfig.maxCacheCount || common_1.GlobalCacheConfig.maxCacheCount) ||
+                                (cacheConfig.maxCacheCount || common_1.GlobalCacheConfig.maxCacheCount) === 1 ||
+                                ((cacheConfig.maxCacheCount || common_1.GlobalCacheConfig.maxCacheCount) &&
+                                    (cacheConfig.maxCacheCount || common_1.GlobalCacheConfig.maxCacheCount) < cachePairs.length + 1)) {
                                 storageStrategy_1.removeAtIndex(0, cacheKey);
                             }
                             storageStrategy_1.add({
                                 parameters: cacheParameters,
                                 response: response,
-                                created: cacheConfig.maxAge ? new Date() : null
+                                created: (cacheConfig.maxAge || common_1.GlobalCacheConfig.maxAge) ? new Date() : null
                             }, cacheKey);
                         }
                     }), operators_1.publishReplay(1), operators_1.refCount());

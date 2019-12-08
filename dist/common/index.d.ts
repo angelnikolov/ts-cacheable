@@ -11,6 +11,9 @@ export declare type IShouldCacheDecider = (response: any) => boolean;
 export declare type ICacheable<T> = (...args: Array<any>) => T;
 export { ICacheBusterConfig, ICacheConfig, ICachePair };
 export declare const GlobalCacheConfig: {
+    maxAge?: number;
+    slidingExpiration?: boolean;
+    maxCacheCount?: number;
     cacheResolver?: ICacheResolver;
     cacheHasher?: ICacheHasher;
     storageStrategy: new () => IStorageStrategy | IAsyncStorageStrategy;
