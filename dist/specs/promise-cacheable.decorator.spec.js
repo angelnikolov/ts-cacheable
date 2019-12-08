@@ -129,6 +129,15 @@ strategies.forEach(function (s) {
             Service.prototype.getData = function (parameter) {
                 return this.mockServiceCall(parameter);
             };
+            Service.prototype.getData1 = function (parameter) {
+                return this.mockServiceCall(parameter);
+            };
+            Service.prototype.getData2 = function (parameter) {
+                return this.mockServiceCall(parameter);
+            };
+            Service.prototype.getData3 = function (parameter) {
+                return this.mockServiceCall(parameter);
+            };
             Service.prototype.getDataWithParamsObj = function (parameter) {
                 return this.mockServiceCall(parameter);
             };
@@ -183,6 +192,15 @@ strategies.forEach(function (s) {
             __decorate([
                 promise_cacheable_decorator_1.PCacheable()
             ], Service.prototype, "getData", null);
+            __decorate([
+                promise_cacheable_decorator_1.PCacheable()
+            ], Service.prototype, "getData1", null);
+            __decorate([
+                promise_cacheable_decorator_1.PCacheable()
+            ], Service.prototype, "getData2", null);
+            __decorate([
+                promise_cacheable_decorator_1.PCacheable()
+            ], Service.prototype, "getData3", null);
             __decorate([
                 promise_cacheable_decorator_1.PCacheable()
             ], Service.prototype, "getDataWithParamsObj", null);
@@ -1001,12 +1019,12 @@ strategies.forEach(function (s) {
                     case 0:
                         common_1.GlobalCacheConfig.maxAge = 400;
                         common_1.GlobalCacheConfig.slidingExpiration = true;
-                        return [4 /*yield*/, service.getData('test')];
+                        return [4 /*yield*/, service.getData1('test')];
                     case 1:
                         asyncFreshData = _a.sent();
                         expect(asyncFreshData).toEqual({ payload: 'test' });
                         expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
-                        return [4 /*yield*/, service.getData('test')];
+                        return [4 /*yield*/, service.getData1('test')];
                     case 2:
                         cachedResponse = _a.sent();
                         expect(cachedResponse).toEqual({ payload: 'test' });
@@ -1018,20 +1036,20 @@ strategies.forEach(function (s) {
                             var _this = this;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
-                                    case 0: return [4 /*yield*/, service.getData('test')];
+                                    case 0: return [4 /*yield*/, service.getData1('test')];
                                     case 1:
                                         _a.sent();
                                         expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
                                         setTimeout(function () { return __awaiter(_this, void 0, void 0, function () {
                                             return __generator(this, function (_a) {
                                                 switch (_a.label) {
-                                                    case 0: return [4 /*yield*/, service.getData('test')];
+                                                    case 0: return [4 /*yield*/, service.getData1('test')];
                                                     case 1:
                                                         _a.sent();
                                                         expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
                                                         done();
                                                         common_1.GlobalCacheConfig.maxAge = undefined;
-                                                        common_1.GlobalCacheConfig.slidingExpiration;
+                                                        common_1.GlobalCacheConfig.slidingExpiration = undefined;
                                                         return [2 /*return*/];
                                                 }
                                             });
@@ -1051,7 +1069,7 @@ strategies.forEach(function (s) {
                     case 0:
                         common_1.GlobalCacheConfig.maxCacheCount = 5;
                         parameters = ['test1', 'test2', 'test3', 'test4', 'test5'];
-                        return [4 /*yield*/, Promise.all(parameters.map(function (param) { return (service.getDataWithMaxCacheCount(param)); }))
+                        return [4 /*yield*/, Promise.all(parameters.map(function (param) { return (service.getData2(param)); }))
                             /**
                              * data for all endpoints should be available through cache by now
                              */
@@ -1062,13 +1080,13 @@ strategies.forEach(function (s) {
                          * data for all endpoints should be available through cache by now
                          */
                         expect(mockServiceCallSpy).toHaveBeenCalledTimes(5);
-                        return [4 /*yield*/, service.getDataWithMaxCacheCount('test1')];
+                        return [4 /*yield*/, service.getData2('test1')];
                     case 2:
                         cachedResponse = _a.sent();
                         expect(cachedResponse).toEqual({ payload: 'test1' });
                         /** call count still 5 */
                         expect(mockServiceCallSpy).toHaveBeenCalledTimes(5);
-                        return [4 /*yield*/, Promise.all(parameters.map(function (param) { return service.getDataWithMaxCacheCount(param); }))];
+                        return [4 /*yield*/, Promise.all(parameters.map(function (param) { return service.getData2(param); }))];
                     case 3:
                         cachedResponseAll = _a.sent();
                         expect(cachedResponseAll).toEqual([
@@ -1080,14 +1098,14 @@ strategies.forEach(function (s) {
                         ]);
                         /** call count still 5 */
                         expect(mockServiceCallSpy).toHaveBeenCalledTimes(5);
-                        return [4 /*yield*/, service.getDataWithMaxCacheCount('test6')];
+                        return [4 /*yield*/, service.getData2('test6')];
                     case 4:
                         asyncData = _a.sent();
                         expect(asyncData).toEqual({ payload: 'test6' });
                         /** call count incremented by one */
                         expect(mockServiceCallSpy).toHaveBeenCalledTimes(6);
                         newParameters = ['test2', 'test3', 'test4', 'test5', 'test6'];
-                        return [4 /*yield*/, Promise.all(newParameters.map(function (param) { return service.getDataWithMaxCacheCount(param); }))];
+                        return [4 /*yield*/, Promise.all(newParameters.map(function (param) { return service.getData2(param); }))];
                     case 5:
                         cachedResponseAll2 = _a.sent();
                         expect(cachedResponseAll2).toEqual([
@@ -1099,7 +1117,7 @@ strategies.forEach(function (s) {
                         ]);
                         /** no service calls will be made, since we have all the responses still cached even after 1s (1000ms) */
                         expect(mockServiceCallSpy).toHaveBeenCalledTimes(6);
-                        return [4 /*yield*/, service.getDataWithMaxCacheCount('test7')];
+                        return [4 /*yield*/, service.getData2('test7')];
                     case 6:
                         nonCachedResponse = _a.sent();
                         expect(nonCachedResponse).toEqual({ payload: 'test7' });
@@ -1107,7 +1125,7 @@ strategies.forEach(function (s) {
                         /**
                          * since the cached response for 'test2' was now removed from cache by 'test7',
                          */
-                        return [4 /*yield*/, service.getDataWithMaxCacheCount('test2')];
+                        return [4 /*yield*/, service.getData2('test2')];
                     case 7:
                         /**
                          * since the cached response for 'test2' was now removed from cache by 'test7',
@@ -1128,13 +1146,13 @@ strategies.forEach(function (s) {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        common_1.GlobalCacheConfig.maxAge = 10000;
-                        return [4 /*yield*/, service.getDataWithExpiration('test')];
+                        common_1.GlobalCacheConfig.maxAge = 1000;
+                        return [4 /*yield*/, service.getData3('test')];
                     case 1:
                         asyncFreshData = _a.sent();
                         expect(asyncFreshData).toEqual({ payload: 'test' });
                         expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
-                        return [4 /*yield*/, service.getDataWithExpiration('test')];
+                        return [4 /*yield*/, service.getData3('test')];
                     case 2:
                         cachedResponse = _a.sent();
                         expect(cachedResponse).toEqual({ payload: 'test' });
@@ -1144,12 +1162,12 @@ strategies.forEach(function (s) {
                                 switch (_a.label) {
                                     case 0: 
                                     /**
-                                     * after 500ms the cache would've expired and we will bail to the data source
+                                     * after 1001ms the cache would've expired and we will bail to the data source
                                      */
-                                    return [4 /*yield*/, service.getDataWithExpiration('test')];
+                                    return [4 /*yield*/, service.getData3('test')];
                                     case 1:
                                         /**
-                                         * after 500ms the cache would've expired and we will bail to the data source
+                                         * after 1001ms the cache would've expired and we will bail to the data source
                                          */
                                         _a.sent();
                                         expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
@@ -1158,7 +1176,7 @@ strategies.forEach(function (s) {
                                         return [2 /*return*/];
                                 }
                             });
-                        }); }, 500);
+                        }); }, 1001);
                         return [2 /*return*/];
                 }
             });
