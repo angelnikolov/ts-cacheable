@@ -79,6 +79,53 @@ export interface ICacheConfig {
 }
 ```
 
+## Global Configuration
+Some of the local cache config options (passed to specific decorators) can also be used as global ones. All the local configurations will of course take precedence over the global ones.
+Here are all the possible global configurations:
+```ts
+  /**
+   * whether should use a sliding expiration strategy on caches
+   * this will reset the cache created property and keep the cache alive for @param maxAge milliseconds more
+   */
+  slidingExpiration: boolean;
+  /**
+   * max cacheCount for different parameters
+   * @description maximum allowed unique caches (same parameters)
+   */
+  maxCacheCount: number;
+  /**
+   * @description request cache resolver which will get old and new paramaters passed to and based on those
+   * will figure out if we need to bail out of cache or not
+   */
+  cacheResolver: ICacheRequestResolver;
+  /**
+   * @description cache hasher which will be called to hash the parameters into a cache key
+   */
+  cacheHasher: ICacheHasher;
+  /**
+   * @description cache decider that will figure out if the response should be cached or not, based on it
+   */
+  shouldCacheDecider: IShouldCacheDecider;
+  /**
+   * maxAge of cache in milliseconds
+   * @description if time between method calls is larger - we bail out of cache
+   */
+  maxAge: number;
+  /**
+   * @description storage strategy to be used for setting, evicting and updating cache.
+   */
+  storageStrategy: new () => IStorageStrategy | IAsyncStorageStrategy;
+  /**
+   * @description global cache key which will be used to namespace the cache.
+   * for example, it will be used in the DOMStorageStrategy for now.
+   */
+  globalCacheKey: string;
+  /**
+   * @description a custom promise implementation. For example, if you use angularjs, you might like to provide $q's promise here change detection still works properly.
+   */
+  promiseImplementation: (() => PromiseConstructorLike) | PromiseConstructorLike;
+```
+
 ## Examples
 ### Cache Busting
 You can achieve it by decorating the cache busting method with the CacheBuster decorator. So you can have one method for fetching and caching data and another, to remove the cache. This is useful when for example you want to add an item to a list and refresh that list afterwards.

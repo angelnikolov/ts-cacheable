@@ -26,10 +26,13 @@ export type ICacheable<T> = (...args: Array<any>) => T;
 export { ICacheBusterConfig, ICacheConfig, ICachePair };
 
 export const GlobalCacheConfig: {
-  cacheResolver?: ICacheResolver,
-  cacheHasher?: ICacheHasher,
-  storageStrategy: new () => IStorageStrategy | IAsyncStorageStrategy,
-  globalCacheKey: string,
+  maxAge?: number;
+  slidingExpiration?: boolean;
+  maxCacheCount?: number;
+  cacheResolver?: ICacheResolver;
+  cacheHasher?: ICacheHasher;
+  storageStrategy: new () => IStorageStrategy | IAsyncStorageStrategy;
+  globalCacheKey: string;
   promiseImplementation: (() => PromiseConstructorLike) | PromiseConstructorLike;
 } = {
   storageStrategy: InMemoryStorageStrategy,
