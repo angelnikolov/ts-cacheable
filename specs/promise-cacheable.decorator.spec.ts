@@ -77,6 +77,21 @@ strategies.forEach(s => {
       }
 
       @PCacheable()
+      getData1(parameter: string) {
+        return this.mockServiceCall(parameter);
+      }
+
+      @PCacheable()
+      getData2(parameter: string) {
+        return this.mockServiceCall(parameter);
+      }
+
+      @PCacheable()
+      getData3(parameter: string) {
+        return this.mockServiceCall(parameter);
+      }
+
+      @PCacheable()
       getDataWithParamsObj(parameter: any) {
         return this.mockServiceCall(parameter);
       }
@@ -699,11 +714,11 @@ strategies.forEach(s => {
       GlobalCacheConfig.maxAge = 400;
       GlobalCacheConfig.slidingExpiration = true;
 
-      const asyncFreshData = await service.getData('test');
+      const asyncFreshData = await service.getData1('test');
       expect(asyncFreshData).toEqual({ payload: 'test' });
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
 
-      const cachedResponse = await service.getData('test');
+      const cachedResponse = await service.getData1('test');
       expect(cachedResponse).toEqual({ payload: 'test' });
       /**
        * call count should still be one, since we rerouted to cache, instead of service call
@@ -711,14 +726,14 @@ strategies.forEach(s => {
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
 
       setTimeout(async () => {
-        await service.getData('test');
+        await service.getData1('test');
         expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
         setTimeout(async () => {
-          await service.getData('test');
+          await service.getData1('test');
           expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
           done();
           GlobalCacheConfig.maxAge = undefined;
-          GlobalCacheConfig.slidingExpiration;
+          GlobalCacheConfig.slidingExpiration = undefined;
         }, 500);
       }, 200);
 
@@ -731,14 +746,14 @@ strategies.forEach(s => {
        */
       const parameters = ['test1', 'test2', 'test3', 'test4', 'test5'];
       await Promise.all(parameters.map(
-        param => (service.getDataWithMaxCacheCount(param))
+        param => (service.getData2(param))
       ))
       /**
        * data for all endpoints should be available through cache by now
        */
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(5);
 
-      const cachedResponse = await service.getDataWithMaxCacheCount('test1');
+      const cachedResponse = await service.getData2('test1');
       expect(cachedResponse).toEqual({ payload: 'test1' });
       /** call count still 5 */
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(5);
@@ -747,7 +762,7 @@ strategies.forEach(s => {
        * this should return a maximum of 5 different cached responses
        */
       const cachedResponseAll = await Promise.all(
-        parameters.map(param => service.getDataWithMaxCacheCount(param))
+        parameters.map(param => service.getData2(param))
       );
 
       expect(cachedResponseAll).toEqual([
@@ -760,7 +775,7 @@ strategies.forEach(s => {
       /** call count still 5 */
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(5);
 
-      const asyncData = await service.getDataWithMaxCacheCount('test6');
+      const asyncData = await service.getData2('test6');
 
       expect(asyncData).toEqual({ payload: 'test6' });
       /** call count incremented by one */
@@ -775,7 +790,7 @@ strategies.forEach(s => {
        * this should return a maximum of 5 different cached responses, with the latest one in the end
        */
       const cachedResponseAll2 = await Promise.all(
-        newParameters.map(param => service.getDataWithMaxCacheCount(param))
+        newParameters.map(param => service.getData2(param))
       );
 
       expect(cachedResponseAll2).toEqual([
@@ -791,14 +806,14 @@ strategies.forEach(s => {
       /**
        * fetch and cache the test7 response
        */
-      const nonCachedResponse = await service.getDataWithMaxCacheCount('test7');
+      const nonCachedResponse = await service.getData2('test7');
       expect(nonCachedResponse).toEqual({ payload: 'test7' });
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(7);
 
       /**
        * since the cached response for 'test2' was now removed from cache by 'test7',
        */
-      await service.getDataWithMaxCacheCount('test2');
+      await service.getData2('test2');
       /**
        * test2 is not in cache anymore and a service call will be made
        */
@@ -808,26 +823,25 @@ strategies.forEach(s => {
 
 
     it('use the maxAge from the GlobalCacheConfig', async done => {
-      GlobalCacheConfig.maxAge = 10000;
-      const asyncFreshData = await service.getDataWithExpiration('test');
+      GlobalCacheConfig.maxAge = 1000;
+      const asyncFreshData = await service.getData3('test');
 
       expect(asyncFreshData).toEqual({ payload: 'test' });
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
 
-      const cachedResponse = await service.getDataWithExpiration('test');
+      const cachedResponse = await service.getData3('test');
       expect(cachedResponse).toEqual({ payload: 'test' });
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
 
       setTimeout(async () => {
         /**
-         * after 500ms the cache would've expired and we will bail to the data source
+         * after 1001ms the cache would've expired and we will bail to the data source
          */
-        await service.getDataWithExpiration('test');
+        await service.getData3('test');
         expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
         GlobalCacheConfig.maxAge = undefined;
         done();
-      }, 500);
-
+      }, 1001);
     });
   });
 });

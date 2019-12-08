@@ -23,4 +23,7 @@ export interface IService<T> {
     getDataWithMultipleUndefinedParameters(parameter: string, parameter1: string): T;
     getDateWithCustomStorageStrategyProvided(parameter: string): T;
     getDataAsync?(parameter: string): T;
+    getData1?(parameter: string): T;
+    getData2?(parameter: string): T;
+    getData3?(parameter: string): T;
 }
