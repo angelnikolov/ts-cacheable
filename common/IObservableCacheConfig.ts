@@ -1,5 +1,5 @@
 import { ICacheConfig } from './ICacheConfig';
-import { IStorageStrategy } from '.';
+import { IStorageStrategy } from './';
 
 export interface IObservableCacheConfig extends ICacheConfig {
   /**
