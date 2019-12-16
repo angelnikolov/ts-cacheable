@@ -1,5 +1,6 @@
 import { IStorageStrategy } from './IStorageStrategy';
 import { InMemoryStorageStrategy } from './InMemoryStorageStrategy';
+import { DOMStorageStrategy } from './DOMStorageStrategy';
 export var DEFAULT_CACHE_RESOLVER = function (oldParams, newParams) {
     return JSON.stringify(oldParams) === JSON.stringify(newParams);
 };
@@ -10,4 +11,5 @@ export var GlobalCacheConfig = {
     promiseImplementation: Promise
 };
 export { IStorageStrategy };
+export { DOMStorageStrategy };
 //# sourceMappingURL=index.js.map

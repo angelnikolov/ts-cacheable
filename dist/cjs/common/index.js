@@ -3,6 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var IStorageStrategy_1 = require("./IStorageStrategy");
 exports.IStorageStrategy = IStorageStrategy_1.IStorageStrategy;
 var InMemoryStorageStrategy_1 = require("./InMemoryStorageStrategy");
+var DOMStorageStrategy_1 = require("./DOMStorageStrategy");
+exports.DOMStorageStrategy = DOMStorageStrategy_1.DOMStorageStrategy;
 exports.DEFAULT_CACHE_RESOLVER = function (oldParams, newParams) {
     return JSON.stringify(oldParams) === JSON.stringify(newParams);
 };

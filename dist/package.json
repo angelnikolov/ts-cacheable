@@ -1,6 +1,6 @@
 {
   "name": "ngx-cacheable",
-  "version": "1.4.0-beta.10",
+  "version": "1.4.0-beta.11",
   "description": "Promise/Observable cache decorators",
   "main": "./cjs/index.js",
   "module": "./esm5/index.js",
