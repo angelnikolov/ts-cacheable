@@ -114,11 +114,9 @@ export function PCacheable(cacheConfig = {}) {
                     : GlobalCacheConfig.promiseImplementation;
                 let cachePairs = storageStrategy.getAll(cacheKey);
                 if (!(cachePairs instanceof promiseImplementation)) {
-                    return getResponse(oldMethod, cacheKey, cacheConfig, this, cachePairs, parameters, pendingCachePairs, storageStrategy, promiseImplementation);
+                    cachePairs = promiseImplementation.resolve(cachePairs);
                 }
-                else {
-                    return cachePairs.then(cachePairs => getResponse(oldMethod, cacheKey, cacheConfig, this, cachePairs, parameters, pendingCachePairs, storageStrategy, promiseImplementation));
-                }
+                return cachePairs.then(cachePairs => getResponse(oldMethod, cacheKey, cacheConfig, this, cachePairs, parameters, pendingCachePairs, storageStrategy, promiseImplementation));
             };
         }
         return propertyDescriptor;

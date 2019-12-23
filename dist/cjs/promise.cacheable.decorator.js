@@ -128,11 +128,9 @@ function PCacheable(cacheConfig) {
                     : common_1.GlobalCacheConfig.promiseImplementation;
                 var cachePairs = storageStrategy_1.getAll(cacheKey);
                 if (!(cachePairs instanceof promiseImplementation)) {
-                    return getResponse(oldMethod, cacheKey, cacheConfig, this, cachePairs, parameters, pendingCachePairs_1, storageStrategy_1, promiseImplementation);
+                    cachePairs = promiseImplementation.resolve(cachePairs);
                 }
-                else {
-                    return cachePairs.then(function (cachePairs) { return getResponse(oldMethod, cacheKey, cacheConfig, _this, cachePairs, parameters, pendingCachePairs_1, storageStrategy_1, promiseImplementation); });
-                }
+                return cachePairs.then(function (cachePairs) { return getResponse(oldMethod, cacheKey, cacheConfig, _this, cachePairs, parameters, pendingCachePairs_1, storageStrategy_1, promiseImplementation); });
             };
         }
         return propertyDescriptor;

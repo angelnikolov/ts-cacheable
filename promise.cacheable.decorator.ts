@@ -1,12 +1,12 @@
-import { empty, merge, Subject } from 'rxjs';
-import { DEFAULT_CACHE_RESOLVER, ICacheable, GlobalCacheConfig, IStorageStrategy, DEFAULT_HASHER } from './common';
-import { ICacheConfig } from './common/ICacheConfig';
-import { ICachePair } from './common/ICachePair';
-import { IAsyncStorageStrategy } from './common/IAsyncStorageStrategy';
+import {empty, merge, Subject} from 'rxjs';
+import {DEFAULT_CACHE_RESOLVER, ICacheable, GlobalCacheConfig, IStorageStrategy, DEFAULT_HASHER} from './common';
+import {ICacheConfig} from './common/ICacheConfig';
+import {ICachePair} from './common/ICachePair';
+import {IAsyncStorageStrategy} from './common/IAsyncStorageStrategy';
 export const promiseGlobalCacheBusterNotifier = new Subject<void>();
 
 
-const getResponse = (oldMethod: Function, cacheKey: string, cacheConfig: ICacheConfig, context: any, cachePairs: ICachePair<any>[], parameters: any[], pendingCachePairs: ICachePair<Promise<any>>[] | { parameters: any; response: Promise<any>; created: Date; }[], storageStrategy: IStorageStrategy | IAsyncStorageStrategy, promiseImplementation: any) => {
+const getResponse = (oldMethod: Function, cacheKey: string, cacheConfig: ICacheConfig, context: any, cachePairs: ICachePair<any>[], parameters: any[], pendingCachePairs: ICachePair<Promise<any>>[] | {parameters: any; response: Promise<any>; created: Date;}[], storageStrategy: IStorageStrategy | IAsyncStorageStrategy, promiseImplementation: any) => {
   let cacheParameters = cacheConfig.cacheHasher(parameters);
   let _foundCachePair = cachePairs.find(cp =>
     cacheConfig.cacheResolver(cp.parameters, cacheParameters)
@@ -145,10 +145,9 @@ export function PCacheable(cacheConfig: ICacheConfig = {}) {
           : GlobalCacheConfig.promiseImplementation as PromiseConstructorLike;
         let cachePairs = storageStrategy.getAll(cacheKey);
         if (!(cachePairs instanceof promiseImplementation)) {
-          return getResponse(oldMethod, cacheKey, cacheConfig, this, cachePairs as ICachePair<any>[], parameters, pendingCachePairs, storageStrategy, promiseImplementation)
-        } else {
-          return (cachePairs as Promise<ICachePair<any>[]>).then(cachePairs => getResponse(oldMethod, cacheKey, cacheConfig, this, cachePairs, parameters, pendingCachePairs, storageStrategy, promiseImplementation))
+          cachePairs = promiseImplementation.resolve(cachePairs);
         }
+        return (cachePairs as Promise<ICachePair<any>[]>).then(cachePairs => getResponse(oldMethod, cacheKey, cacheConfig, this, cachePairs, parameters, pendingCachePairs, storageStrategy, promiseImplementation))
       };
     }
 
