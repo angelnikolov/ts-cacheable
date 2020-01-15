@@ -158,7 +158,7 @@ globalCacheBusterNotifier.next();
 By default, both the Observable and Promise decorators are caching in-memory only. Now, there's another browser-only caching strategy called DOMCachingStrategy which will use localStorage to persist the data. This means that you can simply provide that strategy **somewhere up top in your application lifecycle** to your decorators with a couple of lines:
 ```ts
 import { GlobalCacheConfig } from 'ngx-cacheable'; 
-import { DOMStorageStrategy } from 'ngx-cacheable/common/DOMStorageStrategy'; 
+import { DOMStorageStrategy } from 'ngx-cacheable'; 
 GlobalCacheConfig.storageStrategy = DOMStorageStrategy;
 ```
 And that's it, from then on, your decorators will be `caching` in `localStorage` and all other cache config options from above will just work.
