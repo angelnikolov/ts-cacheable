@@ -1,5 +1,5 @@
 
-[![Actions Status](https://github.com/angelnikolov/ngx-cacheable/workflows/Node CI/badge.svg)](https://github.com/angelnikolov/ngx-cacheable/actions)
+[![Actions Status](https://github.com/angelnikolov/ngx-cacheable/workflows/test/badge.svg)](https://github.com/angelnikolov/ngx-cacheable/actions)
 
 # ngx-cacheable
 
