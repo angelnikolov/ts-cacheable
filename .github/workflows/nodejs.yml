@@ -1,4 +1,4 @@
-name: Node CI
+name: test
 
 on: [push, pull_request]
 
@@ -17,7 +17,7 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - name: npm install, build, and test
+    - name: npm install and test
       run: |
         npm ci
         npm install rxjs@6.2.0
