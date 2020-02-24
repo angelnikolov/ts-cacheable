@@ -32,6 +32,7 @@ export const GlobalCacheConfig: {
   maxCacheCount?: number;
   cacheResolver?: ICacheResolver;
   cacheHasher?: ICacheHasher;
+  shouldCacheDecider?: IShouldCacheDecider;
   storageStrategy: new () => IStorageStrategy | IAsyncStorageStrategy;
   globalCacheKey: string;
   promiseImplementation: (() => PromiseConstructorLike) | PromiseConstructorLike;
