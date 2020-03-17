@@ -42,4 +42,5 @@ export const GlobalCacheConfig: {
 }
 
 export { IStorageStrategy };
+export { IAsyncStorageStrategy };
 export { DOMStorageStrategy };
