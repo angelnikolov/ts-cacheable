@@ -22,4 +22,5 @@ export declare const GlobalCacheConfig: {
     promiseImplementation: (() => PromiseConstructorLike) | PromiseConstructorLike;
 };
 export { IStorageStrategy };
+export { IAsyncStorageStrategy };
 export { DOMStorageStrategy };

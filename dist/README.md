@@ -1,4 +1,6 @@
-[![Build Status](https://travis-ci.org/angelnikolov/ngx-cacheable.svg?branch=master)](https://travis-ci.org/angelnikolov/ngx-cacheable)
+
+[![Actions Status](https://github.com/angelnikolov/ngx-cacheable/workflows/test/badge.svg)](https://github.com/angelnikolov/ngx-cacheable/actions)
+
 # ngx-cacheable
 
 Observable/Promise cache decorator you can use to decorate class methods which return streams and cache their return values.
