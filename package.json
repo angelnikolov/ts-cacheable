@@ -34,8 +34,5 @@
     "karma-jasmine": "^2.0.1",
     "karma-typescript": "^4.1.0",
     "typescript": "^2.8.1"
-  },
-  "dependencies": {
-    "rxjs": "^6.5.4"
   }
 }
