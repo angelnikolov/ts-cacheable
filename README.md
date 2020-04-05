@@ -151,7 +151,7 @@ export class Service {
 
 If you want to globally bust your whole cache (i.e caches of all Cacheable decorators), just import the `globalCacheBusterNotifier` and call `next()` on it, like:
 ```typescript
-import { globalCacheBusterNotifier } from './cacheable.decorator';
+import { globalCacheBusterNotifier } from 'ngx-cacheable';
 
 globalCacheBusterNotifier.next();
 ``` 
