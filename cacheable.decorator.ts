@@ -99,8 +99,8 @@ export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
                * if maxCacheCount has been passed, respect that and only shift the cachePairs if the new cachePair will make them exceed the count
                */
               if (
-                (!cacheConfig.shouldCacheDecider || cacheConfig.shouldCacheDecider(response)) ||
-                (!GlobalCacheConfig.shouldCacheDecider || GlobalCacheConfig.shouldCacheDecider(response))
+                (cacheConfig.shouldCacheDecider && cacheConfig.shouldCacheDecider(response)) ||
+                (!cacheConfig.shouldCacheDecider && (!GlobalCacheConfig.shouldCacheDecider || GlobalCacheConfig.shouldCacheDecider(response)))
               ) {
                 if (
                   !(cacheConfig.maxCacheCount || GlobalCacheConfig.maxCacheCount) ||

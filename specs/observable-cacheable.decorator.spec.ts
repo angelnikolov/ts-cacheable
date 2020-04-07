@@ -771,6 +771,97 @@ strategies.forEach(s => {
        * the service call count won't be incremented
        */
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(3);
+      GlobalCacheConfig.shouldCacheDecider = undefined;
+    });
+
+    it('only cache data when a specific response (set from globalConfig) is returned, otherwise it should bail to service call', () => {
+      GlobalCacheConfig.shouldCacheDecider = (response: { payload: string }) => {
+        return response.payload === 'test';
+      }
+      const asyncData = _timedStreamAsyncAwait(
+        service.getData('test1'),
+        1000
+      );
+      expect(asyncData).toEqual({ payload: 'test1' });
+      expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+
+      /**
+       * this call shouldn't be cached, since the custom response decider hasn't passed
+       */
+      const cachedData = _timedStreamAsyncAwait(
+        service.getData('test1')
+      );
+      expect(cachedData).toEqual(null);
+      expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
+
+      /**
+       * next calls will be for 'test' whose response will match the cache deciders condition and it will be cached
+       */
+
+      const asyncData2 = _timedStreamAsyncAwait(
+        service.getData('test'),
+        1000
+      );
+      expect(asyncData2).toEqual({ payload: 'test' });
+      expect(mockServiceCallSpy).toHaveBeenCalledTimes(3);
+
+      /**
+       * this call has to return cached data, since we the response cache decider should have matched the previous one
+       */
+      const cachedData2 = _timedStreamAsyncAwait(
+        service.getData('test')
+      );
+      expect(cachedData2).toEqual({ payload: 'test' });
+      /**
+       * the service call count won't be incremented
+       */
+      expect(mockServiceCallSpy).toHaveBeenCalledTimes(3);
+      GlobalCacheConfig.shouldCacheDecider = undefined;
+    });
+
+    it('only cache data when a specific response is returned (local precede globalConfig), otherwise it should bail to service call', () => {
+      GlobalCacheConfig.shouldCacheDecider = (response: { payload: string }) => {
+        return response.payload === 'test1';
+      }
+      const asyncData = _timedStreamAsyncAwait(
+        service.getDataWithCustomCacheDecider('test1'),
+        1000
+      );
+      expect(asyncData).toEqual({ payload: 'test1' });
+      expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+
+      /**
+       * this call shouldn't be cached, since the custom response decider hasn't passed
+       */
+      const cachedData = _timedStreamAsyncAwait(
+        service.getDataWithCustomCacheDecider('test1')
+      );
+      expect(cachedData).toEqual(null);
+      expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
+
+      /**
+       * next calls will be for 'test' whose response will match the cache deciders condition and it will be cached
+       */
+
+      const asyncData2 = _timedStreamAsyncAwait(
+        service.getDataWithCustomCacheDecider('test'),
+        1000
+      );
+      expect(asyncData2).toEqual({ payload: 'test' });
+      expect(mockServiceCallSpy).toHaveBeenCalledTimes(3);
+
+      /**
+       * this call has to return cached data, since we the response cache decider should have matched the previous one
+       */
+      const cachedData2 = _timedStreamAsyncAwait(
+        service.getDataWithCustomCacheDecider('test')
+      );
+      expect(cachedData2).toEqual({ payload: 'test' });
+      /**
+       * the service call count won't be incremented
+       */
+      expect(mockServiceCallSpy).toHaveBeenCalledTimes(3);
+      GlobalCacheConfig.shouldCacheDecider = undefined;
     });
 
     it('cache data until the cacheBusterNotifier has emitted', () => {
