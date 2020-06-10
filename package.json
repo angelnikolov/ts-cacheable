@@ -1,11 +1,11 @@
 {
   "name": "ngx-cacheable",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "Promise/Observable cache decorators",
-  "main": "./cjs/index.js",
-  "module": "./esm5/index.js",
-  "es2015": "./esm2015/index.js",
-  "types": "./cjs/index.d.ts",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm5/index.js",
+  "es2015": "./dist/esm2015/index.js",
+  "types": "./dist/cjs/index.d.ts",
   "sideEffects": false,
   "scripts": {
     "test": "karma start",
@@ -13,7 +13,7 @@
     "build:cjs": "rm -rf dist && tsc",
     "build:esm5": "tsc --p tsconfig.esm5.json",
     "build:esm2015": "tsc --p tsconfig.esm2015.json",
-    "build:all": "npm run build:cjs && npm run build:esm5 && npm run build:esm2015 && cp package.json ./dist && cp README.md ./dist/README.md"
+    "build:all": "npm run build:cjs && npm run build:esm5 && npm run build:esm2015"
   },
   "repository": {
     "type": "git",
