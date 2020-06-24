@@ -22,7 +22,6 @@ jobs:
         npm ci
         npm install rxjs@6.2.0
         npm test
-        ls
       env:
         CI: true
     - name: Upload coverage to Codecov
