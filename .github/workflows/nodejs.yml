@@ -22,10 +22,12 @@ jobs:
         npm ci
         npm install rxjs@6.2.0
         npm test
+        ls
       env:
         CI: true
     - uses: actions/checkout@master
     - uses: codecov/codecov-action@v1
+      run: ls
       with:
         file: ./coverage/lcov/coverage.xml # optional
         name: codecoverage # optional
