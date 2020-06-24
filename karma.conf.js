@@ -1,4 +1,4 @@
-module.exports = function (config) {
+module.exports = function(config) {
   config.set({
     frameworks: ['jasmine', 'karma-typescript'],
     browsers: ['ChromeHeadlessNoSandbox'],
@@ -23,7 +23,14 @@ module.exports = function (config) {
       '**/*.ts': 'karma-typescript'
     },
     karmaTypescriptConfig: {
-      tsconfig: './tsconfig.json'
+      tsconfig: './tsconfig.json',
+      reports: {
+        lcovonly: {
+          "directory": "coverage",
+          "subdirectory": "lcov",
+          "filename": "coverage.xml",
+        }
+      }
     },
     // you can define custom flags
     customLaunchers: {

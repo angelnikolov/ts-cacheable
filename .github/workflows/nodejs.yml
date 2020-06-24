@@ -24,3 +24,9 @@ jobs:
         npm test
       env:
         CI: true
+    - uses: actions/checkout@master
+    - uses: codecov/codecov-action@v1
+      with:
+        file: ./coverage/lcov/coverage.xml # optional
+        name: codecoverage # optional
+        fail_ci_if_error: true # optional (default = false)
