@@ -5,13 +5,16 @@ import { IObservableCacheConfig } from './common/IObservableCacheConfig';
 import { ICachePair } from './common/ICachePair';
 export const globalCacheBusterNotifier = new Subject<void>();
 
+let targetCounter = 0;
+
 export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
   return function(
-    _target: Object,
+    _target: Object & { __cacheId?: number },
     _propertyKey: string,
     propertyDescriptor: TypedPropertyDescriptor<ICacheable<Observable<any>>>
   ) {
-    const cacheKey = cacheConfig.cacheKey || _target.constructor.name + '#' + _propertyKey;
+    _target.__cacheId = _target.__cacheId || targetCounter++;
+    const cacheKey = `${_target.__cacheId}#${cacheConfig.cacheKey || _target.constructor.name + '#' + _propertyKey}`;
     const oldMethod = propertyDescriptor.value;
     if (propertyDescriptor && propertyDescriptor.value) {
       let storageStrategy: IStorageStrategy = !cacheConfig.storageStrategy
