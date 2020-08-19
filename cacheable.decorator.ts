@@ -5,6 +5,8 @@ import { IObservableCacheConfig } from './common/IObservableCacheConfig';
 import { ICachePair } from './common/ICachePair';
 export const globalCacheBusterNotifier = new Subject<void>();
 
+let targetCounter = 0;
+
 export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
   return function(
     _target: Object,
@@ -18,20 +20,6 @@ export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
         ? new GlobalCacheConfig.storageStrategy() as IStorageStrategy
         : new cacheConfig.storageStrategy();
       const pendingCachePairs: Array<ICachePair<Observable<any>>> = [];
-      /**
-       * subscribe to the globalCacheBuster
-       * if a custom cacheBusterObserver is passed, subscribe to it as well
-       * subscribe to the cacheBusterObserver and upon emission, clear all caches
-       */
-      merge(
-        globalCacheBusterNotifier.asObservable(),
-        cacheConfig.cacheBusterObserver
-          ? cacheConfig.cacheBusterObserver
-          : empty()
-      ).subscribe(_ => {
-        storageStrategy.removeAll(cacheKey);
-        pendingCachePairs.length = 0;
-      });
       const cacheResolver = cacheConfig.cacheResolver || GlobalCacheConfig.cacheResolver;
       cacheConfig.cacheResolver = cacheResolver
         ? cacheResolver
@@ -43,7 +31,23 @@ export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
 
       /* use function instead of an arrow function to keep context of invocation */
       (propertyDescriptor.value as any) = function(...parameters: Array<any>) {
-        const cachePairs: Array<ICachePair<Observable<any>>> = storageStrategy.getAll(cacheKey);
+        this.__cacheId == this.__cacheId || targetCounter++;
+        const localCacheKey = `${this.__cacheId}#${cacheKey}`
+        /**
+         * subscribe to the globalCacheBuster
+         * if a custom cacheBusterObserver is passed, subscribe to it as well
+         * subscribe to the cacheBusterObserver and upon emission, clear all caches
+         */
+        this.__cacheBusterSubscription = this.__cacheBusterSubscription || merge(
+          globalCacheBusterNotifier.asObservable(),
+          cacheConfig.cacheBusterObserver
+            ? cacheConfig.cacheBusterObserver
+            : empty()
+        ).subscribe(_ => {
+          storageStrategy.removeAll(localCacheKey);
+          pendingCachePairs.length = 0;
+        });
+        const cachePairs: Array<ICachePair<Observable<any>>> = storageStrategy.getAll(localCacheKey);
         let cacheParameters = cacheConfig.cacheHasher(parameters);
         let _foundCachePair = cachePairs.find(cp =>
           cacheConfig.cacheResolver(cp.parameters, cacheParameters));
@@ -61,14 +65,14 @@ export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
             /**
              * cache duration has expired - remove it from the cachePairs array
              */
-            storageStrategy.removeAtIndex(cachePairs.indexOf(_foundCachePair), cacheKey);
+            storageStrategy.removeAtIndex(cachePairs.indexOf(_foundCachePair), localCacheKey);
             _foundCachePair = null;
           } else if (cacheConfig.slidingExpiration || GlobalCacheConfig.slidingExpiration) {
             /**
              * renew cache duration
              */
             _foundCachePair.created = new Date();
-            storageStrategy.updateAtIndex(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey);
+            storageStrategy.updateAtIndex(cachePairs.indexOf(_foundCachePair), _foundCachePair, localCacheKey);
           }
         }
 
@@ -108,13 +112,13 @@ export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
                   ((cacheConfig.maxCacheCount || GlobalCacheConfig.maxCacheCount) &&
                     (cacheConfig.maxCacheCount || GlobalCacheConfig.maxCacheCount) < cachePairs.length + 1)
                 ) {
-                  storageStrategy.removeAtIndex(0, cacheKey);
+                  storageStrategy.removeAtIndex(0, localCacheKey);
                 }
                 storageStrategy.add({
                   parameters: cacheParameters,
                   response,
                   created: (cacheConfig.maxAge || GlobalCacheConfig.maxAge) ? new Date() : null
-                }, cacheKey);
+                }, localCacheKey);
               }
             }),
             publishReplay(1),
