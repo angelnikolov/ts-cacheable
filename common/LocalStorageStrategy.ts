@@ -1,9 +1,6 @@
 import { IStorageStrategy } from './IStorageStrategy';
 import { ICachePair, GlobalCacheConfig } from '.';
-/**
- * @deprecated Use {@link LocalStorageStrategy} instead.
- */
-export class DOMStorageStrategy extends IStorageStrategy {
+export class LocalStorageStrategy extends IStorageStrategy {
   private masterCacheKey: string = GlobalCacheConfig.globalCacheKey;
   constructor() {
     super();

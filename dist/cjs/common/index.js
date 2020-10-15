@@ -7,6 +7,8 @@ var IAsyncStorageStrategy_1 = require("./IAsyncStorageStrategy");
 exports.IAsyncStorageStrategy = IAsyncStorageStrategy_1.IAsyncStorageStrategy;
 var DOMStorageStrategy_1 = require("./DOMStorageStrategy");
 exports.DOMStorageStrategy = DOMStorageStrategy_1.DOMStorageStrategy;
+var LocalStorageStrategy_1 = require("./LocalStorageStrategy");
+exports.LocalStorageStrategy = LocalStorageStrategy_1.LocalStorageStrategy;
 exports.DEFAULT_CACHE_RESOLVER = function (oldParams, newParams) {
     return JSON.stringify(oldParams) === JSON.stringify(newParams);
 };

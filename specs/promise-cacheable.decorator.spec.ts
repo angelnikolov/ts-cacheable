@@ -3,7 +3,7 @@ import { PCacheBuster } from '../promise.cache-buster.decorator';
 import { PCacheable } from '../promise.cacheable.decorator';
 import { promiseGlobalCacheBusterNotifier } from '../promise.cacheable.decorator';
 import { GlobalCacheConfig, ICachePair } from '../common';
-import { DOMStorageStrategy } from '../common/DOMStorageStrategy';
+import { LocalStorageStrategy } from '../common/LocalStorageStrategy';
 import { InMemoryStorageStrategy } from '../common/InMemoryStorageStrategy';
 import { IAsyncStorageStrategy } from 'common/IAsyncStorageStrategy';
 import { IService } from './service.interface';
@@ -37,7 +37,7 @@ class AsyncStorageStrategy extends IAsyncStorageStrategy {
     return Promise.resolve();
   }
 }
-const strategies = [null, AsyncStorageStrategy, DOMStorageStrategy];
+const strategies = [null, AsyncStorageStrategy, LocalStorageStrategy];
 strategies.forEach(s => {
   const cacheBusterNotifier = new Subject();
   if (s) {
@@ -215,7 +215,7 @@ strategies.forEach(s => {
     beforeEach(() => {
       service = new Service();
       mockServiceCallSpy = spyOn(service, 'mockServiceCall').and.callThrough();
-      if (GlobalCacheConfig.storageStrategy === DOMStorageStrategy) {
+      if (GlobalCacheConfig.storageStrategy === LocalStorageStrategy) {
         localStorage.clear();
       }
     });

@@ -9,6 +9,7 @@ module.exports = function(config) {
       './common/IAsyncStorageStrategy.ts',
       './common/IStorageStrategy.ts',
       './common/DOMStorageStrategy.ts',
+      './common/LocalStorageStrategy.ts',
       './common/InMemoryStorageStrategy.ts',
       './cacheable.decorator.ts',
       './cache-buster.decorator.ts',

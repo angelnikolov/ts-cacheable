@@ -6,13 +6,13 @@ import { CacheBuster } from '../cache-buster.decorator';
 import { timer, Subject } from 'rxjs';
 import { mapTo } from 'rxjs/operators';
 import { GlobalCacheConfig } from '../common';
-import { DOMStorageStrategy } from '../common/DOMStorageStrategy';
+import { LocalStorageStrategy } from '../common/LocalStorageStrategy';
 import { InMemoryStorageStrategy } from '../common/InMemoryStorageStrategy';
 import { IService } from './service.interface';
 import { Cat } from './cat';
 const strategies: any[] = [
   null,
-  DOMStorageStrategy
+  LocalStorageStrategy
 ];
 strategies.forEach(s => {
   if (s) {
@@ -172,7 +172,7 @@ strategies.forEach(s => {
       jasmine.clock().install();
       service = new Service();
       mockServiceCallSpy = spyOn(service, 'mockServiceCall').and.callThrough();
-      if (GlobalCacheConfig.storageStrategy === DOMStorageStrategy) {
+      if (GlobalCacheConfig.storageStrategy === LocalStorageStrategy) {
         localStorage.clear();
       }
     });

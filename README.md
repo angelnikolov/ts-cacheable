@@ -1,7 +1,9 @@
 
 [![Actions Status](https://github.com/angelnikolov/ngx-cacheable/workflows/test/badge.svg)](https://github.com/angelnikolov/ngx-cacheable/actions)
+# ngx-cacheable is becoming ts-cacheable
+Initially, the project has been created for the purposes of a clientside Angular application. Since then, it has grown into becoming a popular platform-agnostic caching library. Therfore, we no longer need the ngx prefix.
 
-# ngx-cacheable
+# ts-cacheable
 
 Observable/Promise cache decorator you can use to decorate class methods which return streams and cache their return values.
 
@@ -10,11 +12,11 @@ Observable/Promise cache decorator you can use to decorate class methods which r
 To install the package, just run
 
 ```
-npm install ngx-cacheable
+npm install ts-cacheable
 ```
-Import the decorator from ngx-cacheable like:
+Import the decorator from ts-cacheable like:
 ```
-import { Cacheable } from 'ngx-cacheable';
+import { Cacheable } from 'ts-cacheable';
 ```
 and use it decorate any class method like:
 ```ts
@@ -119,7 +121,7 @@ Here are all the possible global configurations:
   storageStrategy: new () => IStorageStrategy | IAsyncStorageStrategy;
   /**
    * @description global cache key which will be used to namespace the cache.
-   * for example, it will be used in the DOMStorageStrategy for now.
+   * for example, it will be used in the LocalStorageStrategy for now.
    */
   globalCacheKey: string;
   /**
@@ -151,7 +153,7 @@ export class Service {
 
 If you want to globally bust your whole cache (i.e caches of all Cacheable decorators), just import the `globalCacheBusterNotifier` and call `next()` on it, like:
 ```typescript
-import { globalCacheBusterNotifier } from 'ngx-cacheable';
+import { globalCacheBusterNotifier } from 'ts-cacheable';
 
 globalCacheBusterNotifier.next();
 ``` 
@@ -159,9 +161,9 @@ globalCacheBusterNotifier.next();
 ### Storage Strategies
 By default, both the Observable and Promise decorators are caching in-memory only. Now, there's another browser-only caching strategy called DOMCachingStrategy which will use localStorage to persist the data. This means that you can simply provide that strategy **somewhere up top in your application lifecycle** to your decorators with a couple of lines:
 ```ts
-import { GlobalCacheConfig } from 'ngx-cacheable'; 
-import { DOMStorageStrategy } from 'ngx-cacheable'; 
-GlobalCacheConfig.storageStrategy = DOMStorageStrategy;
+import { GlobalCacheConfig } from 'ts-cacheable'; 
+import { LocalStorageStrategy } from 'ts-cacheable'; 
+GlobalCacheConfig.storageStrategy = LocalStorageStrategy;
 ```
 And that's it, from then on, your decorators will be `caching` in `localStorage` and all other cache config options from above will just work.
 Also, you can specify the caching strategy on a decorator basis, so if you want a different strategy for one decorator only, just provide it via the cacheConfig object like:

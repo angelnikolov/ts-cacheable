@@ -1,9 +1,6 @@
 import { IStorageStrategy } from './IStorageStrategy';
 import { ICachePair } from '.';
-/**
- * @deprecated Use {@link LocalStorageStrategy} instead.
- */
-export declare class DOMStorageStrategy extends IStorageStrategy {
+export declare class LocalStorageStrategy extends IStorageStrategy {
     private masterCacheKey;
     constructor();
     add(cachePair: ICachePair<any>, cacheKey: string): void;

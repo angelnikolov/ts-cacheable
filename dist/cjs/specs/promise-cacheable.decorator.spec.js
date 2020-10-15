@@ -57,7 +57,7 @@ var promise_cache_buster_decorator_1 = require("../promise.cache-buster.decorato
 var promise_cacheable_decorator_1 = require("../promise.cacheable.decorator");
 var promise_cacheable_decorator_2 = require("../promise.cacheable.decorator");
 var common_1 = require("../common");
-var DOMStorageStrategy_1 = require("../common/DOMStorageStrategy");
+var LocalStorageStrategy_1 = require("../common/LocalStorageStrategy");
 var InMemoryStorageStrategy_1 = require("../common/InMemoryStorageStrategy");
 var IAsyncStorageStrategy_1 = require("common/IAsyncStorageStrategy");
 var cat_1 = require("./cat");
@@ -93,7 +93,7 @@ var AsyncStorageStrategy = /** @class */ (function (_super) {
     };
     return AsyncStorageStrategy;
 }(IAsyncStorageStrategy_1.IAsyncStorageStrategy));
-var strategies = [null, AsyncStorageStrategy, DOMStorageStrategy_1.DOMStorageStrategy];
+var strategies = [null, AsyncStorageStrategy, LocalStorageStrategy_1.LocalStorageStrategy];
 strategies.forEach(function (s) {
     var cacheBusterNotifier = new rxjs_1.Subject();
     if (s) {
@@ -289,7 +289,7 @@ strategies.forEach(function (s) {
         beforeEach(function () {
             service = new Service();
             mockServiceCallSpy = spyOn(service, 'mockServiceCall').and.callThrough();
-            if (common_1.GlobalCacheConfig.storageStrategy === DOMStorageStrategy_1.DOMStorageStrategy) {
+            if (common_1.GlobalCacheConfig.storageStrategy === LocalStorageStrategy_1.LocalStorageStrategy) {
                 localStorage.clear();
             }
         });

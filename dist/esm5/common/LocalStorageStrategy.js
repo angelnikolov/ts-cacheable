@@ -10,12 +10,9 @@ var __extends = (this && this.__extends) || (function () {
 })();
 import { IStorageStrategy } from './IStorageStrategy';
 import { GlobalCacheConfig } from '.';
-/**
- * @deprecated Use {@link LocalStorageStrategy} instead.
- */
-var DOMStorageStrategy = /** @class */ (function (_super) {
-    __extends(DOMStorageStrategy, _super);
-    function DOMStorageStrategy() {
+var LocalStorageStrategy = /** @class */ (function (_super) {
+    __extends(LocalStorageStrategy, _super);
+    function LocalStorageStrategy() {
         var _this = _super.call(this) || this;
         _this.masterCacheKey = GlobalCacheConfig.globalCacheKey;
         if (typeof localStorage == 'undefined') {
@@ -23,7 +20,7 @@ var DOMStorageStrategy = /** @class */ (function (_super) {
         }
         return _this;
     }
-    DOMStorageStrategy.prototype.add = function (cachePair, cacheKey) {
+    LocalStorageStrategy.prototype.add = function (cachePair, cacheKey) {
         var allCachedData = this.getRawData();
         if (!allCachedData[cacheKey]) {
             allCachedData[cacheKey] = [];
@@ -32,32 +29,32 @@ var DOMStorageStrategy = /** @class */ (function (_super) {
         this.storeRawData(allCachedData);
     };
     ;
-    DOMStorageStrategy.prototype.getAll = function (cacheKey) {
+    LocalStorageStrategy.prototype.getAll = function (cacheKey) {
         return this.getRawData()[cacheKey] || [];
     };
     ;
-    DOMStorageStrategy.prototype.removeAtIndex = function (index, cacheKey) {
+    LocalStorageStrategy.prototype.removeAtIndex = function (index, cacheKey) {
         var allCachedData = this.getRawData();
         if (allCachedData[cacheKey] && allCachedData[cacheKey].length) {
             allCachedData[cacheKey].splice(index, 1);
         }
         this.storeRawData(allCachedData);
     };
-    DOMStorageStrategy.prototype.updateAtIndex = function (index, entity, cacheKey) {
+    LocalStorageStrategy.prototype.updateAtIndex = function (index, entity, cacheKey) {
         var allCachedData = this.getRawData();
         if (allCachedData[cacheKey] && allCachedData[cacheKey][index]) {
             allCachedData[cacheKey][index] = entity;
         }
         this.storeRawData(allCachedData);
     };
-    DOMStorageStrategy.prototype.removeAll = function (cacheKey) {
+    LocalStorageStrategy.prototype.removeAll = function (cacheKey) {
         var allCachedData = this.getRawData();
         if (allCachedData[cacheKey] && allCachedData[cacheKey].length) {
             allCachedData[cacheKey].length = 0;
         }
         this.storeRawData(allCachedData);
     };
-    DOMStorageStrategy.prototype.getRawData = function () {
+    LocalStorageStrategy.prototype.getRawData = function () {
         var data = localStorage.getItem(this.masterCacheKey);
         try {
             return JSON.parse(data) || {};
@@ -66,10 +63,10 @@ var DOMStorageStrategy = /** @class */ (function (_super) {
             throw new Error(error);
         }
     };
-    DOMStorageStrategy.prototype.storeRawData = function (data) {
+    LocalStorageStrategy.prototype.storeRawData = function (data) {
         localStorage.setItem(this.masterCacheKey, JSON.stringify(data));
     };
-    return DOMStorageStrategy;
+    return LocalStorageStrategy;
 }(IStorageStrategy));
-export { DOMStorageStrategy };
-//# sourceMappingURL=DOMStorageStrategy.js.map
+export { LocalStorageStrategy };
+//# sourceMappingURL=LocalStorageStrategy.js.map

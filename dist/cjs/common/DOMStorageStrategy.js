@@ -12,6 +12,9 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var IStorageStrategy_1 = require("./IStorageStrategy");
 var _1 = require(".");
+/**
+ * @deprecated Use {@link LocalStorageStrategy} instead.
+ */
 var DOMStorageStrategy = /** @class */ (function (_super) {
     __extends(DOMStorageStrategy, _super);
     function DOMStorageStrategy() {
