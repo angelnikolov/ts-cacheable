@@ -2,6 +2,7 @@ import { IStorageStrategy } from './IStorageStrategy';
 import { InMemoryStorageStrategy } from './InMemoryStorageStrategy';
 import { IAsyncStorageStrategy } from './IAsyncStorageStrategy';
 import { DOMStorageStrategy } from './DOMStorageStrategy';
+import { LocalStorageStrategy } from './LocalStorageStrategy';
 export var DEFAULT_CACHE_RESOLVER = function (oldParams, newParams) {
     return JSON.stringify(oldParams) === JSON.stringify(newParams);
 };
@@ -14,4 +15,5 @@ export var GlobalCacheConfig = {
 export { IStorageStrategy };
 export { IAsyncStorageStrategy };
 export { DOMStorageStrategy };
+export { LocalStorageStrategy };
 //# sourceMappingURL=index.js.map

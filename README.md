@@ -1,5 +1,7 @@
-
 [![Actions Status](https://github.com/angelnikolov/ts-cacheable/workflows/test/badge.svg)](https://github.com/angelnikolov/ts-cacheable/actions)
+# ngx-cacheable is becoming ts-cacheable
+Initially, the project has been created for the purposes of a clientside Angular application. Since then, it has grown into becoming a popular platform-agnostic caching library. Therfore, we no longer need the ngx prefix.
+
 
 # ts-cacheable
 
@@ -119,7 +121,7 @@ Here are all the possible global configurations:
   storageStrategy: new () => IStorageStrategy | IAsyncStorageStrategy;
   /**
    * @description global cache key which will be used to namespace the cache.
-   * for example, it will be used in the DOMStorageStrategy for now.
+   * for example, it will be used in the LocalStorageStrategy for now.
    */
   globalCacheKey: string;
   /**
@@ -160,8 +162,8 @@ globalCacheBusterNotifier.next();
 By default, both the Observable and Promise decorators are caching in-memory only. Now, there's another browser-only caching strategy called DOMCachingStrategy which will use localStorage to persist the data. This means that you can simply provide that strategy **somewhere up top in your application lifecycle** to your decorators with a couple of lines:
 ```ts
 import { GlobalCacheConfig } from 'ts-cacheable'; 
-import { DOMStorageStrategy } from 'ts-cacheable'; 
-GlobalCacheConfig.storageStrategy = DOMStorageStrategy;
+import { LocalStorageStrategy } from 'ts-cacheable'; 
+GlobalCacheConfig.storageStrategy = LocalStorageStrategy;
 ```
 And that's it, from then on, your decorators will be `caching` in `localStorage` and all other cache config options from above will just work.
 Also, you can specify the caching strategy on a decorator basis, so if you want a different strategy for one decorator only, just provide it via the cacheConfig object like:

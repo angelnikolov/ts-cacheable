@@ -1,3 +1,4 @@
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -8,22 +9,20 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-import { IStorageStrategy } from './IStorageStrategy';
-import { GlobalCacheConfig } from '.';
-/**
- * @deprecated Use {@link LocalStorageStrategy} instead.
- */
-var DOMStorageStrategy = /** @class */ (function (_super) {
-    __extends(DOMStorageStrategy, _super);
-    function DOMStorageStrategy() {
+Object.defineProperty(exports, "__esModule", { value: true });
+var IStorageStrategy_1 = require("./IStorageStrategy");
+var _1 = require(".");
+var LocalStorageStrategy = /** @class */ (function (_super) {
+    __extends(LocalStorageStrategy, _super);
+    function LocalStorageStrategy() {
         var _this = _super.call(this) || this;
-        _this.masterCacheKey = GlobalCacheConfig.globalCacheKey;
+        _this.masterCacheKey = _1.GlobalCacheConfig.globalCacheKey;
         if (typeof localStorage == 'undefined') {
             throw new Error('Platform not supported.');
         }
         return _this;
     }
-    DOMStorageStrategy.prototype.add = function (cachePair, cacheKey) {
+    LocalStorageStrategy.prototype.add = function (cachePair, cacheKey) {
         var allCachedData = this.getRawData();
         if (!allCachedData[cacheKey]) {
             allCachedData[cacheKey] = [];
@@ -32,32 +31,32 @@ var DOMStorageStrategy = /** @class */ (function (_super) {
         this.storeRawData(allCachedData);
     };
     ;
-    DOMStorageStrategy.prototype.getAll = function (cacheKey) {
+    LocalStorageStrategy.prototype.getAll = function (cacheKey) {
         return this.getRawData()[cacheKey] || [];
     };
     ;
-    DOMStorageStrategy.prototype.removeAtIndex = function (index, cacheKey) {
+    LocalStorageStrategy.prototype.removeAtIndex = function (index, cacheKey) {
         var allCachedData = this.getRawData();
         if (allCachedData[cacheKey] && allCachedData[cacheKey].length) {
             allCachedData[cacheKey].splice(index, 1);
         }
         this.storeRawData(allCachedData);
     };
-    DOMStorageStrategy.prototype.updateAtIndex = function (index, entity, cacheKey) {
+    LocalStorageStrategy.prototype.updateAtIndex = function (index, entity, cacheKey) {
         var allCachedData = this.getRawData();
         if (allCachedData[cacheKey] && allCachedData[cacheKey][index]) {
             allCachedData[cacheKey][index] = entity;
         }
         this.storeRawData(allCachedData);
     };
-    DOMStorageStrategy.prototype.removeAll = function (cacheKey) {
+    LocalStorageStrategy.prototype.removeAll = function (cacheKey) {
         var allCachedData = this.getRawData();
         if (allCachedData[cacheKey] && allCachedData[cacheKey].length) {
             allCachedData[cacheKey].length = 0;
         }
         this.storeRawData(allCachedData);
     };
-    DOMStorageStrategy.prototype.getRawData = function () {
+    LocalStorageStrategy.prototype.getRawData = function () {
         var data = localStorage.getItem(this.masterCacheKey);
         try {
             return JSON.parse(data) || {};
@@ -66,10 +65,10 @@ var DOMStorageStrategy = /** @class */ (function (_super) {
             throw new Error(error);
         }
     };
-    DOMStorageStrategy.prototype.storeRawData = function (data) {
+    LocalStorageStrategy.prototype.storeRawData = function (data) {
         localStorage.setItem(this.masterCacheKey, JSON.stringify(data));
     };
-    return DOMStorageStrategy;
-}(IStorageStrategy));
-export { DOMStorageStrategy };
-//# sourceMappingURL=DOMStorageStrategy.js.map
+    return LocalStorageStrategy;
+}(IStorageStrategy_1.IStorageStrategy));
+exports.LocalStorageStrategy = LocalStorageStrategy;
+//# sourceMappingURL=LocalStorageStrategy.js.map

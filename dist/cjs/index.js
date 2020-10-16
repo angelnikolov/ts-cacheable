@@ -10,4 +10,5 @@ __export(require("./promise.cacheable.decorator"));
 __export(require("./common"));
 __export(require("./common/InMemoryStorageStrategy"));
 __export(require("./common/DOMStorageStrategy"));
+__export(require("./common/LocalStorageStrategy"));
 //# sourceMappingURL=index.js.map

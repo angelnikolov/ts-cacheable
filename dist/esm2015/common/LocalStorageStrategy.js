@@ -1,9 +1,6 @@
 import { IStorageStrategy } from './IStorageStrategy';
 import { GlobalCacheConfig } from '.';
-/**
- * @deprecated Use {@link LocalStorageStrategy} instead.
- */
-export class DOMStorageStrategy extends IStorageStrategy {
+export class LocalStorageStrategy extends IStorageStrategy {
     constructor() {
         super();
         this.masterCacheKey = GlobalCacheConfig.globalCacheKey;
@@ -58,4 +55,4 @@ export class DOMStorageStrategy extends IStorageStrategy {
         localStorage.setItem(this.masterCacheKey, JSON.stringify(data));
     }
 }
-//# sourceMappingURL=DOMStorageStrategy.js.map
+//# sourceMappingURL=LocalStorageStrategy.js.map

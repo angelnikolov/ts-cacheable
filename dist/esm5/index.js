@@ -5,4 +5,5 @@ export * from './promise.cacheable.decorator';
 export * from './common';
 export * from './common/InMemoryStorageStrategy';
 export * from './common/DOMStorageStrategy';
+export * from './common/LocalStorageStrategy';
 //# sourceMappingURL=index.js.map
