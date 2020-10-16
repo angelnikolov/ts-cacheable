@@ -1,7 +1,7 @@
-
-[![Actions Status](https://github.com/angelnikolov/ngx-cacheable/workflows/test/badge.svg)](https://github.com/angelnikolov/ngx-cacheable/actions)
+[![Actions Status](https://github.com/angelnikolov/ts-cacheable/workflows/test/badge.svg)](https://github.com/angelnikolov/ts-cacheable/actions)
 # ngx-cacheable is becoming ts-cacheable
 Initially, the project has been created for the purposes of a clientside Angular application. Since then, it has grown into becoming a popular platform-agnostic caching library. Therfore, we no longer need the ngx prefix.
+
 
 # ts-cacheable
 
