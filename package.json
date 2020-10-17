@@ -1,6 +1,6 @@
 {
   "name": "ts-cacheable",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Promise/Observable cache decorators",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm5/index.js",
@@ -36,9 +36,9 @@
     "typescript": "^2.8.1"
   },
   "bugs": {
-    "url": "https://github.com/angelnikolov/ngx-cacheable/issues"
+    "url": "https://github.com/angelnikolov/ts-cacheable/issues"
   },
-  "homepage": "https://github.com/angelnikolov/ngx-cacheable#readme",
+  "homepage": "https://github.com/angelnikolov/ts-cacheable#readme",
   "dependencies": {
     "rxjs": "^6.5.4"
   }
