@@ -38,8 +38,5 @@
   "bugs": {
     "url": "https://github.com/angelnikolov/ts-cacheable/issues"
   },
-  "homepage": "https://github.com/angelnikolov/ts-cacheable#readme",
-  "dependencies": {
-    "rxjs": "^6.5.4"
-  }
+  "homepage": "https://github.com/angelnikolov/ts-cacheable#readme"
 }
