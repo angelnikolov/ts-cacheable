@@ -6,4 +6,5 @@ export abstract class IStorageStrategy {
   abstract updateAtIndex(index: number, entity: ICachePair<any>, cacheKey: string): void;
   abstract removeAtIndex(index: number, cacheKey: string): void;
   abstract removeAll(cacheKey: string): void;
+  abstract addMany(entities: ICachePair<any>[], cacheKey: string): void;
 }

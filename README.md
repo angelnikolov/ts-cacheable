@@ -80,6 +80,13 @@ export interface ICacheConfig {
    * @description should cache be resolved asynchronously? - helps with declarative forms and two-way databinding via ngModel
    */
   async?: boolean;
+
+  /**
+   * Emit a callback which changes the caches and returns it.
+   * Whatever is returned from the callback will be automatically stored against the chosen cacheKey in the
+   * storage of the storage strategy you've chosen.
+   */
+  cacheModifier?: Subject<(cachePairs: ICachePair<Observable<any>>[]) => ICachePair<Observable<any>>[]>;
 }
 ```
 

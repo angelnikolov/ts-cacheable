@@ -6,4 +6,5 @@ export abstract class IAsyncStorageStrategy {
   abstract updateAtIndex(index: number, entity: ICachePair<any>, cacheKey: string): void | Promise<void>;
   abstract removeAtIndex(index: number, cacheKey: string): void | Promise<void>;
   abstract removeAll(cacheKey: string): void | Promise<void>;
+  abstract addMany(entities: ICachePair<any>[], cacheKey: string): Promise<void>;
 }

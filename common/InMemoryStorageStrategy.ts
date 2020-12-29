@@ -1,11 +1,15 @@
-import { IStorageStrategy } from './IStorageStrategy';
-import { ICachePair } from '.';
+import {IStorageStrategy} from './IStorageStrategy';
+import {ICachePair} from '.';
 
 export class InMemoryStorageStrategy extends IStorageStrategy {
   private cachePairs: Array<ICachePair<any>> = [];
 
   add(cachePair: ICachePair<any>) {
     this.cachePairs.push(cachePair)
+  };
+  
+  addMany(cachePairs: ICachePair<any>[]) {
+    this.cachePairs = cachePairs;
   };
 
   updateAtIndex(index: number, entity: ICachePair<any>) {

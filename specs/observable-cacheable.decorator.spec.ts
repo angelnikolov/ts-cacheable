@@ -21,6 +21,7 @@ strategies.forEach(s => {
   describe('CacheableDecorator', () => {
     let service: IService<Observable<any>> = null;
     let mockServiceCallSpy: jasmine.Spy = null;
+    const cacheModifier = new Subject<any>();
     beforeEach(() => {
       const cacheBusterNotifier = new Subject();
       class Service {
@@ -166,6 +167,13 @@ strategies.forEach(s => {
           storageStrategy: InMemoryStorageStrategy
         })
         getDateWithCustomStorageStrategyProvided(parameter: string) {
+          return this.mockServiceCall(parameter);
+        }
+        @Cacheable({
+          storageStrategy: InMemoryStorageStrategy,
+          cacheModifier
+        })
+        getMutableData(parameter: string) {
           return this.mockServiceCall(parameter);
         }
       }
@@ -1196,6 +1204,28 @@ strategies.forEach(s => {
       jasmine.clock().tick(1000);
       expect(asyncFreshDataAfterCacheBust).toEqual({ payload: 'test' });
       GlobalCacheConfig.maxAge = undefined;
+    });
+
+    it('should modify cache of getMutableData dynamically', () => {
+      const asyncFreshData = _timedStreamAsyncAwait(
+        service.getMutableData('test'),
+        1000
+      );
+      expect(asyncFreshData).toEqual({payload: 'test'});
+      expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+
+      const cachedResponse = _timedStreamAsyncAwait(service.getMutableData('test'));
+      expect(cachedResponse).toEqual({payload: 'test'});
+      cacheModifier.next((data: any[]) => {
+        data.find(p => p.parameters[0] === 'test').response.payload = 'test_modified';
+        return data;
+      });
+      /**
+       * response acquired from cache, so no incrementation on the service spy call counter is expected here
+       */
+      expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+      const cachedResponse2 = _timedStreamAsyncAwait(service.getMutableData('test'));
+      expect(cachedResponse2).toEqual({payload: 'test_modified'});
     });
   });
 

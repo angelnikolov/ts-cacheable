@@ -114,6 +114,9 @@ export function PCacheable(cacheConfig: ICacheConfig = {}) {
         ? new GlobalCacheConfig.storageStrategy()
         : new cacheConfig.storageStrategy();
       const pendingCachePairs: Array<ICachePair<Promise<any>>> = [];
+      if (cacheConfig.cacheModifier) {
+        cacheConfig.cacheModifier.subscribe(async callback => storageStrategy.addMany(callback(await storageStrategy.getAll(cacheKey)), cacheKey))
+      }
       /**
        * subscribe to the promiseGlobalCacheBusterNotifier
        * if a custom cacheBusterObserver is passed, subscribe to it as well
