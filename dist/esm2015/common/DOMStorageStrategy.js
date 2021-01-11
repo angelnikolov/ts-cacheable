@@ -20,6 +20,15 @@ export class DOMStorageStrategy extends IStorageStrategy {
         this.storeRawData(allCachedData);
     }
     ;
+    addMany(cachePairs, cacheKey) {
+        const allCachedData = this.getRawData();
+        if (!allCachedData[cacheKey]) {
+            allCachedData[cacheKey] = [];
+        }
+        allCachedData[cacheKey] = cachePairs;
+        this.storeRawData(allCachedData);
+    }
+    ;
     getAll(cacheKey) {
         return this.getRawData()[cacheKey] || [];
     }

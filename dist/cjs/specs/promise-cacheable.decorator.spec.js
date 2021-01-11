@@ -74,6 +74,11 @@ var AsyncStorageStrategy = /** @class */ (function (_super) {
         return Promise.resolve();
     };
     ;
+    AsyncStorageStrategy.prototype.addMany = function (cachePairs) {
+        this.cachePairs = cachePairs;
+        return Promise.resolve();
+    };
+    ;
     AsyncStorageStrategy.prototype.updateAtIndex = function (index, entity) {
         var updatee = this.cachePairs[index];
         Object.assign(updatee, entity);
@@ -102,6 +107,7 @@ strategies.forEach(function (s) {
     describe('PCacheableDecorator', function () {
         var service = null;
         var mockServiceCallSpy = null;
+        var cacheModifier = new rxjs_1.Subject();
         var Service = /** @class */ (function () {
             function Service() {
             }
@@ -187,6 +193,9 @@ strategies.forEach(function (s) {
                 return this.mockServiceCallWithMultipleParameters(parameter, parameter1);
             };
             Service.prototype.getDateWithCustomStorageStrategyProvided = function (parameter) {
+                return this.mockServiceCall(parameter);
+            };
+            Service.prototype.getMutableData = function (parameter) {
                 return this.mockServiceCall(parameter);
             };
             __decorate([
@@ -284,6 +293,12 @@ strategies.forEach(function (s) {
                     storageStrategy: InMemoryStorageStrategy_1.InMemoryStorageStrategy
                 })
             ], Service.prototype, "getDateWithCustomStorageStrategyProvided", null);
+            __decorate([
+                promise_cacheable_decorator_1.PCacheable({
+                    storageStrategy: InMemoryStorageStrategy_1.InMemoryStorageStrategy,
+                    cacheModifier: cacheModifier
+                })
+            ], Service.prototype, "getMutableData", null);
             return Service;
         }());
         beforeEach(function () {
@@ -1177,6 +1192,35 @@ strategies.forEach(function (s) {
                                 }
                             });
                         }); }, 1001);
+                        return [2 /*return*/];
+                }
+            });
+        }); });
+        it('should modify cache of getMutableData dynamically', function () { return __awaiter(_this, void 0, void 0, function () {
+            var asyncFreshData, cachedResponse, cachedResponse2;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, service.getMutableData('test')];
+                    case 1:
+                        asyncFreshData = _a.sent();
+                        expect(asyncFreshData).toEqual({ payload: 'test' });
+                        expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+                        return [4 /*yield*/, service.getMutableData('test')];
+                    case 2:
+                        cachedResponse = _a.sent();
+                        expect(cachedResponse).toEqual({ payload: 'test' });
+                        cacheModifier.next(function (data) {
+                            data.find(function (p) { return p.parameters[0] === 'test'; }).response.payload = 'test_modified';
+                            return data;
+                        });
+                        return [4 /*yield*/, service.getMutableData('test')];
+                    case 3:
+                        cachedResponse2 = _a.sent();
+                        expect(cachedResponse2).toEqual({ payload: 'test_modified' });
+                        /**
+                         * response acquired from cache, so no incrementation on the service spy call counter is expected here
+                         */
+                        expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
                         return [2 /*return*/];
                 }
             });

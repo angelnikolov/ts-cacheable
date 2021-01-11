@@ -4,6 +4,7 @@ export declare class LocalStorageStrategy extends IStorageStrategy {
     private masterCacheKey;
     constructor();
     add(cachePair: ICachePair<any>, cacheKey: string): void;
+    addMany(cachePairs: ICachePair<any>[], cacheKey: string): void;
     getAll(cacheKey: string): ICachePair<any>[];
     removeAtIndex(index: number, cacheKey: string): void;
     updateAtIndex(index: number, entity: any, cacheKey: string): void;

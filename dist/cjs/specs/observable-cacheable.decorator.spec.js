@@ -64,6 +64,7 @@ strategies.forEach(function (s) {
     describe('CacheableDecorator', function () {
         var service = null;
         var mockServiceCallSpy = null;
+        var cacheModifier = new rxjs_2.Subject();
         beforeEach(function () {
             var cacheBusterNotifier = new rxjs_2.Subject();
             var Service = /** @class */ (function () {
@@ -133,6 +134,9 @@ strategies.forEach(function (s) {
                     return this.mockServiceCallWithMultipleParameters(parameter, parameter1);
                 };
                 Service.prototype.getDateWithCustomStorageStrategyProvided = function (parameter) {
+                    return this.mockServiceCall(parameter);
+                };
+                Service.prototype.getMutableData = function (parameter) {
                     return this.mockServiceCall(parameter);
                 };
                 __decorate([
@@ -226,6 +230,12 @@ strategies.forEach(function (s) {
                         storageStrategy: InMemoryStorageStrategy_1.InMemoryStorageStrategy
                     })
                 ], Service.prototype, "getDateWithCustomStorageStrategyProvided", null);
+                __decorate([
+                    cacheable_decorator_2.Cacheable({
+                        storageStrategy: InMemoryStorageStrategy_1.InMemoryStorageStrategy,
+                        cacheModifier: cacheModifier
+                    })
+                ], Service.prototype, "getMutableData", null);
                 return Service;
             }());
             jasmine.clock().install();
@@ -974,6 +984,23 @@ strategies.forEach(function (s) {
             jasmine.clock().tick(1000);
             expect(asyncFreshDataAfterCacheBust).toEqual({ payload: 'test' });
             common_1.GlobalCacheConfig.maxAge = undefined;
+        });
+        it('should modify cache of getMutableData dynamically', function () {
+            var asyncFreshData = _timedStreamAsyncAwait(service.getMutableData('test'), 1000);
+            expect(asyncFreshData).toEqual({ payload: 'test' });
+            expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+            var cachedResponse = _timedStreamAsyncAwait(service.getMutableData('test'));
+            expect(cachedResponse).toEqual({ payload: 'test' });
+            cacheModifier.next(function (data) {
+                data.find(function (p) { return p.parameters[0] === 'test'; }).response.payload = 'test_modified';
+                return data;
+            });
+            /**
+             * response acquired from cache, so no incrementation on the service spy call counter is expected here
+             */
+            expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+            var cachedResponse2 = _timedStreamAsyncAwait(service.getMutableData('test'));
+            expect(cachedResponse2).toEqual({ payload: 'test_modified' });
         });
     });
     function _timedStreamAsyncAwait(stream$, skipTime) {

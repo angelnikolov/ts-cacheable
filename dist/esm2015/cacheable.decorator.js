@@ -11,6 +11,9 @@ export function Cacheable(cacheConfig = {}) {
                 ? new GlobalCacheConfig.storageStrategy()
                 : new cacheConfig.storageStrategy();
             const pendingCachePairs = [];
+            if (cacheConfig.cacheModifier) {
+                cacheConfig.cacheModifier.subscribe(callback => storageStrategy.addMany(callback(storageStrategy.getAll(cacheKey)), cacheKey));
+            }
             /**
              * subscribe to the globalCacheBuster
              * if a custom cacheBusterObserver is passed, subscribe to it as well

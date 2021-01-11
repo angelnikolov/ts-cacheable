@@ -1,3 +1,11 @@
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 import { empty, merge, Subject } from 'rxjs';
 import { DEFAULT_CACHE_RESOLVER, GlobalCacheConfig, DEFAULT_HASHER } from './common';
 export const promiseGlobalCacheBusterNotifier = new Subject();
@@ -88,6 +96,9 @@ export function PCacheable(cacheConfig = {}) {
                 ? new GlobalCacheConfig.storageStrategy()
                 : new cacheConfig.storageStrategy();
             const pendingCachePairs = [];
+            if (cacheConfig.cacheModifier) {
+                cacheConfig.cacheModifier.subscribe((callback) => __awaiter(this, void 0, void 0, function* () { return storageStrategy.addMany(callback(yield storageStrategy.getAll(cacheKey)), cacheKey); }));
+            }
             /**
              * subscribe to the promiseGlobalCacheBusterNotifier
              * if a custom cacheBusterObserver is passed, subscribe to it as well

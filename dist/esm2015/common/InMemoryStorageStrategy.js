@@ -8,6 +8,10 @@ export class InMemoryStorageStrategy extends IStorageStrategy {
         this.cachePairs.push(cachePair);
     }
     ;
+    addMany(cachePairs) {
+        this.cachePairs = cachePairs;
+    }
+    ;
     updateAtIndex(index, entity) {
         const updatee = this.cachePairs[index];
         Object.assign(updatee, entity);

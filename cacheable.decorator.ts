@@ -1,8 +1,8 @@
-import { empty, merge, Observable, of, Subject } from 'rxjs';
-import { delay, finalize, tap, publishReplay, refCount } from 'rxjs/operators';
-import { DEFAULT_CACHE_RESOLVER, ICacheable, GlobalCacheConfig, IStorageStrategy, DEFAULT_HASHER } from './common';
-import { IObservableCacheConfig } from './common/IObservableCacheConfig';
-import { ICachePair } from './common/ICachePair';
+import {empty, merge, Observable, of, Subject} from 'rxjs';
+import {delay, finalize, tap, publishReplay, refCount} from 'rxjs/operators';
+import {DEFAULT_CACHE_RESOLVER, ICacheable, GlobalCacheConfig, IStorageStrategy, DEFAULT_HASHER} from './common';
+import {IObservableCacheConfig} from './common/IObservableCacheConfig';
+import {ICachePair} from './common/ICachePair';
 export const globalCacheBusterNotifier = new Subject<void>();
 
 export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
@@ -18,6 +18,9 @@ export function Cacheable(cacheConfig: IObservableCacheConfig = {}) {
         ? new GlobalCacheConfig.storageStrategy() as IStorageStrategy
         : new cacheConfig.storageStrategy();
       const pendingCachePairs: Array<ICachePair<Observable<any>>> = [];
+      if (cacheConfig.cacheModifier) {
+        cacheConfig.cacheModifier.subscribe(callback => storageStrategy.addMany(callback(storageStrategy.getAll(cacheKey)), cacheKey))
+      }
       /**
        * subscribe to the globalCacheBuster
        * if a custom cacheBusterObserver is passed, subscribe to it as well

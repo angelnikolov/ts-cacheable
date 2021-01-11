@@ -31,4 +31,5 @@ export interface IService<T> {
   getData1?(parameter: string): T;
   getData2?(parameter: string): T;
   getData3?(parameter: string): T;
+  getMutableData(parameter: string): T;
 }
