@@ -197,6 +197,35 @@ and then provide it to your decorators as in the example above.
 For the `PCacheable` decorator, we also support async promise-based caching strategies. Just extend the `IAsyncStorageStrategy` and provide it to your promise decorators and voila. You can use that to implement Redis caching, IndexDB or whatever async caching you might desire.
 
 **IMPORTANT: Right now, we only support async strategies as a configuration for our promise decorators**
+
+### Changing, accessing and mutating cache
+
+You can get access to the cached data and change it by providing a `cacheModifier` subject to your decorator like this:
+```ts
+const cacheModifier = new Subject<any>();
+@Cacheable({
+  cacheModifier
+})
+getMutableData(parameter: string) {
+  return this.getData(parameter);
+}
+```
+
+Then, say you want to change the cached data somewhere in your code.
+You can emit a callback through the `cacheModifier` subject, which will be called upon all your cached data for this decorator, by:
+```ts
+cacheModifier.next((data: any[]) => {
+  data.find(p => p.parameters[0] === 'test').response.payload = 'test_modified';
+  return data;
+});
+```
+What happens here is that we look for the cache under the `'test'` parameter here and modify it to a different string.
+`data` is all the caches for this method so you can change it in whatever way you want.
+
+Now, if this method is called with the same parameter as before, it will still return cached data, but this time modified.
+You can also delete and add more data to the cache.
+
+
 ## Running the tests
 
 Just run `npm test`.

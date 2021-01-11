@@ -1,5 +1,5 @@
-import { Observable } from 'rxjs';
-import { ICacheResolver, IShouldCacheDecider, ICacheHasher } from './index';
+import { Observable, Subject } from 'rxjs';
+import { ICacheResolver, IShouldCacheDecider, ICacheHasher, ICachePair } from './index';
 import { IStorageStrategy } from './IStorageStrategy';
 import { IAsyncStorageStrategy } from './IAsyncStorageStrategy';
 export interface ICacheConfig {
@@ -44,4 +44,10 @@ export interface ICacheConfig {
      * if not provided a combination of class name + method name will be used
      */
     cacheKey?: string;
+    /**
+     * Emit a callback which changes the caches and returns it.
+     * Whatever is returned from the callback will be automatically stored against the chosen cacheKey in the
+     * storage of the storage strategy you've chosen.
+     */
+    cacheModifier?: Subject<(cachePairs: ICachePair<Observable<any>>[]) => ICachePair<Observable<any>>[]>;
 }

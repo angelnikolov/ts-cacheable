@@ -31,6 +31,15 @@ var LocalStorageStrategy = /** @class */ (function (_super) {
         this.storeRawData(allCachedData);
     };
     ;
+    LocalStorageStrategy.prototype.addMany = function (cachePairs, cacheKey) {
+        var allCachedData = this.getRawData();
+        if (!allCachedData[cacheKey]) {
+            allCachedData[cacheKey] = [];
+        }
+        allCachedData[cacheKey] = cachePairs;
+        this.storeRawData(allCachedData);
+    };
+    ;
     LocalStorageStrategy.prototype.getAll = function (cacheKey) {
         return this.getRawData()[cacheKey] || [];
     };

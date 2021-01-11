@@ -34,6 +34,15 @@ var DOMStorageStrategy = /** @class */ (function (_super) {
         this.storeRawData(allCachedData);
     };
     ;
+    DOMStorageStrategy.prototype.addMany = function (cachePairs, cacheKey) {
+        var allCachedData = this.getRawData();
+        if (!allCachedData[cacheKey]) {
+            allCachedData[cacheKey] = [];
+        }
+        allCachedData[cacheKey] = cachePairs;
+        this.storeRawData(allCachedData);
+    };
+    ;
     DOMStorageStrategy.prototype.getAll = function (cacheKey) {
         return this.getRawData()[cacheKey] || [];
     };
