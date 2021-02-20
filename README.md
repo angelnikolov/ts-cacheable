@@ -186,8 +186,16 @@ It's also really easy to implement your own caching strategy, by extending the I
 export abstract class IStorageStrategy {
   abstract getAll(cacheKey: string): Array<ICachePair<any>>;
   abstract add(entity: ICachePair<any>, cacheKey: string): void;
+  /**
+   * @deprecated Use update instead.
+   */
   abstract updateAtIndex(index: number, entity: ICachePair<any>, cacheKey: string): void;
+  abstract update?(index: number, entity: ICachePair<any>, cacheKey: string): void;
+  /**
+   * @deprecated Use remove instead.
+   */
   abstract removeAtIndex(index: number, cacheKey: string): void;
+  abstract remove?(index: number, entity: ICachePair<any>, cacheKey: string): void;
   abstract removeAll(cacheKey: string): void;
 }
 ```
