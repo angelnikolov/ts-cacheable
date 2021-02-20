@@ -1,6 +1,6 @@
 {
   "name": "ts-cacheable",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Promise/Observable cache decorators",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm5/index.js",

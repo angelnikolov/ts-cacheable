@@ -54,7 +54,21 @@ var DOMStorageStrategy = /** @class */ (function (_super) {
         }
         this.storeRawData(allCachedData);
     };
+    DOMStorageStrategy.prototype.remove = function (index, entity, cacheKey) {
+        var allCachedData = this.getRawData();
+        if (allCachedData[cacheKey] && allCachedData[cacheKey].length) {
+            allCachedData[cacheKey].splice(index, 1);
+        }
+        this.storeRawData(allCachedData);
+    };
     DOMStorageStrategy.prototype.updateAtIndex = function (index, entity, cacheKey) {
+        var allCachedData = this.getRawData();
+        if (allCachedData[cacheKey] && allCachedData[cacheKey][index]) {
+            allCachedData[cacheKey][index] = entity;
+        }
+        this.storeRawData(allCachedData);
+    };
+    DOMStorageStrategy.prototype.update = function (index, entity, cacheKey) {
         var allCachedData = this.getRawData();
         if (allCachedData[cacheKey] && allCachedData[cacheKey][index]) {
             allCachedData[cacheKey][index] = entity;

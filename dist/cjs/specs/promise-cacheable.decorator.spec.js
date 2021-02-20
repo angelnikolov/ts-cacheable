@@ -84,11 +84,20 @@ var AsyncStorageStrategy = /** @class */ (function (_super) {
         Object.assign(updatee, entity);
         return Promise.resolve();
     };
+    AsyncStorageStrategy.prototype.update = function (index, entity) {
+        var updatee = this.cachePairs[index];
+        Object.assign(updatee, entity);
+        return Promise.resolve();
+    };
     AsyncStorageStrategy.prototype.getAll = function () {
         return Promise.resolve(this.cachePairs);
     };
     ;
     AsyncStorageStrategy.prototype.removeAtIndex = function (index) {
+        this.cachePairs.splice(index, 1);
+        return Promise.resolve();
+    };
+    AsyncStorageStrategy.prototype.remove = function (index) {
         this.cachePairs.splice(index, 1);
         return Promise.resolve();
     };
@@ -104,7 +113,7 @@ strategies.forEach(function (s) {
     if (s) {
         common_1.GlobalCacheConfig.storageStrategy = s;
     }
-    describe('PCacheableDecorator', function () {
+    describe((!s ? 'InMemoryStorageStrategy' : s.name) + ": PCacheableDecorator", function () {
         var service = null;
         var mockServiceCallSpy = null;
         var cacheModifier = new rxjs_1.Subject();

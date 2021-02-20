@@ -16,11 +16,18 @@ export class InMemoryStorageStrategy extends IStorageStrategy {
         const updatee = this.cachePairs[index];
         Object.assign(updatee, entity);
     }
+    update(index, entity) {
+        const updatee = this.cachePairs[index];
+        Object.assign(updatee, entity);
+    }
     getAll() {
         return this.cachePairs;
     }
     ;
     removeAtIndex(index) {
+        this.cachePairs.splice(index, 1);
+    }
+    remove(index) {
         this.cachePairs.splice(index, 1);
     }
     removeAll() {
