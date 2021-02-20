@@ -1,5 +1,5 @@
-import { IStorageStrategy } from './IStorageStrategy';
-import { ICachePair, GlobalCacheConfig } from '.';
+import {IStorageStrategy} from './IStorageStrategy';
+import {ICachePair, GlobalCacheConfig} from '.';
 /**
  * @deprecated Use {@link LocalStorageStrategy} instead.
  */
@@ -43,7 +43,23 @@ export class DOMStorageStrategy extends IStorageStrategy {
     this.storeRawData(allCachedData);
   }
 
+  remove(index: number, entity: any, cacheKey: string) {
+    const allCachedData = this.getRawData();
+    if (allCachedData[cacheKey] && allCachedData[cacheKey].length) {
+      allCachedData[cacheKey].splice(index, 1);
+    }
+    this.storeRawData(allCachedData);
+  }
+
   updateAtIndex(index: number, entity: any, cacheKey: string) {
+    const allCachedData = this.getRawData();
+    if (allCachedData[cacheKey] && allCachedData[cacheKey][index]) {
+      allCachedData[cacheKey][index] = entity;
+    }
+    this.storeRawData(allCachedData);
+  }
+
+  update(index: number, entity: any, cacheKey: string) {
     const allCachedData = this.getRawData();
     if (allCachedData[cacheKey] && allCachedData[cacheKey][index]) {
       allCachedData[cacheKey][index] = entity;
@@ -59,7 +75,7 @@ export class DOMStorageStrategy extends IStorageStrategy {
     this.storeRawData(allCachedData);
   }
 
-  private getRawData(): { [key: string]: Array<ICachePair<any>> } {
+  private getRawData(): {[key: string]: Array<ICachePair<any>>} {
     const data = localStorage.getItem(this.masterCacheKey);
     try {
       return JSON.parse(data) || {};
@@ -68,7 +84,7 @@ export class DOMStorageStrategy extends IStorageStrategy {
     }
   }
 
-  private storeRawData(data: { [key: string]: Array<ICachePair<any>> }): void {
+  private storeRawData(data: {[key: string]: Array<ICachePair<any>>}): void {
     localStorage.setItem(this.masterCacheKey, JSON.stringify(data));
   }
 }

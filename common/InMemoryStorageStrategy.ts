@@ -7,7 +7,7 @@ export class InMemoryStorageStrategy extends IStorageStrategy {
   add(cachePair: ICachePair<any>) {
     this.cachePairs.push(cachePair)
   };
-  
+ 
   addMany(cachePairs: ICachePair<any>[]) {
     this.cachePairs = cachePairs;
   };
@@ -17,11 +17,20 @@ export class InMemoryStorageStrategy extends IStorageStrategy {
     Object.assign(updatee, entity);
   }
 
+  update(index: number, entity: ICachePair<any>) {
+    const updatee = this.cachePairs[index];
+    Object.assign(updatee, entity);
+  }
+
   getAll() {
     return this.cachePairs;
   };
 
   removeAtIndex(index: number) {
+    this.cachePairs.splice(index, 1);
+  }
+
+  remove(index: number) {
     this.cachePairs.splice(index, 1);
   }
 
