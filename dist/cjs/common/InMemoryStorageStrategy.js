@@ -30,11 +30,18 @@ var InMemoryStorageStrategy = /** @class */ (function (_super) {
         var updatee = this.cachePairs[index];
         Object.assign(updatee, entity);
     };
+    InMemoryStorageStrategy.prototype.update = function (index, entity) {
+        var updatee = this.cachePairs[index];
+        Object.assign(updatee, entity);
+    };
     InMemoryStorageStrategy.prototype.getAll = function () {
         return this.cachePairs;
     };
     ;
     InMemoryStorageStrategy.prototype.removeAtIndex = function (index) {
+        this.cachePairs.splice(index, 1);
+    };
+    InMemoryStorageStrategy.prototype.remove = function (index) {
         this.cachePairs.splice(index, 1);
     };
     InMemoryStorageStrategy.prototype.removeAll = function () {

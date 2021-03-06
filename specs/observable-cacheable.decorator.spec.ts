@@ -18,7 +18,7 @@ strategies.forEach(s => {
   if (s) {
     GlobalCacheConfig.storageStrategy = s;
   }
-  describe('CacheableDecorator', () => {
+  describe(`${!s ? 'InMemoryStorageStrategy' : s.name}: CacheableDecorator`, () => {
     let service: IService<Observable<any>> = null;
     let mockServiceCallSpy: jasmine.Spy = null;
     const cacheModifier = new Subject<any>();
@@ -913,9 +913,9 @@ strategies.forEach(s => {
 
     it('should work correctly with a custom storage strategy', () => {
       const addSpy = spyOn(InMemoryStorageStrategy.prototype, 'add').and.callThrough();
-      const updateAtIndexSpy = spyOn(InMemoryStorageStrategy.prototype, 'updateAtIndex').and.callThrough();
+      const updateSpy = spyOn(InMemoryStorageStrategy.prototype, 'update').and.callThrough();
       const getAllSpy = spyOn(InMemoryStorageStrategy.prototype, 'getAll').and.callThrough();
-      const removeAtIndexSpy = spyOn(InMemoryStorageStrategy.prototype, 'removeAtIndex').and.callThrough();
+      const removeSpy = spyOn(InMemoryStorageStrategy.prototype, 'remove').and.callThrough();
       const removeAllSpy = spyOn(InMemoryStorageStrategy.prototype, 'removeAll').and.callThrough();
 
       jasmine.clock().mockDate();
@@ -924,7 +924,7 @@ strategies.forEach(s => {
         1000
       );
       // called removeAtIndex once, because of how the cache works, it always removes the last cached pair with this method
-      expect(removeAtIndexSpy).toHaveBeenCalledTimes(1);
+      expect(removeSpy).toHaveBeenCalledTimes(1);
       expect(asyncFreshData).toEqual({ payload: 'test' });
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
       // one add call, one getAll call
@@ -935,7 +935,7 @@ strategies.forEach(s => {
         service.getDateWithCustomStorageStrategyProvided('test')
       );
       // this call will renew the updateAtIndex call count since it's used to renew the cache
-      expect(updateAtIndexSpy).toHaveBeenCalledTimes(1);
+      expect(updateSpy).toHaveBeenCalledTimes(1);
       expect(cachedResponse).toEqual({ payload: 'test' });
       /**
        * call count should still be one, since we rerouted to cache, instead of service call
@@ -954,7 +954,7 @@ strategies.forEach(s => {
        */
       service.getDateWithCustomStorageStrategyProvided('test').subscribe();
       // this call will renew the updateAtIndex call count since it's used to renew the cache
-      expect(updateAtIndexSpy).toHaveBeenCalledTimes(2);
+      expect(updateSpy).toHaveBeenCalledTimes(2);
       // one more getAll cache and it is renewed
       expect(getAllSpy).toHaveBeenCalledTimes(3);
       expect(addSpy).toHaveBeenCalledTimes(1);
@@ -968,7 +968,7 @@ strategies.forEach(s => {
         service.getDateWithCustomStorageStrategyProvided('test')
       );
       // this call will renew the updateAtIndex call count since it's used to renew the cache
-      expect(updateAtIndexSpy).toHaveBeenCalledTimes(3);
+      expect(updateSpy).toHaveBeenCalledTimes(3);
       // one more getAll call, and still just one add call, since the cache was renewed due to sliding expiration
       expect(getAllSpy).toHaveBeenCalledTimes(4);
       expect(addSpy).toHaveBeenCalledTimes(1);
@@ -987,7 +987,7 @@ strategies.forEach(s => {
         service.getDateWithCustomStorageStrategyProvided('test')
       );
       // cache has expired so the currently cached pair should have been swapped by now by calling the removeAtIndex method first
-      expect(removeAtIndexSpy).toHaveBeenCalledTimes(2);
+      expect(removeSpy).toHaveBeenCalledTimes(2);
       expect(getAllSpy).toHaveBeenCalledTimes(5);
       expect(addSpy).toHaveBeenCalledTimes(1);
       /**
@@ -1001,9 +1001,9 @@ strategies.forEach(s => {
        */
       globalCacheBusterNotifier.next();
       expect(addSpy).toHaveBeenCalledTimes(1);
-      expect(updateAtIndexSpy).toHaveBeenCalledTimes(3);
+      expect(updateSpy).toHaveBeenCalledTimes(3);
       expect(getAllSpy).toHaveBeenCalledTimes(5);
-      expect(removeAtIndexSpy).toHaveBeenCalledTimes(2);
+      expect(removeSpy).toHaveBeenCalledTimes(2);
       expect(removeAllSpy).toHaveBeenCalled();
     })
 

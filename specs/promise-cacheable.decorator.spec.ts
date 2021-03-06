@@ -29,11 +29,22 @@ class AsyncStorageStrategy extends IAsyncStorageStrategy {
     return Promise.resolve();
   }
 
+  update(index: number, entity: ICachePair<any>) {
+    const updatee = this.cachePairs[index];
+    Object.assign(updatee, entity);
+    return Promise.resolve();
+  }
+
   getAll() {
     return Promise.resolve(this.cachePairs);
   };
 
   removeAtIndex(index: number) {
+    this.cachePairs.splice(index, 1);
+    return Promise.resolve();
+  }
+
+  remove(index: number) {
     this.cachePairs.splice(index, 1);
     return Promise.resolve();
   }
@@ -50,7 +61,7 @@ strategies.forEach(s => {
     GlobalCacheConfig.storageStrategy = s;
   }
 
-  describe('PCacheableDecorator', () => {
+  describe(`${!s ? 'InMemoryStorageStrategy' : s.name}: PCacheableDecorator`, () => {
     let service: IService<Promise<any>> = null;
     let mockServiceCallSpy: jasmine.Spy = null;
     const cacheModifier = new Subject<any>();

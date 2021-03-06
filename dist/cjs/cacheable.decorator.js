@@ -59,7 +59,7 @@ function Cacheable(cacheConfig) {
                         /**
                          * cache duration has expired - remove it from the cachePairs array
                          */
-                        storageStrategy_1.removeAtIndex(cachePairs.indexOf(_foundCachePair), cacheKey);
+                        storageStrategy_1.remove ? storageStrategy_1.remove(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey) : storageStrategy_1.removeAtIndex(cachePairs.indexOf(_foundCachePair), cacheKey);
                         _foundCachePair = null;
                     }
                     else if (cacheConfig.slidingExpiration || common_1.GlobalCacheConfig.slidingExpiration) {
@@ -67,7 +67,7 @@ function Cacheable(cacheConfig) {
                          * renew cache duration
                          */
                         _foundCachePair.created = new Date();
-                        storageStrategy_1.updateAtIndex(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey);
+                        storageStrategy_1.update ? storageStrategy_1.update(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey) : storageStrategy_1.updateAtIndex(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey);
                     }
                 }
                 if (_foundCachePair) {
@@ -97,7 +97,7 @@ function Cacheable(cacheConfig) {
                                 (cacheConfig.maxCacheCount || common_1.GlobalCacheConfig.maxCacheCount) === 1 ||
                                 ((cacheConfig.maxCacheCount || common_1.GlobalCacheConfig.maxCacheCount) &&
                                     (cacheConfig.maxCacheCount || common_1.GlobalCacheConfig.maxCacheCount) < cachePairs.length + 1)) {
-                                storageStrategy_1.removeAtIndex(0, cacheKey);
+                                storageStrategy_1.remove ? storageStrategy_1.remove(0, cachePairs[0], cacheKey) : storageStrategy_1.removeAtIndex(0, cacheKey);
                             }
                             storageStrategy_1.add({
                                 parameters: cacheParameters,

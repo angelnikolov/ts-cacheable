@@ -22,7 +22,7 @@ const getResponse = (oldMethod, cacheKey, cacheConfig, context, cachePairs, para
             /**
              * cache duration has expired - remove it from the cachePairs array
              */
-            storageStrategy.removeAtIndex(cachePairs.indexOf(_foundCachePair), cacheKey);
+            storageStrategy.remove ? storageStrategy.remove(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey) : storageStrategy.removeAtIndex(cachePairs.indexOf(_foundCachePair), cacheKey);
             _foundCachePair = null;
         }
         else if (cacheConfig.slidingExpiration || GlobalCacheConfig.slidingExpiration) {
@@ -30,7 +30,7 @@ const getResponse = (oldMethod, cacheKey, cacheConfig, context, cachePairs, para
              * renew cache duration
              */
             _foundCachePair.created = new Date();
-            storageStrategy.updateAtIndex(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey);
+            storageStrategy.update ? storageStrategy.update(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey) : storageStrategy.updateAtIndex(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey);
         }
     }
     if (_foundCachePair) {
@@ -54,7 +54,7 @@ const getResponse = (oldMethod, cacheKey, cacheConfig, context, cachePairs, para
                     (cacheConfig.maxCacheCount || GlobalCacheConfig.maxCacheCount) === 1 ||
                     ((cacheConfig.maxCacheCount || GlobalCacheConfig.maxCacheCount) &&
                         (cacheConfig.maxCacheCount || GlobalCacheConfig.maxCacheCount) < cachePairs.length + 1)) {
-                    storageStrategy.removeAtIndex(0, cacheKey);
+                    storageStrategy.remove ? storageStrategy.remove(0, cachePairs[0], cacheKey) : storageStrategy.removeAtIndex(0, cacheKey);
                 }
                 storageStrategy.add({
                     parameters: cacheParameters,

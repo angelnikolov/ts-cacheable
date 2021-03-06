@@ -15,7 +15,6 @@ var removeCachePair = function (cachePairs, parameters, cacheConfig) {
 function PCacheable(cacheConfig) {
     if (cacheConfig === void 0) { cacheConfig = {}; }
     return function (_target, _propertyKey, propertyDescriptor) {
-      console.log(_propertyKey)
         var cacheKey = cacheConfig.cacheKey || _target.constructor.name + '#' + _propertyKey;
         var oldMethod = propertyDescriptor.value;
         if (propertyDescriptor && propertyDescriptor.value) {

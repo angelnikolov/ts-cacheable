@@ -5,7 +5,9 @@ export declare class InMemoryStorageStrategy extends IStorageStrategy {
     add(cachePair: ICachePair<any>): void;
     addMany(cachePairs: ICachePair<any>[]): void;
     updateAtIndex(index: number, entity: ICachePair<any>): void;
+    update(index: number, entity: ICachePair<any>): void;
     getAll(): ICachePair<any>[];
     removeAtIndex(index: number): void;
+    remove(index: number): void;
     removeAll(): void;
 }

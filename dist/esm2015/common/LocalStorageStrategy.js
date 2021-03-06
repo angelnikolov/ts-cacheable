@@ -37,7 +37,21 @@ export class LocalStorageStrategy extends IStorageStrategy {
         }
         this.storeRawData(allCachedData);
     }
+    remove(index, entity, cacheKey) {
+        const allCachedData = this.getRawData();
+        if (allCachedData[cacheKey] && allCachedData[cacheKey].length) {
+            allCachedData[cacheKey].splice(index, 1);
+        }
+        this.storeRawData(allCachedData);
+    }
     updateAtIndex(index, entity, cacheKey) {
+        const allCachedData = this.getRawData();
+        if (allCachedData[cacheKey] && allCachedData[cacheKey][index]) {
+            allCachedData[cacheKey][index] = entity;
+        }
+        this.storeRawData(allCachedData);
+    }
+    update(index, entity, cacheKey) {
         const allCachedData = this.getRawData();
         if (allCachedData[cacheKey] && allCachedData[cacheKey][index]) {
             allCachedData[cacheKey][index] = entity;
