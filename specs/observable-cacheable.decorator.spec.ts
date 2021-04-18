@@ -1,15 +1,22 @@
-import { combineLatest, forkJoin, Observable } from 'rxjs';
-import { startWith } from 'rxjs/operators';
-import { globalCacheBusterNotifier } from '../cacheable.decorator';
-import { Cacheable } from '../cacheable.decorator';
-import { CacheBuster } from '../cache-buster.decorator';
-import { timer, Subject } from 'rxjs';
-import { mapTo } from 'rxjs/operators';
-import { GlobalCacheConfig } from '../common';
-import { LocalStorageStrategy } from '../common/LocalStorageStrategy';
-import { InMemoryStorageStrategy } from '../common/InMemoryStorageStrategy';
-import { IService } from './service.interface';
-import { Cat } from './cat';
+import {combineLatest, forkJoin, Observable} from 'rxjs';
+import {startWith} from 'rxjs/operators';
+import {globalCacheBusterNotifier} from '../cacheable.decorator';
+import {Cacheable} from '../cacheable.decorator';
+import {CacheBuster} from '../cache-buster.decorator';
+import {timer, Subject} from 'rxjs';
+import {mapTo} from 'rxjs/operators';
+import {GlobalCacheConfig, ICachePair} from '../common';
+import {LocalStorageStrategy} from '../common/LocalStorageStrategy';
+import {InMemoryStorageStrategy} from '../common/InMemoryStorageStrategy';
+import {IService} from './service.interface';
+import {Cat} from './cat';
+let customStrategySpy: jasmine.Spy = jasmine.createSpy();
+export class CustomContextStrategy extends InMemoryStorageStrategy {
+  add(cachePair: ICachePair<any>, cacheKey: string, ctx?: any) {
+    customStrategySpy(ctx);
+    super.add(cachePair, cacheKey, ctx);
+  };
+}
 const strategies: any[] = [
   null,
   LocalStorageStrategy
@@ -26,14 +33,14 @@ strategies.forEach(s => {
       const cacheBusterNotifier = new Subject();
       class Service {
         mockServiceCall(parameter: any) {
-          return timer(1000).pipe(mapTo({ payload: parameter }));
+          return timer(1000).pipe(mapTo({payload: parameter}));
         }
         mockSaveServiceCall() {
           return timer(1000).pipe(mapTo('SAVED'));
         }
 
         mockServiceCallWithMultipleParameters(parameter1: any, parameter2: any) {
-          return timer(1000).pipe(mapTo({ payload: [parameter1, parameter2] }));
+          return timer(1000).pipe(mapTo({payload: [parameter1, parameter2]}));
         }
 
         @Cacheable()
@@ -104,7 +111,7 @@ strategies.forEach(s => {
         })
         getDataWithCustomCacheResolver(
           parameter: string,
-          _cacheRerouterParameter?: { straightToLastCache: boolean }
+          _cacheRerouterParameter?: {straightToLastCache: boolean}
         ) {
           return this.mockServiceCall(parameter);
         }
@@ -129,7 +136,7 @@ strategies.forEach(s => {
         }
 
         @Cacheable({
-          shouldCacheDecider: (response: { payload: string }) => {
+          shouldCacheDecider: (response: {payload: string}) => {
             return response.payload === 'test';
           }
         })
@@ -176,6 +183,14 @@ strategies.forEach(s => {
         getMutableData(parameter: string) {
           return this.mockServiceCall(parameter);
         }
+
+        @Cacheable({
+          storageStrategy: CustomContextStrategy,
+          maxCacheCount: 3
+        })
+        getDataWithCustomContextStorageStrategy(parameter: string = 'Parameter1') {
+          return this.mockServiceCall(parameter);
+        }
       }
       jasmine.clock().install();
       service = new Service();
@@ -200,11 +215,11 @@ strategies.forEach(s => {
         service.getData('test'),
         1000
       );
-      expect(asyncFreshData).toEqual({ payload: 'test' });
+      expect(asyncFreshData).toEqual({payload: 'test'});
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
 
       const cachedResponse = _timedStreamAsyncAwait(service.getData('test'));
-      expect(cachedResponse).toEqual({ payload: 'test' });
+      expect(cachedResponse).toEqual({payload: 'test'});
       /**
        * response acquired from cache, so no incrementation on the service spy call counter is expected here
        */
@@ -226,7 +241,7 @@ strategies.forEach(s => {
       /**
        * service call is made and waited out
        */
-      expect(cachedResponse3).toEqual({ payload: 'test3' });
+      expect(cachedResponse3).toEqual({payload: 'test3'});
 
       /**
        * this should NOT return cached response, since the currently cached one should be 'test3'
@@ -270,7 +285,7 @@ strategies.forEach(s => {
        * call the service endpoint five hundred times with the same parameter
        * but the service should only be called once, since the observable will be cached
        */
-      for (let i = 0; i < 500; i++) {
+      for (let i = 0;i < 500;i++) {
         service.getDataAndReturnCachedStream('test');
       }
 
@@ -294,7 +309,7 @@ strategies.forEach(s => {
         service.getDataAsync('test'),
         1000
       );
-      expect(asyncFreshData).toEqual({ payload: 'test' });
+      expect(asyncFreshData).toEqual({payload: 'test'});
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
 
       const cachedResponseTry1 = _timedStreamAsyncAwait(
@@ -312,7 +327,7 @@ strategies.forEach(s => {
         service.getDataAsync('test'),
         1
       );
-      expect(cachedResponseTry2).toEqual({ payload: 'test' });
+      expect(cachedResponseTry2).toEqual({payload: 'test'});
       /**
        * response acquired from cache, so no incrementation on the service spy call counter is expected here
        */
@@ -340,7 +355,7 @@ strategies.forEach(s => {
       /**
        * service call is made and waited out
        */
-      expect(cachedResponse3).toEqual({ payload: 'test3' });
+      expect(cachedResponse3).toEqual({payload: 'test3'});
 
       /**
        * this should return cached response, since the currently cached one should be 'test3'
@@ -361,7 +376,7 @@ strategies.forEach(s => {
         1000
       );
 
-      expect(asyncFreshData).toEqual({ payload: 'test' });
+      expect(asyncFreshData).toEqual({payload: 'test'});
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
 
       const cachedResponse = _timedStreamAsyncAwait(
@@ -371,7 +386,7 @@ strategies.forEach(s => {
        * service shouldn't be called and we should route directly to cache
        */
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
-      expect(cachedResponse).toEqual({ payload: 'test' });
+      expect(cachedResponse).toEqual({payload: 'test'});
 
       /**
        * progress in time for 7501 ms, e.g - one millisecond after the maxAge would expire
@@ -392,7 +407,7 @@ strategies.forEach(s => {
         asyncFreshDataAfterCacheBust = data;
       });
       jasmine.clock().tick(1000);
-      expect(asyncFreshDataAfterCacheBust).toEqual({ payload: 'test' });
+      expect(asyncFreshDataAfterCacheBust).toEqual({payload: 'test'});
     });
 
     it('return cached data up until the maxAge period but renew the expiration if called within the period', () => {
@@ -401,13 +416,13 @@ strategies.forEach(s => {
         service.getDataWithSlidingExpiration('test'),
         1000
       );
-      expect(asyncFreshData).toEqual({ payload: 'test' });
+      expect(asyncFreshData).toEqual({payload: 'test'});
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
 
       const cachedResponse = _timedStreamAsyncAwait(
         service.getDataWithSlidingExpiration('test')
       );
-      expect(cachedResponse).toEqual({ payload: 'test' });
+      expect(cachedResponse).toEqual({payload: 'test'});
       /**
        * call count should still be one, since we rerouted to cache, instead of service call
        */
@@ -430,7 +445,7 @@ strategies.forEach(s => {
       const cachedResponse2 = _timedStreamAsyncAwait(
         service.getDataWithSlidingExpiration('test')
       );
-      expect(cachedResponse2).toEqual({ payload: 'test' });
+      expect(cachedResponse2).toEqual({payload: 'test'});
       /**
        * call count is still one, because we renewed the cache 4501ms ago
        */
@@ -467,7 +482,7 @@ strategies.forEach(s => {
       const cachedResponse = _timedStreamAsyncAwait(
         service.getDataWithMaxCacheCount('test1')
       );
-      expect(cachedResponse).toEqual({ payload: 'test1' });
+      expect(cachedResponse).toEqual({payload: 'test1'});
       /** call count still 5 */
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(5);
 
@@ -479,11 +494,11 @@ strategies.forEach(s => {
       );
 
       expect(cachedResponseAll).toEqual([
-        { payload: 'test1' },
-        { payload: 'test2' },
-        { payload: 'test3' },
-        { payload: 'test4' },
-        { payload: 'test5' }
+        {payload: 'test1'},
+        {payload: 'test2'},
+        {payload: 'test3'},
+        {payload: 'test4'},
+        {payload: 'test5'}
       ]);
       /** call count still 5 */
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(5);
@@ -493,7 +508,7 @@ strategies.forEach(s => {
         1000
       );
 
-      expect(asyncData).toEqual({ payload: 'test6' });
+      expect(asyncData).toEqual({payload: 'test6'});
       /** call count incremented by one */
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(6);
 
@@ -513,11 +528,11 @@ strategies.forEach(s => {
       );
 
       expect(cachedResponseAll2).toEqual([
-        { payload: 'test2' },
-        { payload: 'test3' },
-        { payload: 'test4' },
-        { payload: 'test5' },
-        { payload: 'test6' }
+        {payload: 'test2'},
+        {payload: 'test3'},
+        {payload: 'test4'},
+        {payload: 'test5'},
+        {payload: 'test6'}
       ]);
 
       /** no service calls will be made, since we have all the responses still cached even after 1s (1000ms) */
@@ -529,7 +544,7 @@ strategies.forEach(s => {
         service.getDataWithMaxCacheCount('test7'),
         1000
       );
-      expect(nonCachedResponse).toEqual({ payload: 'test7' });
+      expect(nonCachedResponse).toEqual({payload: 'test7'});
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(7);
 
       /**
@@ -568,11 +583,11 @@ strategies.forEach(s => {
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(5);
 
       expect(cachedResponse2).toEqual([
-        { payload: 'test1' },
-        { payload: 'test2' },
-        { payload: 'test3' },
-        { payload: 'test4' },
-        { payload: 'test5' }
+        {payload: 'test1'},
+        {payload: 'test2'},
+        {payload: 'test3'},
+        {payload: 'test4'},
+        {payload: 'test5'}
       ]);
 
       /**
@@ -635,7 +650,7 @@ strategies.forEach(s => {
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(9);
       expect(cachedResponse).toEqual([
         null,
-        { payload: 'test2' },
+        {payload: 'test2'},
         null,
         null,
         null
@@ -648,14 +663,14 @@ strategies.forEach(s => {
         service.getDataWithCustomCacheResolver('test1'),
         1000
       );
-      expect(asyncFreshData).toEqual({ payload: 'test1' });
+      expect(asyncFreshData).toEqual({payload: 'test1'});
       expect(mockServiceCallSpy).toHaveBeenCalled();
 
       const asyncFreshData2 = _timedStreamAsyncAwait(
         service.getDataWithCustomCacheResolver('test2'),
         1000
       );
-      expect(asyncFreshData2).toEqual({ payload: 'test2' });
+      expect(asyncFreshData2).toEqual({payload: 'test2'});
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
 
       const cachedResponse = _timedStreamAsyncAwait(
@@ -663,7 +678,7 @@ strategies.forEach(s => {
           straightToLastCache: true
         })
       );
-      expect(cachedResponse).toEqual({ payload: 'test2' });
+      expect(cachedResponse).toEqual({payload: 'test2'});
       /**
        * call count still 2, since we rerouted directly to cache
        */
@@ -699,7 +714,7 @@ strategies.forEach(s => {
       };
       class Service {
         mockServiceCall(parameter: any) {
-          return timer(1000).pipe(mapTo({ payload: parameter }));
+          return timer(1000).pipe(mapTo({payload: parameter}));
         }
         @Cacheable()
         getData(parameter: string) {
@@ -745,7 +760,7 @@ strategies.forEach(s => {
         service.getDataWithCustomCacheDecider('test1'),
         1000
       );
-      expect(asyncData).toEqual({ payload: 'test1' });
+      expect(asyncData).toEqual({payload: 'test1'});
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
 
       /**
@@ -765,7 +780,7 @@ strategies.forEach(s => {
         service.getDataWithCustomCacheDecider('test'),
         1000
       );
-      expect(asyncData2).toEqual({ payload: 'test' });
+      expect(asyncData2).toEqual({payload: 'test'});
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(3);
 
       /**
@@ -774,7 +789,7 @@ strategies.forEach(s => {
       const cachedData2 = _timedStreamAsyncAwait(
         service.getDataWithCustomCacheDecider('test')
       );
-      expect(cachedData2).toEqual({ payload: 'test' });
+      expect(cachedData2).toEqual({payload: 'test'});
       /**
        * the service call count won't be incremented
        */
@@ -786,13 +801,13 @@ strategies.forEach(s => {
         service.getDataWithCacheBusting('test'),
         1000
       );
-      expect(asyncFreshData).toEqual({ payload: 'test' });
+      expect(asyncFreshData).toEqual({payload: 'test'});
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
 
       const cachedResponse = _timedStreamAsyncAwait(
         service.getDataWithCacheBusting('test')
       );
-      expect(cachedResponse).toEqual({ payload: 'test' });
+      expect(cachedResponse).toEqual({payload: 'test'});
       /**
        * response acquired from cache, so no incrementation on the service spy call counter is expected here
        */
@@ -823,7 +838,7 @@ strategies.forEach(s => {
        */
       expect(
         _timedStreamAsyncAwait(service.getDataWithCacheBusting('test'))
-      ).toEqual({ payload: 'test' });
+      ).toEqual({payload: 'test'});
     });
 
     it('should clear all caches when the global cache buster is called', () => {
@@ -835,9 +850,9 @@ strategies.forEach(s => {
         service.getData('test1'),
         1000
       );
-      expect(asyncFreshData1).toEqual({ payload: 'test1' });
+      expect(asyncFreshData1).toEqual({payload: 'test1'});
       const cachedResponse1 = _timedStreamAsyncAwait(service.getData('test1'));
-      expect(cachedResponse1).toEqual({ payload: 'test1' });
+      expect(cachedResponse1).toEqual({payload: 'test1'});
       /**
        * even though we called getData twice, this should only be called once
        * since the second call went straight to the cache
@@ -849,9 +864,9 @@ strategies.forEach(s => {
         service.getData('test2'),
         1000
       );
-      expect(asyncFreshData2).toEqual({ payload: 'test2' });
+      expect(asyncFreshData2).toEqual({payload: 'test2'});
       const cachedResponse2 = _timedStreamAsyncAwait(service.getData('test2'));
-      expect(cachedResponse2).toEqual({ payload: 'test2' });
+      expect(cachedResponse2).toEqual({payload: 'test2'});
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
 
 
@@ -860,9 +875,9 @@ strategies.forEach(s => {
         service.getData('test3'),
         1000
       );
-      expect(asyncFreshData3).toEqual({ payload: 'test3' });
+      expect(asyncFreshData3).toEqual({payload: 'test3'});
       const cachedResponse3 = _timedStreamAsyncAwait(service.getData('test3'));
-      expect(cachedResponse3).toEqual({ payload: 'test3' });
+      expect(cachedResponse3).toEqual({payload: 'test3'});
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(3);
 
       /**
@@ -901,7 +916,7 @@ strategies.forEach(s => {
         1000
       );
 
-      expect(asyncData).toEqual({ payload: ['Parameter1', 'Parameter2'] });
+      expect(asyncData).toEqual({payload: ['Parameter1', 'Parameter2']});
       expect(mockServiceCallWithMultipleParametersSpy).toHaveBeenCalledWith('Parameter1', 'Parameter2');
 
       service.getDataWithMultipleUndefinedParameters(undefined, undefined);
@@ -925,7 +940,7 @@ strategies.forEach(s => {
       );
       // called removeAtIndex once, because of how the cache works, it always removes the last cached pair with this method
       expect(removeSpy).toHaveBeenCalledTimes(1);
-      expect(asyncFreshData).toEqual({ payload: 'test' });
+      expect(asyncFreshData).toEqual({payload: 'test'});
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
       // one add call, one getAll call
       expect(getAllSpy).toHaveBeenCalledTimes(1);
@@ -936,7 +951,7 @@ strategies.forEach(s => {
       );
       // this call will renew the updateAtIndex call count since it's used to renew the cache
       expect(updateSpy).toHaveBeenCalledTimes(1);
-      expect(cachedResponse).toEqual({ payload: 'test' });
+      expect(cachedResponse).toEqual({payload: 'test'});
       /**
        * call count should still be one, since we rerouted to cache, instead of service call
        */
@@ -972,7 +987,7 @@ strategies.forEach(s => {
       // one more getAll call, and still just one add call, since the cache was renewed due to sliding expiration
       expect(getAllSpy).toHaveBeenCalledTimes(4);
       expect(addSpy).toHaveBeenCalledTimes(1);
-      expect(cachedResponse2).toEqual({ payload: 'test' });
+      expect(cachedResponse2).toEqual({payload: 'test'});
       /**
        * call count is still one, because we renewed the cache 4501ms ago
        */
@@ -1015,13 +1030,13 @@ strategies.forEach(s => {
         service.getData('test'),
         1000
       );
-      expect(asyncFreshData).toEqual({ payload: 'test' });
+      expect(asyncFreshData).toEqual({payload: 'test'});
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
 
       const cachedResponse = _timedStreamAsyncAwait(
         service.getData('test')
       );
-      expect(cachedResponse).toEqual({ payload: 'test' });
+      expect(cachedResponse).toEqual({payload: 'test'});
       /**
        * call count should still be one, since we rerouted to cache, instead of service call
        */
@@ -1044,7 +1059,7 @@ strategies.forEach(s => {
       const cachedResponse2 = _timedStreamAsyncAwait(
         service.getData('test')
       );
-      expect(cachedResponse2).toEqual({ payload: 'test' });
+      expect(cachedResponse2).toEqual({payload: 'test'});
       /**
        * call count is still one, because we renewed the cache 4501ms ago
        */
@@ -1084,7 +1099,7 @@ strategies.forEach(s => {
       const cachedResponse = _timedStreamAsyncAwait(
         service.getData('test1')
       );
-      expect(cachedResponse).toEqual({ payload: 'test1' });
+      expect(cachedResponse).toEqual({payload: 'test1'});
       /** call count still 5 */
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(5);
 
@@ -1096,11 +1111,11 @@ strategies.forEach(s => {
       );
 
       expect(cachedResponseAll).toEqual([
-        { payload: 'test1' },
-        { payload: 'test2' },
-        { payload: 'test3' },
-        { payload: 'test4' },
-        { payload: 'test5' }
+        {payload: 'test1'},
+        {payload: 'test2'},
+        {payload: 'test3'},
+        {payload: 'test4'},
+        {payload: 'test5'}
       ]);
       /** call count still 5 */
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(5);
@@ -1110,7 +1125,7 @@ strategies.forEach(s => {
         1000
       );
 
-      expect(asyncData).toEqual({ payload: 'test6' });
+      expect(asyncData).toEqual({payload: 'test6'});
       /** call count incremented by one */
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(6);
 
@@ -1129,11 +1144,11 @@ strategies.forEach(s => {
         1000
       );
       expect(cachedResponseAll2).toEqual([
-        { payload: 'test2' },
-        { payload: 'test3' },
-        { payload: 'test4' },
-        { payload: 'test5' },
-        { payload: 'test6' }
+        {payload: 'test2'},
+        {payload: 'test3'},
+        {payload: 'test4'},
+        {payload: 'test5'},
+        {payload: 'test6'}
       ]);
 
       /** no service calls will be made, since we have all the responses still cached even after 1s (1000ms) */
@@ -1145,7 +1160,7 @@ strategies.forEach(s => {
         service.getData('test7'),
         1000
       );
-      expect(nonCachedResponse).toEqual({ payload: 'test7' });
+      expect(nonCachedResponse).toEqual({payload: 'test7'});
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(7);
 
       /**
@@ -1171,7 +1186,7 @@ strategies.forEach(s => {
         1000
       );
 
-      expect(asyncFreshData).toEqual({ payload: 'test' });
+      expect(asyncFreshData).toEqual({payload: 'test'});
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
 
       const cachedResponse = _timedStreamAsyncAwait(
@@ -1181,7 +1196,7 @@ strategies.forEach(s => {
        * service shouldn't be called and we should route directly to cache
        */
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
-      expect(cachedResponse).toEqual({ payload: 'test' });
+      expect(cachedResponse).toEqual({payload: 'test'});
 
       /**
        * progress in time for 10001 ms, e.g - one millisecond after the maxAge would expire
@@ -1202,7 +1217,7 @@ strategies.forEach(s => {
         asyncFreshDataAfterCacheBust = data;
       });
       jasmine.clock().tick(1000);
-      expect(asyncFreshDataAfterCacheBust).toEqual({ payload: 'test' });
+      expect(asyncFreshDataAfterCacheBust).toEqual({payload: 'test'});
       GlobalCacheConfig.maxAge = undefined;
     });
 
@@ -1226,6 +1241,13 @@ strategies.forEach(s => {
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
       const cachedResponse2 = _timedStreamAsyncAwait(service.getMutableData('test'));
       expect(cachedResponse2).toEqual({payload: 'test_modified'});
+    });
+    it('should work with a custom context storage strategy', () => {
+      _timedStreamAsyncAwait(
+        service.getDataWithCustomContextStorageStrategy('test'),
+        1000
+      );
+      expect(customStrategySpy).toHaveBeenCalledWith(jasmine.any(Object));
     });
   });
 
