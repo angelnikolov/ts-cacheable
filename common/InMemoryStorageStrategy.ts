@@ -4,8 +4,8 @@ import {ICachePair} from '.';
 export class InMemoryStorageStrategy extends IStorageStrategy {
   private cachePairs: Array<ICachePair<any>> = [];
 
-  add(cachePair: ICachePair<any>) {
-    this.cachePairs.push(cachePair)
+  add(cachePair: ICachePair<any>, cacheKey: string, ctx?: any) {
+    this.cachePairs.push(cachePair);
   };
  
   addMany(cachePairs: ICachePair<any>[]) {

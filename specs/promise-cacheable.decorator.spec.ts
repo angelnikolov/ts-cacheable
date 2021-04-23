@@ -8,6 +8,13 @@ import {InMemoryStorageStrategy} from '../common/InMemoryStorageStrategy';
 import {IAsyncStorageStrategy} from 'common/IAsyncStorageStrategy';
 import {IService} from './service.interface';
 import {Cat} from './cat';
+let customStrategySpy: jasmine.Spy = jasmine.createSpy();
+export class CustomContextStrategy extends InMemoryStorageStrategy {
+  add(cachePair: ICachePair<any>, cacheKey: string, ctx?: any) {
+    customStrategySpy(ctx);
+    super.add(cachePair, cacheKey, ctx);
+  };
+}
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000;
 class AsyncStorageStrategy extends IAsyncStorageStrategy {
   private cachePairs: Array<ICachePair<any>> = [];
@@ -16,7 +23,7 @@ class AsyncStorageStrategy extends IAsyncStorageStrategy {
     this.cachePairs.push(cachePair);
     return Promise.resolve();
   };
-  
+
   addMany(cachePairs: ICachePair<any>[]) {
     this.cachePairs = cachePairs;
     return Promise.resolve();
@@ -234,6 +241,12 @@ strategies.forEach(s => {
         cacheModifier
       })
       getMutableData(parameter: string) {
+        return this.mockServiceCall(parameter);
+      }
+      @PCacheable({
+        storageStrategy: CustomContextStrategy
+      })
+      getDataWithCustomContextStorageStrategy(parameter: string = 'Parameter1') {
         return this.mockServiceCall(parameter);
       }
     }
@@ -887,6 +900,10 @@ strategies.forEach(s => {
        * response acquired from cache, so no incrementation on the service spy call counter is expected here
        */
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
-    })
+    });
+    it('should work with a custom context storage strategy', async () => {
+      await service.getDataWithCustomContextStorageStrategy('test');
+      expect(customStrategySpy).toHaveBeenCalledWith(jasmine.any(Object));
+    });
   });
 });
