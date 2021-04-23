@@ -61,6 +61,20 @@ var LocalStorageStrategy_1 = require("../common/LocalStorageStrategy");
 var InMemoryStorageStrategy_1 = require("../common/InMemoryStorageStrategy");
 var IAsyncStorageStrategy_1 = require("common/IAsyncStorageStrategy");
 var cat_1 = require("./cat");
+var customStrategySpy = jasmine.createSpy();
+var CustomContextStrategy = /** @class */ (function (_super) {
+    __extends(CustomContextStrategy, _super);
+    function CustomContextStrategy() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    CustomContextStrategy.prototype.add = function (cachePair, cacheKey, ctx) {
+        customStrategySpy(ctx);
+        _super.prototype.add.call(this, cachePair, cacheKey, ctx);
+    };
+    ;
+    return CustomContextStrategy;
+}(InMemoryStorageStrategy_1.InMemoryStorageStrategy));
+exports.CustomContextStrategy = CustomContextStrategy;
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000;
 var AsyncStorageStrategy = /** @class */ (function (_super) {
     __extends(AsyncStorageStrategy, _super);
@@ -207,6 +221,10 @@ strategies.forEach(function (s) {
             Service.prototype.getMutableData = function (parameter) {
                 return this.mockServiceCall(parameter);
             };
+            Service.prototype.getDataWithCustomContextStorageStrategy = function (parameter) {
+                if (parameter === void 0) { parameter = 'Parameter1'; }
+                return this.mockServiceCall(parameter);
+            };
             __decorate([
                 promise_cacheable_decorator_1.PCacheable()
             ], Service.prototype, "getData", null);
@@ -308,6 +326,11 @@ strategies.forEach(function (s) {
                     cacheModifier: cacheModifier
                 })
             ], Service.prototype, "getMutableData", null);
+            __decorate([
+                promise_cacheable_decorator_1.PCacheable({
+                    storageStrategy: CustomContextStrategy
+                })
+            ], Service.prototype, "getDataWithCustomContextStorageStrategy", null);
             return Service;
         }());
         beforeEach(function () {
@@ -1230,6 +1253,17 @@ strategies.forEach(function (s) {
                          * response acquired from cache, so no incrementation on the service spy call counter is expected here
                          */
                         expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+                        return [2 /*return*/];
+                }
+            });
+        }); });
+        it('should work with a custom context storage strategy', function () { return __awaiter(_this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, service.getDataWithCustomContextStorageStrategy('test')];
+                    case 1:
+                        _a.sent();
+                        expect(customStrategySpy).toHaveBeenCalledWith(jasmine.any(Object));
                         return [2 /*return*/];
                 }
             });

@@ -7,6 +7,7 @@ exports.globalCacheBusterNotifier = new rxjs_1.Subject();
 function Cacheable(cacheConfig) {
     if (cacheConfig === void 0) { cacheConfig = {}; }
     return function (_target, _propertyKey, propertyDescriptor) {
+        var _this = this;
         var cacheKey = cacheConfig.cacheKey || _target.constructor.name + '#' + _propertyKey;
         var oldMethod = propertyDescriptor.value;
         if (propertyDescriptor && propertyDescriptor.value) {
@@ -15,7 +16,7 @@ function Cacheable(cacheConfig) {
                 : new cacheConfig.storageStrategy();
             var pendingCachePairs_1 = [];
             if (cacheConfig.cacheModifier) {
-                cacheConfig.cacheModifier.subscribe(function (callback) { return storageStrategy_1.addMany(callback(storageStrategy_1.getAll(cacheKey)), cacheKey); });
+                cacheConfig.cacheModifier.subscribe(function (callback) { return storageStrategy_1.addMany(callback(storageStrategy_1.getAll(cacheKey, _this)), cacheKey, _this); });
             }
             /**
              * subscribe to the globalCacheBuster
@@ -25,7 +26,7 @@ function Cacheable(cacheConfig) {
             rxjs_1.merge(exports.globalCacheBusterNotifier.asObservable(), cacheConfig.cacheBusterObserver
                 ? cacheConfig.cacheBusterObserver
                 : rxjs_1.empty()).subscribe(function (_) {
-                storageStrategy_1.removeAll(cacheKey);
+                storageStrategy_1.removeAll(cacheKey, _this);
                 pendingCachePairs_1.length = 0;
             });
             var cacheResolver = cacheConfig.cacheResolver || common_1.GlobalCacheConfig.cacheResolver;
@@ -38,11 +39,12 @@ function Cacheable(cacheConfig) {
                 : common_1.DEFAULT_HASHER;
             /* use function instead of an arrow function to keep context of invocation */
             propertyDescriptor.value = function () {
+                var _this = this;
                 var parameters = [];
                 for (var _i = 0; _i < arguments.length; _i++) {
                     parameters[_i] = arguments[_i];
                 }
-                var cachePairs = storageStrategy_1.getAll(cacheKey);
+                var cachePairs = storageStrategy_1.getAll(cacheKey, this);
                 var cacheParameters = cacheConfig.cacheHasher(parameters);
                 var _foundCachePair = cachePairs.find(function (cp) {
                     return cacheConfig.cacheResolver(cp.parameters, cacheParameters);
@@ -59,7 +61,7 @@ function Cacheable(cacheConfig) {
                         /**
                          * cache duration has expired - remove it from the cachePairs array
                          */
-                        storageStrategy_1.remove ? storageStrategy_1.remove(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey) : storageStrategy_1.removeAtIndex(cachePairs.indexOf(_foundCachePair), cacheKey);
+                        storageStrategy_1.remove ? storageStrategy_1.remove(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey, this) : storageStrategy_1.removeAtIndex(cachePairs.indexOf(_foundCachePair), cacheKey, this);
                         _foundCachePair = null;
                     }
                     else if (cacheConfig.slidingExpiration || common_1.GlobalCacheConfig.slidingExpiration) {
@@ -67,7 +69,7 @@ function Cacheable(cacheConfig) {
                          * renew cache duration
                          */
                         _foundCachePair.created = new Date();
-                        storageStrategy_1.update ? storageStrategy_1.update(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey) : storageStrategy_1.updateAtIndex(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey);
+                        storageStrategy_1.update ? storageStrategy_1.update(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey, this) : storageStrategy_1.updateAtIndex(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey, this);
                     }
                 }
                 if (_foundCachePair) {
@@ -97,13 +99,13 @@ function Cacheable(cacheConfig) {
                                 (cacheConfig.maxCacheCount || common_1.GlobalCacheConfig.maxCacheCount) === 1 ||
                                 ((cacheConfig.maxCacheCount || common_1.GlobalCacheConfig.maxCacheCount) &&
                                     (cacheConfig.maxCacheCount || common_1.GlobalCacheConfig.maxCacheCount) < cachePairs.length + 1)) {
-                                storageStrategy_1.remove ? storageStrategy_1.remove(0, cachePairs[0], cacheKey) : storageStrategy_1.removeAtIndex(0, cacheKey);
+                                storageStrategy_1.remove ? storageStrategy_1.remove(0, cachePairs[0], cacheKey, _this) : storageStrategy_1.removeAtIndex(0, cacheKey, _this);
                             }
                             storageStrategy_1.add({
                                 parameters: cacheParameters,
                                 response: response,
                                 created: (cacheConfig.maxAge || common_1.GlobalCacheConfig.maxAge) ? new Date() : null
-                            }, cacheKey);
+                            }, cacheKey, _this);
                         }
                     }), operators_1.publishReplay(1), operators_1.refCount());
                     /**

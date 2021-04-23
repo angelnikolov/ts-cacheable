@@ -4,7 +4,7 @@ export class InMemoryStorageStrategy extends IStorageStrategy {
         super(...arguments);
         this.cachePairs = [];
     }
-    add(cachePair) {
+    add(cachePair, cacheKey, ctx) {
         this.cachePairs.push(cachePair);
     }
     ;

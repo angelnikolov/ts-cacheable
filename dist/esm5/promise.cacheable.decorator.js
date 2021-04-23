@@ -33,6 +33,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var _this = this;
 import { empty, merge, Subject } from 'rxjs';
 import { DEFAULT_CACHE_RESOLVER, GlobalCacheConfig, DEFAULT_HASHER } from './common';
 export var promiseGlobalCacheBusterNotifier = new Subject();
@@ -53,7 +54,7 @@ var getResponse = function (oldMethod, cacheKey, cacheConfig, context, cachePair
             /**
              * cache duration has expired - remove it from the cachePairs array
              */
-            storageStrategy.remove ? storageStrategy.remove(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey) : storageStrategy.removeAtIndex(cachePairs.indexOf(_foundCachePair), cacheKey);
+            storageStrategy.remove ? storageStrategy.remove(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey, _this) : storageStrategy.removeAtIndex(cachePairs.indexOf(_foundCachePair), cacheKey, _this);
             _foundCachePair = null;
         }
         else if (cacheConfig.slidingExpiration || GlobalCacheConfig.slidingExpiration) {
@@ -61,7 +62,7 @@ var getResponse = function (oldMethod, cacheKey, cacheConfig, context, cachePair
              * renew cache duration
              */
             _foundCachePair.created = new Date();
-            storageStrategy.update ? storageStrategy.update(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey) : storageStrategy.updateAtIndex(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey);
+            storageStrategy.update ? storageStrategy.update(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey, _this) : storageStrategy.updateAtIndex(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey, _this);
         }
     }
     if (_foundCachePair) {
@@ -85,13 +86,13 @@ var getResponse = function (oldMethod, cacheKey, cacheConfig, context, cachePair
                     (cacheConfig.maxCacheCount || GlobalCacheConfig.maxCacheCount) === 1 ||
                     ((cacheConfig.maxCacheCount || GlobalCacheConfig.maxCacheCount) &&
                         (cacheConfig.maxCacheCount || GlobalCacheConfig.maxCacheCount) < cachePairs.length + 1)) {
-                    storageStrategy.remove ? storageStrategy.remove(0, cachePairs[0], cacheKey) : storageStrategy.removeAtIndex(0, cacheKey);
+                    storageStrategy.remove ? storageStrategy.remove(0, cachePairs[0], cacheKey, _this) : storageStrategy.removeAtIndex(0, cacheKey, _this);
                 }
                 storageStrategy.add({
                     parameters: cacheParameters,
                     response: response,
                     created: (cacheConfig.maxAge || GlobalCacheConfig.maxAge) ? new Date() : null
-                }, cacheKey);
+                }, cacheKey, _this);
             }
             return response;
         })
@@ -137,8 +138,8 @@ export function PCacheable(cacheConfig) {
                         case 0:
                             _b = (_a = storageStrategy_1).addMany;
                             _c = callback;
-                            return [4 /*yield*/, storageStrategy_1.getAll(cacheKey)];
-                        case 1: return [2 /*return*/, _b.apply(_a, [_c.apply(void 0, [_d.sent()]), cacheKey])];
+                            return [4 /*yield*/, storageStrategy_1.getAll(cacheKey, this)];
+                        case 1: return [2 /*return*/, _b.apply(_a, [_c.apply(void 0, [_d.sent()]), cacheKey, this])];
                     }
                 }); }); });
             }
@@ -150,7 +151,7 @@ export function PCacheable(cacheConfig) {
             merge(promiseGlobalCacheBusterNotifier.asObservable(), cacheConfig.cacheBusterObserver
                 ? cacheConfig.cacheBusterObserver
                 : empty()).subscribe(function (_) {
-                storageStrategy_1.removeAll(cacheKey);
+                storageStrategy_1.removeAll(cacheKey, _this);
                 pendingCachePairs_1.length = 0;
             });
             var cacheResolver = cacheConfig.cacheResolver || GlobalCacheConfig.cacheResolver;
@@ -171,7 +172,7 @@ export function PCacheable(cacheConfig) {
                 var promiseImplementation = typeof GlobalCacheConfig.promiseImplementation === 'function' && (GlobalCacheConfig.promiseImplementation !== Promise) ?
                     GlobalCacheConfig.promiseImplementation.call(this)
                     : GlobalCacheConfig.promiseImplementation;
-                var cachePairs = storageStrategy_1.getAll(cacheKey);
+                var cachePairs = storageStrategy_1.getAll(cacheKey, this);
                 if (!(cachePairs instanceof promiseImplementation)) {
                     cachePairs = promiseImplementation.resolve(cachePairs);
                 }

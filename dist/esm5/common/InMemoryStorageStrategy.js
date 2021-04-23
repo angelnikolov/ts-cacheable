@@ -16,7 +16,7 @@ var InMemoryStorageStrategy = /** @class */ (function (_super) {
         _this.cachePairs = [];
         return _this;
     }
-    InMemoryStorageStrategy.prototype.add = function (cachePair) {
+    InMemoryStorageStrategy.prototype.add = function (cachePair, cacheKey, ctx) {
         this.cachePairs.push(cachePair);
     };
     ;

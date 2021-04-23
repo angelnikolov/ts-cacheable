@@ -12,7 +12,7 @@ export function Cacheable(cacheConfig = {}) {
                 : new cacheConfig.storageStrategy();
             const pendingCachePairs = [];
             if (cacheConfig.cacheModifier) {
-                cacheConfig.cacheModifier.subscribe(callback => storageStrategy.addMany(callback(storageStrategy.getAll(cacheKey)), cacheKey));
+                cacheConfig.cacheModifier.subscribe(callback => storageStrategy.addMany(callback(storageStrategy.getAll(cacheKey, this)), cacheKey, this));
             }
             /**
              * subscribe to the globalCacheBuster
@@ -22,7 +22,7 @@ export function Cacheable(cacheConfig = {}) {
             merge(globalCacheBusterNotifier.asObservable(), cacheConfig.cacheBusterObserver
                 ? cacheConfig.cacheBusterObserver
                 : empty()).subscribe(_ => {
-                storageStrategy.removeAll(cacheKey);
+                storageStrategy.removeAll(cacheKey, this);
                 pendingCachePairs.length = 0;
             });
             const cacheResolver = cacheConfig.cacheResolver || GlobalCacheConfig.cacheResolver;
@@ -35,7 +35,7 @@ export function Cacheable(cacheConfig = {}) {
                 : DEFAULT_HASHER;
             /* use function instead of an arrow function to keep context of invocation */
             propertyDescriptor.value = function (...parameters) {
-                const cachePairs = storageStrategy.getAll(cacheKey);
+                const cachePairs = storageStrategy.getAll(cacheKey, this);
                 let cacheParameters = cacheConfig.cacheHasher(parameters);
                 let _foundCachePair = cachePairs.find(cp => cacheConfig.cacheResolver(cp.parameters, cacheParameters));
                 const _foundPendingCachePair = pendingCachePairs.find(cp => cacheConfig.cacheResolver(cp.parameters, cacheParameters));
@@ -48,7 +48,7 @@ export function Cacheable(cacheConfig = {}) {
                         /**
                          * cache duration has expired - remove it from the cachePairs array
                          */
-                        storageStrategy.remove ? storageStrategy.remove(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey) : storageStrategy.removeAtIndex(cachePairs.indexOf(_foundCachePair), cacheKey);
+                        storageStrategy.remove ? storageStrategy.remove(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey, this) : storageStrategy.removeAtIndex(cachePairs.indexOf(_foundCachePair), cacheKey, this);
                         _foundCachePair = null;
                     }
                     else if (cacheConfig.slidingExpiration || GlobalCacheConfig.slidingExpiration) {
@@ -56,7 +56,7 @@ export function Cacheable(cacheConfig = {}) {
                          * renew cache duration
                          */
                         _foundCachePair.created = new Date();
-                        storageStrategy.update ? storageStrategy.update(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey) : storageStrategy.updateAtIndex(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey);
+                        storageStrategy.update ? storageStrategy.update(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey, this) : storageStrategy.updateAtIndex(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey, this);
                     }
                 }
                 if (_foundCachePair) {
@@ -84,13 +84,13 @@ export function Cacheable(cacheConfig = {}) {
                                 (cacheConfig.maxCacheCount || GlobalCacheConfig.maxCacheCount) === 1 ||
                                 ((cacheConfig.maxCacheCount || GlobalCacheConfig.maxCacheCount) &&
                                     (cacheConfig.maxCacheCount || GlobalCacheConfig.maxCacheCount) < cachePairs.length + 1)) {
-                                storageStrategy.remove ? storageStrategy.remove(0, cachePairs[0], cacheKey) : storageStrategy.removeAtIndex(0, cacheKey);
+                                storageStrategy.remove ? storageStrategy.remove(0, cachePairs[0], cacheKey, this) : storageStrategy.removeAtIndex(0, cacheKey, this);
                             }
                             storageStrategy.add({
                                 parameters: cacheParameters,
                                 response,
                                 created: (cacheConfig.maxAge || GlobalCacheConfig.maxAge) ? new Date() : null
-                            }, cacheKey);
+                            }, cacheKey, this);
                         }
                     }), publishReplay(1), refCount());
                     /**

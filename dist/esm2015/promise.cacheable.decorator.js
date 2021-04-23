@@ -22,7 +22,7 @@ const getResponse = (oldMethod, cacheKey, cacheConfig, context, cachePairs, para
             /**
              * cache duration has expired - remove it from the cachePairs array
              */
-            storageStrategy.remove ? storageStrategy.remove(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey) : storageStrategy.removeAtIndex(cachePairs.indexOf(_foundCachePair), cacheKey);
+            storageStrategy.remove ? storageStrategy.remove(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey, this) : storageStrategy.removeAtIndex(cachePairs.indexOf(_foundCachePair), cacheKey, this);
             _foundCachePair = null;
         }
         else if (cacheConfig.slidingExpiration || GlobalCacheConfig.slidingExpiration) {
@@ -30,7 +30,7 @@ const getResponse = (oldMethod, cacheKey, cacheConfig, context, cachePairs, para
              * renew cache duration
              */
             _foundCachePair.created = new Date();
-            storageStrategy.update ? storageStrategy.update(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey) : storageStrategy.updateAtIndex(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey);
+            storageStrategy.update ? storageStrategy.update(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey, this) : storageStrategy.updateAtIndex(cachePairs.indexOf(_foundCachePair), _foundCachePair, cacheKey, this);
         }
     }
     if (_foundCachePair) {
@@ -54,13 +54,13 @@ const getResponse = (oldMethod, cacheKey, cacheConfig, context, cachePairs, para
                     (cacheConfig.maxCacheCount || GlobalCacheConfig.maxCacheCount) === 1 ||
                     ((cacheConfig.maxCacheCount || GlobalCacheConfig.maxCacheCount) &&
                         (cacheConfig.maxCacheCount || GlobalCacheConfig.maxCacheCount) < cachePairs.length + 1)) {
-                    storageStrategy.remove ? storageStrategy.remove(0, cachePairs[0], cacheKey) : storageStrategy.removeAtIndex(0, cacheKey);
+                    storageStrategy.remove ? storageStrategy.remove(0, cachePairs[0], cacheKey, this) : storageStrategy.removeAtIndex(0, cacheKey, this);
                 }
                 storageStrategy.add({
                     parameters: cacheParameters,
                     response,
                     created: (cacheConfig.maxAge || GlobalCacheConfig.maxAge) ? new Date() : null
-                }, cacheKey);
+                }, cacheKey, this);
             }
             return response;
         })
@@ -97,7 +97,7 @@ export function PCacheable(cacheConfig = {}) {
                 : new cacheConfig.storageStrategy();
             const pendingCachePairs = [];
             if (cacheConfig.cacheModifier) {
-                cacheConfig.cacheModifier.subscribe((callback) => __awaiter(this, void 0, void 0, function* () { return storageStrategy.addMany(callback(yield storageStrategy.getAll(cacheKey)), cacheKey); }));
+                cacheConfig.cacheModifier.subscribe((callback) => __awaiter(this, void 0, void 0, function* () { return storageStrategy.addMany(callback(yield storageStrategy.getAll(cacheKey, this)), cacheKey, this); }));
             }
             /**
              * subscribe to the promiseGlobalCacheBusterNotifier
@@ -107,7 +107,7 @@ export function PCacheable(cacheConfig = {}) {
             merge(promiseGlobalCacheBusterNotifier.asObservable(), cacheConfig.cacheBusterObserver
                 ? cacheConfig.cacheBusterObserver
                 : empty()).subscribe(_ => {
-                storageStrategy.removeAll(cacheKey);
+                storageStrategy.removeAll(cacheKey, this);
                 pendingCachePairs.length = 0;
             });
             const cacheResolver = cacheConfig.cacheResolver || GlobalCacheConfig.cacheResolver;
@@ -123,7 +123,7 @@ export function PCacheable(cacheConfig = {}) {
                 const promiseImplementation = typeof GlobalCacheConfig.promiseImplementation === 'function' && (GlobalCacheConfig.promiseImplementation !== Promise) ?
                     GlobalCacheConfig.promiseImplementation.call(this)
                     : GlobalCacheConfig.promiseImplementation;
-                let cachePairs = storageStrategy.getAll(cacheKey);
+                let cachePairs = storageStrategy.getAll(cacheKey, this);
                 if (!(cachePairs instanceof promiseImplementation)) {
                     cachePairs = promiseImplementation.resolve(cachePairs);
                 }
