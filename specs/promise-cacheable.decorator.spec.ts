@@ -233,7 +233,7 @@ strategies.forEach(s => {
         slidingExpiration: true,
         storageStrategy: InMemoryStorageStrategy
       })
-      getDateWithCustomStorageStrategyProvided(parameter: string) {
+      getDataWithCustomStorageStrategyProvided(parameter: string) {
         return this.mockServiceCall(parameter);
       }
       @PCacheable({
@@ -659,13 +659,13 @@ strategies.forEach(s => {
     it('should work correctly with a custom storage strategy', async (done) => {
       //for some reason we cant rely on expectations on the other methods here
       const getAllSpy = spyOn(InMemoryStorageStrategy.prototype, 'getAll').and.callThrough();
-      const asyncFreshData = await service.getDateWithCustomStorageStrategyProvided('test');
+      const asyncFreshData = await service.getDataWithCustomStorageStrategyProvided('test');
       expect(asyncFreshData).toEqual({payload: 'test'});
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
       // one add call, one getAll call
       expect(getAllSpy).toHaveBeenCalledTimes(1);
 
-      const cachedResponse = await service.getDateWithCustomStorageStrategyProvided('test');
+      const cachedResponse = await service.getDataWithCustomStorageStrategyProvided('test');
       expect(cachedResponse).toEqual({payload: 'test'});
       expect(getAllSpy).toHaveBeenCalledTimes(2);
       /**
@@ -674,12 +674,12 @@ strategies.forEach(s => {
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
 
       setTimeout(async () => {
-        await service.getDateWithCustomStorageStrategyProvided('test');
+        await service.getDataWithCustomStorageStrategyProvided('test');
         expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
         // three getAll calls since every time we call the decorated method, we check the cache first
         expect(getAllSpy).toHaveBeenCalledTimes(3);
         setTimeout(async () => {
-          await service.getDateWithCustomStorageStrategyProvided('test');
+          await service.getDataWithCustomStorageStrategyProvided('test');
           expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
           done();
         }, 500);

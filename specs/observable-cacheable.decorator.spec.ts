@@ -173,7 +173,7 @@ strategies.forEach(s => {
           slidingExpiration: true,
           storageStrategy: InMemoryStorageStrategy
         })
-        getDateWithCustomStorageStrategyProvided(parameter: string) {
+        getDataWithCustomStorageStrategyProvided(parameter: string) {
           return this.mockServiceCall(parameter);
         }
         @Cacheable({
@@ -935,7 +935,7 @@ strategies.forEach(s => {
 
       jasmine.clock().mockDate();
       const asyncFreshData = _timedStreamAsyncAwait(
-        service.getDateWithCustomStorageStrategyProvided('test'),
+        service.getDataWithCustomStorageStrategyProvided('test'),
         1000
       );
       // called removeAtIndex once, because of how the cache works, it always removes the last cached pair with this method
@@ -947,7 +947,7 @@ strategies.forEach(s => {
       expect(addSpy).toHaveBeenCalledTimes(1);
 
       const cachedResponse = _timedStreamAsyncAwait(
-        service.getDateWithCustomStorageStrategyProvided('test')
+        service.getDataWithCustomStorageStrategyProvided('test')
       );
       // this call will renew the updateAtIndex call count since it's used to renew the cache
       expect(updateSpy).toHaveBeenCalledTimes(1);
@@ -967,7 +967,7 @@ strategies.forEach(s => {
       /**
        * calling the method again should renew expiration for 7500 more milliseconds
        */
-      service.getDateWithCustomStorageStrategyProvided('test').subscribe();
+      service.getDataWithCustomStorageStrategyProvided('test').subscribe();
       // this call will renew the updateAtIndex call count since it's used to renew the cache
       expect(updateSpy).toHaveBeenCalledTimes(2);
       // one more getAll cache and it is renewed
@@ -980,7 +980,7 @@ strategies.forEach(s => {
        */
 
       const cachedResponse2 = _timedStreamAsyncAwait(
-        service.getDateWithCustomStorageStrategyProvided('test')
+        service.getDataWithCustomStorageStrategyProvided('test')
       );
       // this call will renew the updateAtIndex call count since it's used to renew the cache
       expect(updateSpy).toHaveBeenCalledTimes(3);
@@ -999,7 +999,7 @@ strategies.forEach(s => {
       jasmine.clock().tick(7501);
 
       const cachedResponse3 = _timedStreamAsyncAwait(
-        service.getDateWithCustomStorageStrategyProvided('test')
+        service.getDataWithCustomStorageStrategyProvided('test')
       );
       // cache has expired so the currently cached pair should have been swapped by now by calling the removeAtIndex method first
       expect(removeSpy).toHaveBeenCalledTimes(2);
