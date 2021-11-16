@@ -1,18 +1,21 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.LocalStorageStrategy = exports.DOMStorageStrategy = exports.IAsyncStorageStrategy = exports.IStorageStrategy = exports.GlobalCacheConfig = exports.DEFAULT_HASHER = exports.DEFAULT_CACHE_RESOLVER = void 0;
 var IStorageStrategy_1 = require("./IStorageStrategy");
-exports.IStorageStrategy = IStorageStrategy_1.IStorageStrategy;
+Object.defineProperty(exports, "IStorageStrategy", { enumerable: true, get: function () { return IStorageStrategy_1.IStorageStrategy; } });
 var InMemoryStorageStrategy_1 = require("./InMemoryStorageStrategy");
 var IAsyncStorageStrategy_1 = require("./IAsyncStorageStrategy");
-exports.IAsyncStorageStrategy = IAsyncStorageStrategy_1.IAsyncStorageStrategy;
+Object.defineProperty(exports, "IAsyncStorageStrategy", { enumerable: true, get: function () { return IAsyncStorageStrategy_1.IAsyncStorageStrategy; } });
 var DOMStorageStrategy_1 = require("./DOMStorageStrategy");
-exports.DOMStorageStrategy = DOMStorageStrategy_1.DOMStorageStrategy;
+Object.defineProperty(exports, "DOMStorageStrategy", { enumerable: true, get: function () { return DOMStorageStrategy_1.DOMStorageStrategy; } });
 var LocalStorageStrategy_1 = require("./LocalStorageStrategy");
-exports.LocalStorageStrategy = LocalStorageStrategy_1.LocalStorageStrategy;
-exports.DEFAULT_CACHE_RESOLVER = function (oldParams, newParams) {
+Object.defineProperty(exports, "LocalStorageStrategy", { enumerable: true, get: function () { return LocalStorageStrategy_1.LocalStorageStrategy; } });
+var DEFAULT_CACHE_RESOLVER = function (oldParams, newParams) {
     return JSON.stringify(oldParams) === JSON.stringify(newParams);
 };
-exports.DEFAULT_HASHER = function (parameters) { return parameters.map(function (param) { return param !== undefined ? JSON.parse(JSON.stringify(param)) : param; }); };
+exports.DEFAULT_CACHE_RESOLVER = DEFAULT_CACHE_RESOLVER;
+var DEFAULT_HASHER = function (parameters) { return parameters.map(function (param) { return param !== undefined ? JSON.parse(JSON.stringify(param)) : param; }); };
+exports.DEFAULT_HASHER = DEFAULT_HASHER;
 exports.GlobalCacheConfig = {
     storageStrategy: InMemoryStorageStrategy_1.InMemoryStorageStrategy,
     globalCacheKey: 'CACHE_STORAGE',

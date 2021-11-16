@@ -1,3 +1,12 @@
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
 export function PCacheBuster(cacheBusterConfig) {
     return function (_target, _propertyKey, propertyDescriptor) {
         var oldMethod = propertyDescriptor.value;
@@ -8,7 +17,7 @@ export function PCacheBuster(cacheBusterConfig) {
                 for (var _i = 0; _i < arguments.length; _i++) {
                     parameters[_i] = arguments[_i];
                 }
-                return oldMethod.call.apply(oldMethod, [this].concat(parameters)).then(function (response) {
+                return oldMethod.call.apply(oldMethod, __spreadArray([this], parameters, false)).then(function (response) {
                     if (cacheBusterConfig.cacheBusterNotifier) {
                         cacheBusterConfig.cacheBusterNotifier.next();
                     }

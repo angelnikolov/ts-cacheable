@@ -63,7 +63,7 @@ class AsyncStorageStrategy extends IAsyncStorageStrategy {
 }
 const strategies = [null, AsyncStorageStrategy, LocalStorageStrategy];
 strategies.forEach(s => {
-  const cacheBusterNotifier = new Subject();
+  const cacheBusterNotifier = new Subject<void>();
   if (s) {
     GlobalCacheConfig.storageStrategy = s;
   }

@@ -1,3 +1,12 @@
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
 import { empty, merge, of, Subject } from 'rxjs';
 import { delay, finalize, tap, publishReplay, refCount } from 'rxjs/operators';
 import { DEFAULT_CACHE_RESOLVER, GlobalCacheConfig, DEFAULT_HASHER } from './common';
@@ -78,7 +87,7 @@ export function Cacheable(cacheConfig) {
                     return _foundPendingCachePair.response;
                 }
                 else {
-                    var response$ = oldMethod.call.apply(oldMethod, [this].concat(parameters)).pipe(finalize(function () {
+                    var response$ = oldMethod.call.apply(oldMethod, __spreadArray([this], parameters, false)).pipe(finalize(function () {
                         /**
                          * if there has been an observable cache pair for these parameters, when it completes or errors, remove it
                          */

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.IStorageStrategy = void 0;
 var IStorageStrategy = /** @class */ (function () {
     function IStorageStrategy() {
     }

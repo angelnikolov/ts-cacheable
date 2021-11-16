@@ -6,7 +6,7 @@ import { IAsyncStorageStrategy } from './IAsyncStorageStrategy';
 import { DOMStorageStrategy } from './DOMStorageStrategy';
 import { LocalStorageStrategy } from './LocalStorageStrategy';
 export declare const DEFAULT_CACHE_RESOLVER: (oldParams: any, newParams: any) => boolean;
-export declare const DEFAULT_HASHER: (parameters: any[]) => any[];
+export declare const DEFAULT_HASHER: (parameters: Array<any>) => any[];
 export declare type ICacheResolver = (oldParameters: any, newParameters: any) => boolean;
 export declare type ICacheHasher = (parameters: Array<any>) => any;
 export declare type IShouldCacheDecider = (response: any) => boolean;

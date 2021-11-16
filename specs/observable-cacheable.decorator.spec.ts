@@ -30,7 +30,7 @@ strategies.forEach(s => {
     let mockServiceCallSpy: jasmine.Spy = null;
     const cacheModifier = new Subject<any>();
     beforeEach(() => {
-      const cacheBusterNotifier = new Subject();
+      const cacheBusterNotifier = new Subject<void>();
       class Service {
         mockServiceCall(parameter: any) {
           return timer(1000).pipe(mapTo({payload: parameter}));

@@ -1,5 +1,15 @@
 "use strict";
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Cacheable = exports.globalCacheBusterNotifier = void 0;
 var rxjs_1 = require("rxjs");
 var operators_1 = require("rxjs/operators");
 var common_1 = require("./common");
@@ -23,9 +33,9 @@ function Cacheable(cacheConfig) {
              * if a custom cacheBusterObserver is passed, subscribe to it as well
              * subscribe to the cacheBusterObserver and upon emission, clear all caches
              */
-            rxjs_1.merge(exports.globalCacheBusterNotifier.asObservable(), cacheConfig.cacheBusterObserver
+            (0, rxjs_1.merge)(exports.globalCacheBusterNotifier.asObservable(), cacheConfig.cacheBusterObserver
                 ? cacheConfig.cacheBusterObserver
-                : rxjs_1.empty()).subscribe(function (_) {
+                : (0, rxjs_1.empty)()).subscribe(function (_) {
                 storageStrategy_1.removeAll(cacheKey, _this);
                 pendingCachePairs_1.length = 0;
             });
@@ -73,14 +83,14 @@ function Cacheable(cacheConfig) {
                     }
                 }
                 if (_foundCachePair) {
-                    var cached$ = rxjs_1.of(_foundCachePair.response);
-                    return cacheConfig.async ? cached$.pipe(operators_1.delay(0)) : cached$;
+                    var cached$ = (0, rxjs_1.of)(_foundCachePair.response);
+                    return cacheConfig.async ? cached$.pipe((0, operators_1.delay)(0)) : cached$;
                 }
                 else if (_foundPendingCachePair) {
                     return _foundPendingCachePair.response;
                 }
                 else {
-                    var response$ = oldMethod.call.apply(oldMethod, [this].concat(parameters)).pipe(operators_1.finalize(function () {
+                    var response$ = oldMethod.call.apply(oldMethod, __spreadArray([this], parameters, false)).pipe((0, operators_1.finalize)(function () {
                         /**
                          * if there has been an observable cache pair for these parameters, when it completes or errors, remove it
                          */
@@ -88,7 +98,7 @@ function Cacheable(cacheConfig) {
                             return cacheConfig.cacheResolver(cp.parameters, cacheParameters);
                         });
                         pendingCachePairs_1.splice(pendingCachePairs_1.indexOf(_pendingCachePairToRemove), 1);
-                    }), operators_1.tap(function (response) {
+                    }), (0, operators_1.tap)(function (response) {
                         /**
                          * if maxCacheCount has not been passed, just shift the cachePair to make room for the new one
                          * if maxCacheCount has been passed, respect that and only shift the cachePairs if the new cachePair will make them exceed the count
@@ -107,7 +117,7 @@ function Cacheable(cacheConfig) {
                                 created: (cacheConfig.maxAge || common_1.GlobalCacheConfig.maxAge) ? new Date() : null
                             }, cacheKey, _this);
                         }
-                    }), operators_1.publishReplay(1), operators_1.refCount());
+                    }), (0, operators_1.publishReplay)(1), (0, operators_1.refCount)());
                     /**
                      * cache the stream
                      */

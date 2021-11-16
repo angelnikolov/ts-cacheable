@@ -1,9 +1,14 @@
 "use strict";
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -16,10 +21,11 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -30,8 +36,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
         while (_) try {
-            if (f = 1, y && (t = y[op[0] & 2 ? "return" : op[0] ? "throw" : "next"]) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [0, t.value];
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
             switch (op[0]) {
                 case 0: case 1: t = op; break;
                 case 4: _.label++; return { value: op[1], done: false };
@@ -50,8 +56,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.CustomContextStrategy = void 0;
 var rxjs_1 = require("rxjs");
 var operators_1 = require("rxjs/operators");
 var cacheable_decorator_1 = require("../cacheable.decorator");
@@ -95,13 +101,13 @@ strategies.forEach(function (s) {
                 function Service() {
                 }
                 Service.prototype.mockServiceCall = function (parameter) {
-                    return rxjs_2.timer(1000).pipe(operators_2.mapTo({ payload: parameter }));
+                    return (0, rxjs_2.timer)(1000).pipe((0, operators_2.mapTo)({ payload: parameter }));
                 };
                 Service.prototype.mockSaveServiceCall = function () {
-                    return rxjs_2.timer(1000).pipe(operators_2.mapTo('SAVED'));
+                    return (0, rxjs_2.timer)(1000).pipe((0, operators_2.mapTo)('SAVED'));
                 };
                 Service.prototype.mockServiceCallWithMultipleParameters = function (parameter1, parameter2) {
-                    return rxjs_2.timer(1000).pipe(operators_2.mapTo({ payload: [parameter1, parameter2] }));
+                    return (0, rxjs_2.timer)(1000).pipe((0, operators_2.mapTo)({ payload: [parameter1, parameter2] }));
                 };
                 Service.prototype.getData = function (parameter) {
                     return this.mockServiceCall(parameter);
@@ -157,7 +163,7 @@ strategies.forEach(function (s) {
                     if (parameter1 === void 0) { parameter1 = 'Parameter2'; }
                     return this.mockServiceCallWithMultipleParameters(parameter, parameter1);
                 };
-                Service.prototype.getDateWithCustomStorageStrategyProvided = function (parameter) {
+                Service.prototype.getDataWithCustomStorageStrategyProvided = function (parameter) {
                     return this.mockServiceCall(parameter);
                 };
                 Service.prototype.getMutableData = function (parameter) {
@@ -168,57 +174,57 @@ strategies.forEach(function (s) {
                     return this.mockServiceCall(parameter);
                 };
                 __decorate([
-                    cacheable_decorator_2.Cacheable()
+                    (0, cacheable_decorator_2.Cacheable)()
                 ], Service.prototype, "getData", null);
                 __decorate([
-                    cacheable_decorator_2.Cacheable()
+                    (0, cacheable_decorator_2.Cacheable)()
                 ], Service.prototype, "getDataWithParamsObj", null);
                 __decorate([
-                    cacheable_decorator_2.Cacheable()
+                    (0, cacheable_decorator_2.Cacheable)()
                 ], Service.prototype, "getDataAndReturnCachedStream", null);
                 __decorate([
-                    cacheable_decorator_2.Cacheable({
+                    (0, cacheable_decorator_2.Cacheable)({
                         async: true
                     })
                 ], Service.prototype, "getDataAsync", null);
                 __decorate([
-                    cacheable_decorator_2.Cacheable({
+                    (0, cacheable_decorator_2.Cacheable)({
                         maxAge: 7500
                     })
                 ], Service.prototype, "getDataWithExpiration", null);
                 __decorate([
-                    cacheable_decorator_2.Cacheable({
+                    (0, cacheable_decorator_2.Cacheable)({
                         maxAge: 7500,
                         slidingExpiration: true
                     })
                 ], Service.prototype, "getDataWithSlidingExpiration", null);
                 __decorate([
-                    cacheable_decorator_2.Cacheable({
+                    (0, cacheable_decorator_2.Cacheable)({
                         maxCacheCount: 5
                     })
                 ], Service.prototype, "getDataWithMaxCacheCount", null);
                 __decorate([
-                    cacheable_decorator_2.Cacheable({
+                    (0, cacheable_decorator_2.Cacheable)({
                         maxAge: 7500,
                         maxCacheCount: 5
                     })
                 ], Service.prototype, "getDataWithMaxCacheCountAndExpiration", null);
                 __decorate([
-                    cacheable_decorator_2.Cacheable({
+                    (0, cacheable_decorator_2.Cacheable)({
                         maxAge: 7500,
                         maxCacheCount: 5,
                         slidingExpiration: true
                     })
                 ], Service.prototype, "getDataWithMaxCacheCountAndSlidingExpiration", null);
                 __decorate([
-                    cacheable_decorator_2.Cacheable({
+                    (0, cacheable_decorator_2.Cacheable)({
                         cacheResolver: function (_oldParameters, newParameters) {
                             return newParameters.find(function (param) { return !!param.straightToLastCache; });
                         }
                     })
                 ], Service.prototype, "getDataWithCustomCacheResolver", null);
                 __decorate([
-                    cacheable_decorator_2.Cacheable({
+                    (0, cacheable_decorator_2.Cacheable)({
                         cacheHasher: function (_parameters) { return _parameters[0] * 2; },
                         cacheResolver: function (oldParameter, newParameter) {
                             return newParameter > 5;
@@ -226,46 +232,46 @@ strategies.forEach(function (s) {
                     })
                 ], Service.prototype, "getDataWithCustomCacheResolverAndHasher", null);
                 __decorate([
-                    cacheable_decorator_2.Cacheable()
+                    (0, cacheable_decorator_2.Cacheable)()
                 ], Service.prototype, "getWithAComplexType", null);
                 __decorate([
-                    cacheable_decorator_2.Cacheable({
+                    (0, cacheable_decorator_2.Cacheable)({
                         shouldCacheDecider: function (response) {
                             return response.payload === 'test';
                         }
                     })
                 ], Service.prototype, "getDataWithCustomCacheDecider", null);
                 __decorate([
-                    cache_buster_decorator_1.CacheBuster({
+                    (0, cache_buster_decorator_1.CacheBuster)({
                         cacheBusterNotifier: cacheBusterNotifier
                     })
                 ], Service.prototype, "saveDataAndCacheBust", null);
                 __decorate([
-                    cacheable_decorator_2.Cacheable({
+                    (0, cacheable_decorator_2.Cacheable)({
                         cacheBusterObserver: cacheBusterNotifier.asObservable()
                     })
                 ], Service.prototype, "getDataWithCacheBusting", null);
                 __decorate([
-                    cacheable_decorator_2.Cacheable()
+                    (0, cacheable_decorator_2.Cacheable)()
                 ], Service.prototype, "getDataWithUndefinedParameter", null);
                 __decorate([
-                    cacheable_decorator_2.Cacheable()
+                    (0, cacheable_decorator_2.Cacheable)()
                 ], Service.prototype, "getDataWithMultipleUndefinedParameters", null);
                 __decorate([
-                    cacheable_decorator_2.Cacheable({
+                    (0, cacheable_decorator_2.Cacheable)({
                         maxAge: 7500,
                         slidingExpiration: true,
                         storageStrategy: InMemoryStorageStrategy_1.InMemoryStorageStrategy
                     })
-                ], Service.prototype, "getDateWithCustomStorageStrategyProvided", null);
+                ], Service.prototype, "getDataWithCustomStorageStrategyProvided", null);
                 __decorate([
-                    cacheable_decorator_2.Cacheable({
+                    (0, cacheable_decorator_2.Cacheable)({
                         storageStrategy: InMemoryStorageStrategy_1.InMemoryStorageStrategy,
                         cacheModifier: cacheModifier
                     })
                 ], Service.prototype, "getMutableData", null);
                 __decorate([
-                    cacheable_decorator_2.Cacheable({
+                    (0, cacheable_decorator_2.Cacheable)({
                         storageStrategy: CustomContextStrategy,
                         maxCacheCount: 3
                     })
@@ -476,7 +482,7 @@ strategies.forEach(function (s) {
              * call the same endpoint with 5 different parameters and cache all 5 responses, based on the maxCacheCount parameter
              */
             var parameters = ['test1', 'test2', 'test3', 'test4', 'test5'];
-            parameters.forEach(function (param) { return __awaiter(_this, void 0, void 0, function () { return __generator(this, function (_a) {
+            parameters.forEach(function (param) { return __awaiter(void 0, void 0, void 0, function () { return __generator(this, function (_a) {
                 return [2 /*return*/, _timedStreamAsyncAwait(service.getDataWithMaxCacheCount(param), 1000)];
             }); }); });
             /**
@@ -490,7 +496,7 @@ strategies.forEach(function (s) {
             /**
              * this should return a maximum of 5 different cached responses
              */
-            var cachedResponseAll = _timedStreamAsyncAwait(rxjs_1.forkJoin(parameters.map(function (param) { return service.getDataWithMaxCacheCount(param); })));
+            var cachedResponseAll = _timedStreamAsyncAwait((0, rxjs_1.forkJoin)(parameters.map(function (param) { return service.getDataWithMaxCacheCount(param); })));
             expect(cachedResponseAll).toEqual([
                 { payload: 'test1' },
                 { payload: 'test2' },
@@ -511,7 +517,7 @@ strategies.forEach(function (s) {
             /**
              * this should return a maximum of 5 different cached responses, with the latest one in the end
              */
-            var cachedResponseAll2 = _timedStreamAsyncAwait(rxjs_1.forkJoin(newParameters.map(function (param) { return service.getDataWithMaxCacheCount(param); })), 1000);
+            var cachedResponseAll2 = _timedStreamAsyncAwait((0, rxjs_1.forkJoin)(newParameters.map(function (param) { return service.getDataWithMaxCacheCount(param); })), 1000);
             expect(cachedResponseAll2).toEqual([
                 { payload: 'test2' },
                 { payload: 'test3' },
@@ -548,7 +554,7 @@ strategies.forEach(function (s) {
             });
             expect(mockServiceCallSpy).toHaveBeenCalledTimes(5);
             jasmine.clock().tick(1000);
-            var cachedResponse2 = _timedStreamAsyncAwait(rxjs_1.forkJoin(parameters.map(function (param) {
+            var cachedResponse2 = _timedStreamAsyncAwait((0, rxjs_1.forkJoin)(parameters.map(function (param) {
                 return service.getDataWithMaxCacheCountAndExpiration(param);
             })));
             expect(mockServiceCallSpy).toHaveBeenCalledTimes(5);
@@ -597,10 +603,10 @@ strategies.forEach(function (s) {
              * expire ALL caches except the test2 one
              */
             jasmine.clock().tick(1);
-            var cachedResponse = _timedStreamAsyncAwait(rxjs_1.combineLatest(parameters.map(function (param) {
+            var cachedResponse = _timedStreamAsyncAwait((0, rxjs_1.combineLatest)(parameters.map(function (param) {
                 return service
                     .getDataWithMaxCacheCountAndSlidingExpiration(param)
-                    .pipe(operators_1.startWith(null));
+                    .pipe((0, operators_1.startWith)(null));
             })));
             /**
              * no cache for 4 payloads, so 4 more calls to the service will be made
@@ -657,13 +663,13 @@ strategies.forEach(function (s) {
                 function Service() {
                 }
                 Service.prototype.mockServiceCall = function (parameter) {
-                    return rxjs_2.timer(1000).pipe(operators_2.mapTo({ payload: parameter }));
+                    return (0, rxjs_2.timer)(1000).pipe((0, operators_2.mapTo)({ payload: parameter }));
                 };
                 Service.prototype.getData = function (parameter) {
                     return this.mockServiceCall(parameter);
                 };
                 __decorate([
-                    cacheable_decorator_2.Cacheable()
+                    (0, cacheable_decorator_2.Cacheable)()
                 ], Service.prototype, "getData", null);
                 return Service;
             }());
@@ -806,7 +812,7 @@ strategies.forEach(function (s) {
             var removeSpy = spyOn(InMemoryStorageStrategy_1.InMemoryStorageStrategy.prototype, 'remove').and.callThrough();
             var removeAllSpy = spyOn(InMemoryStorageStrategy_1.InMemoryStorageStrategy.prototype, 'removeAll').and.callThrough();
             jasmine.clock().mockDate();
-            var asyncFreshData = _timedStreamAsyncAwait(service.getDateWithCustomStorageStrategyProvided('test'), 1000);
+            var asyncFreshData = _timedStreamAsyncAwait(service.getDataWithCustomStorageStrategyProvided('test'), 1000);
             // called removeAtIndex once, because of how the cache works, it always removes the last cached pair with this method
             expect(removeSpy).toHaveBeenCalledTimes(1);
             expect(asyncFreshData).toEqual({ payload: 'test' });
@@ -814,7 +820,7 @@ strategies.forEach(function (s) {
             // one add call, one getAll call
             expect(getAllSpy).toHaveBeenCalledTimes(1);
             expect(addSpy).toHaveBeenCalledTimes(1);
-            var cachedResponse = _timedStreamAsyncAwait(service.getDateWithCustomStorageStrategyProvided('test'));
+            var cachedResponse = _timedStreamAsyncAwait(service.getDataWithCustomStorageStrategyProvided('test'));
             // this call will renew the updateAtIndex call count since it's used to renew the cache
             expect(updateSpy).toHaveBeenCalledTimes(1);
             expect(cachedResponse).toEqual({ payload: 'test' });
@@ -832,7 +838,7 @@ strategies.forEach(function (s) {
             /**
              * calling the method again should renew expiration for 7500 more milliseconds
              */
-            service.getDateWithCustomStorageStrategyProvided('test').subscribe();
+            service.getDataWithCustomStorageStrategyProvided('test').subscribe();
             // this call will renew the updateAtIndex call count since it's used to renew the cache
             expect(updateSpy).toHaveBeenCalledTimes(2);
             // one more getAll cache and it is renewed
@@ -842,7 +848,7 @@ strategies.forEach(function (s) {
             /**
              * this should have returned null, if the cache didnt renew
              */
-            var cachedResponse2 = _timedStreamAsyncAwait(service.getDateWithCustomStorageStrategyProvided('test'));
+            var cachedResponse2 = _timedStreamAsyncAwait(service.getDataWithCustomStorageStrategyProvided('test'));
             // this call will renew the updateAtIndex call count since it's used to renew the cache
             expect(updateSpy).toHaveBeenCalledTimes(3);
             // one more getAll call, and still just one add call, since the cache was renewed due to sliding expiration
@@ -857,7 +863,7 @@ strategies.forEach(function (s) {
              * expire cache, shouldn't renew since 7501 ms have ellapsed
              */
             jasmine.clock().tick(7501);
-            var cachedResponse3 = _timedStreamAsyncAwait(service.getDateWithCustomStorageStrategyProvided('test'));
+            var cachedResponse3 = _timedStreamAsyncAwait(service.getDataWithCustomStorageStrategyProvided('test'));
             // cache has expired so the currently cached pair should have been swapped by now by calling the removeAtIndex method first
             expect(removeSpy).toHaveBeenCalledTimes(2);
             expect(getAllSpy).toHaveBeenCalledTimes(5);
@@ -927,7 +933,7 @@ strategies.forEach(function (s) {
              * call the same endpoint with 5 different parameters and cache all 5 responses, based on the maxCacheCount parameter
              */
             var parameters = ['test1', 'test2', 'test3', 'test4', 'test5'];
-            parameters.forEach(function (param) { return __awaiter(_this, void 0, void 0, function () { return __generator(this, function (_a) {
+            parameters.forEach(function (param) { return __awaiter(void 0, void 0, void 0, function () { return __generator(this, function (_a) {
                 return [2 /*return*/, _timedStreamAsyncAwait(service.getData(param), 1000)];
             }); }); });
             /**
@@ -941,7 +947,7 @@ strategies.forEach(function (s) {
             /**
              * this should return a maximum of 5 different cached responses
              */
-            var cachedResponseAll = _timedStreamAsyncAwait(rxjs_1.forkJoin(parameters.map(function (param) { return service.getData(param); })));
+            var cachedResponseAll = _timedStreamAsyncAwait((0, rxjs_1.forkJoin)(parameters.map(function (param) { return service.getData(param); })));
             expect(cachedResponseAll).toEqual([
                 { payload: 'test1' },
                 { payload: 'test2' },
@@ -962,7 +968,7 @@ strategies.forEach(function (s) {
             /**
              * this should return a maximum of 5 different cached responses, with the latest one in the end
              */
-            var cachedResponseAll2 = _timedStreamAsyncAwait(rxjs_1.forkJoin(newParameters.map(function (param) { return service.getData(param); })), 1000);
+            var cachedResponseAll2 = _timedStreamAsyncAwait((0, rxjs_1.forkJoin)(newParameters.map(function (param) { return service.getData(param); })), 1000);
             expect(cachedResponseAll2).toEqual([
                 { payload: 'test2' },
                 { payload: 'test3' },

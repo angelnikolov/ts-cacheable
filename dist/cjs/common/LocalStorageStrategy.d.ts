@@ -11,6 +11,6 @@ export declare class LocalStorageStrategy extends IStorageStrategy {
     updateAtIndex(index: number, entity: any, cacheKey: string): void;
     update(index: number, entity: any, cacheKey: string): void;
     removeAll(cacheKey: string): void;
-    private getRawData();
-    private storeRawData(data);
+    private getRawData;
+    private storeRawData;
 }
