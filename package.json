@@ -33,10 +33,14 @@
     "karma-commonjs": "^1.0.0",
     "karma-jasmine": "^2.0.1",
     "karma-typescript": "^5.5.2",
-    "typescript": "^4.3.2"
+    "typescript": "^4.3.2",
+    "rxjs": "^6.6.0 || ^7.4.0"
   },
   "bugs": {
     "url": "https://github.com/angelnikolov/ts-cacheable/issues"
   },
-  "homepage": "https://github.com/angelnikolov/ts-cacheable#readme"
+  "homepage": "https://github.com/angelnikolov/ts-cacheable#readme",
+  "dependencies": {
+    "rxjs": "^7.5.6"
+  }
 }

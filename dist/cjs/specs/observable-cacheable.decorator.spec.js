@@ -69,6 +69,7 @@ var common_1 = require("../common");
 var LocalStorageStrategy_1 = require("../common/LocalStorageStrategy");
 var InMemoryStorageStrategy_1 = require("../common/InMemoryStorageStrategy");
 var cat_1 = require("./cat");
+var testing_1 = require("rxjs/testing");
 var customStrategySpy = jasmine.createSpy();
 var CustomContextStrategy = /** @class */ (function (_super) {
     __extends(CustomContextStrategy, _super);
@@ -95,8 +96,13 @@ strategies.forEach(function (s) {
         var service = null;
         var mockServiceCallSpy = null;
         var cacheModifier = new rxjs_2.Subject();
+        var cacheBusterNotifier;
+        var testScheduler;
         beforeEach(function () {
-            var cacheBusterNotifier = new rxjs_2.Subject();
+            cacheBusterNotifier = new rxjs_2.Subject();
+            testScheduler = new testing_1.TestScheduler(function (actual, expected) {
+                expect(actual).toEqual(expected);
+            });
             var Service = /** @class */ (function () {
                 function Service() {
                 }
@@ -149,6 +155,9 @@ strategies.forEach(function (s) {
                     return this.mockServiceCall(parameter);
                 };
                 Service.prototype.saveDataAndCacheBust = function () {
+                    return this.mockSaveServiceCall();
+                };
+                Service.prototype.bustCacheInstantly = function () {
                     return this.mockSaveServiceCall();
                 };
                 Service.prototype.getDataWithCacheBusting = function (parameter) {
@@ -246,6 +255,12 @@ strategies.forEach(function (s) {
                         cacheBusterNotifier: cacheBusterNotifier
                     })
                 ], Service.prototype, "saveDataAndCacheBust", null);
+                __decorate([
+                    (0, cache_buster_decorator_1.CacheBuster)({
+                        cacheBusterNotifier: cacheBusterNotifier,
+                        isInstant: true
+                    })
+                ], Service.prototype, "bustCacheInstantly", null);
                 __decorate([
                     (0, cacheable_decorator_2.Cacheable)({
                         cacheBusterObserver: cacheBusterNotifier.asObservable()
@@ -752,6 +767,24 @@ strategies.forEach(function (s) {
              * synchronous cached response should now be returned
              */
             expect(_timedStreamAsyncAwait(service.getDataWithCacheBusting('test'))).toEqual({ payload: 'test' });
+        });
+        it('should wait until observable from decorated method emits and then bust the cache', function () {
+            testScheduler.run(function (_a) {
+                var expectObservable = _a.expectObservable;
+                var source$ = service.saveDataAndCacheBust();
+                var notifier$ = cacheBusterNotifier;
+                expectObservable(source$).toBe('1000ms (a|)', { a: 'SAVED' });
+                expectObservable(notifier$).toBe('1000ms a', { a: undefined });
+            });
+        });
+        it('should bust the cache instantly', function () {
+            testScheduler.run(function (_a) {
+                var expectObservable = _a.expectObservable;
+                var source$ = service.bustCacheInstantly();
+                var notifier$ = cacheBusterNotifier;
+                expectObservable(source$).toBe('1000ms (a|)', { a: 'SAVED' });
+                expectObservable(notifier$).toBe('a', { a: undefined });
+            });
         });
         it('should clear all caches when the global cache buster is called', function () {
             /**

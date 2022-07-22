@@ -12,14 +12,19 @@ export function CacheBuster(cacheBusterConfig?: ICacheBusterConfig) {
     const oldMethod = propertyDescriptor.value;
     if (propertyDescriptor && propertyDescriptor.value) {
       /* use function instead of an arrow function to keep context of invocation */
-      (propertyDescriptor.value as any) = function (...parameters: Array<any>) {
-        return (oldMethod.call(this, ...parameters) as Observable<any>).pipe(
-          tap(() => {
-            if (cacheBusterConfig.cacheBusterNotifier) {
-              cacheBusterConfig.cacheBusterNotifier.next();
-            }
-          })
-        );
+      propertyDescriptor.value = function (...parameters: Array<any>) {
+        if(cacheBusterConfig.isInstant) {
+          cacheBusterConfig.cacheBusterNotifier.next();
+          return oldMethod.call(this, parameters);
+        } else {
+          return (oldMethod.call(this, ...parameters) as Observable<any>).pipe(
+              tap(() => {
+                if (cacheBusterConfig.cacheBusterNotifier) {
+                  cacheBusterConfig.cacheBusterNotifier.next();
+                }
+              })
+          );
+        }
       };
     };
     return propertyDescriptor;

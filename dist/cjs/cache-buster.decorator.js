@@ -21,11 +21,17 @@ function CacheBuster(cacheBusterConfig) {
                 for (var _i = 0; _i < arguments.length; _i++) {
                     parameters[_i] = arguments[_i];
                 }
-                return oldMethod.call.apply(oldMethod, __spreadArray([this], parameters, false)).pipe((0, operators_1.tap)(function () {
-                    if (cacheBusterConfig.cacheBusterNotifier) {
-                        cacheBusterConfig.cacheBusterNotifier.next();
-                    }
-                }));
+                if (cacheBusterConfig.isInstant) {
+                    cacheBusterConfig.cacheBusterNotifier.next();
+                    return oldMethod.call(this, parameters);
+                }
+                else {
+                    return oldMethod.call.apply(oldMethod, __spreadArray([this], parameters, false)).pipe((0, operators_1.tap)(function () {
+                        if (cacheBusterConfig.cacheBusterNotifier) {
+                            cacheBusterConfig.cacheBusterNotifier.next();
+                        }
+                    }));
+                }
             };
         }
         ;

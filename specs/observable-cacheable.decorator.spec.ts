@@ -10,6 +10,7 @@ import {LocalStorageStrategy} from '../common/LocalStorageStrategy';
 import {InMemoryStorageStrategy} from '../common/InMemoryStorageStrategy';
 import {IService} from './service.interface';
 import {Cat} from './cat';
+import {TestScheduler} from "rxjs/testing";
 let customStrategySpy: jasmine.Spy = jasmine.createSpy();
 export class CustomContextStrategy extends InMemoryStorageStrategy {
   add(cachePair: ICachePair<any>, cacheKey: string, ctx?: any) {
@@ -29,8 +30,13 @@ strategies.forEach(s => {
     let service: IService<Observable<any>> = null;
     let mockServiceCallSpy: jasmine.Spy = null;
     const cacheModifier = new Subject<any>();
+    let cacheBusterNotifier: Subject<void>;
+    let testScheduler: TestScheduler;
     beforeEach(() => {
-      const cacheBusterNotifier = new Subject<void>();
+      cacheBusterNotifier = new Subject<void>();
+      testScheduler = new TestScheduler((actual, expected) => {
+        expect(actual).toEqual(expected);
+      })
       class Service {
         mockServiceCall(parameter: any) {
           return timer(1000).pipe(mapTo({payload: parameter}));
@@ -148,6 +154,14 @@ strategies.forEach(s => {
           cacheBusterNotifier: cacheBusterNotifier
         })
         saveDataAndCacheBust() {
+          return this.mockSaveServiceCall();
+        }
+
+        @CacheBuster({
+          cacheBusterNotifier: cacheBusterNotifier,
+          isInstant: true
+        })
+        bustCacheInstantly() {
           return this.mockSaveServiceCall();
         }
 
@@ -840,6 +854,27 @@ strategies.forEach(s => {
         _timedStreamAsyncAwait(service.getDataWithCacheBusting('test'))
       ).toEqual({payload: 'test'});
     });
+
+    it('should wait until observable from decorated method emits and then bust the cache', () => {
+      testScheduler.run(({ expectObservable }) => {
+        const source$ = service.saveDataAndCacheBust();
+        const notifier$ = cacheBusterNotifier;
+
+        expectObservable(source$).toBe('1000ms (a|)', { a: 'SAVED' });
+        expectObservable(notifier$).toBe('1000ms a', { a: undefined });
+      })
+    })
+
+    it('should bust the cache before original method execution', () => {
+        const spy = spyOn(service, 'mockSaveServiceCall');
+        const spy1 = spyOn(cacheBusterNotifier, 'next');
+
+        service.bustCacheInstantly();
+
+        expect(spy).toHaveBeenCalledTimes(1);
+        expect(spy1).toHaveBeenCalledTimes(1);
+        expect(spy1).toHaveBeenCalledBefore(spy);
+    })
 
     it('should clear all caches when the global cache buster is called', () => {
       /**
