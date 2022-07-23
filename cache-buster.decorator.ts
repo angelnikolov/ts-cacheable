@@ -15,9 +15,18 @@ export function CacheBuster(cacheBusterConfig?: ICacheBusterConfig) {
       propertyDescriptor.value = function (...parameters: Array<any>) {
         if(cacheBusterConfig.isInstant) {
           cacheBusterConfig.cacheBusterNotifier.next();
-          return oldMethod.call(this, parameters);
+          return oldMethod.call(this, ...parameters);
         } else {
-          return (oldMethod.call(this, ...parameters) as Observable<any>).pipe(
+          const res = oldMethod.call(this, ...parameters);
+
+          if (res instanceof Observable === false) {
+            throw new Error(`
+              Method decorated with @CacheBuster should return observable. 
+              If you don't want to change the method signature, set isInstant flag to true.
+              `);
+          }
+
+          return res.pipe(
               tap(() => {
                 if (cacheBusterConfig.cacheBusterNotifier) {
                   cacheBusterConfig.cacheBusterNotifier.next();

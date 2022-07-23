@@ -866,14 +866,25 @@ strategies.forEach(s => {
     })
 
     it('should bust the cache before original method execution', () => {
-        const spy = spyOn(service, 'mockSaveServiceCall');
-        const spy1 = spyOn(cacheBusterNotifier, 'next');
+        const methodBodySpy = spyOn(service, 'mockSaveServiceCall').and.callThrough();
+        const notifierSpy = spyOn(cacheBusterNotifier, 'next').and.callThrough();
 
-        service.bustCacheInstantly();
+        _timedStreamAsyncAwait(service.bustCacheInstantly(), 1000);
 
-        expect(spy).toHaveBeenCalledTimes(1);
-        expect(spy1).toHaveBeenCalledTimes(1);
-        expect(spy1).toHaveBeenCalledBefore(spy);
+        expect(methodBodySpy).toHaveBeenCalledTimes(1);
+        expect(notifierSpy).toHaveBeenCalledTimes(1);
+        expect(notifierSpy).toHaveBeenCalledBefore(methodBodySpy);
+    })
+
+    it('should bust the cache after original has been executed (observable emitted)', () => {
+      const methodBodySpy = spyOn(service, 'mockSaveServiceCall').and.callThrough();
+      const notifierSpy = spyOn(cacheBusterNotifier, 'next').and.callThrough();
+
+      _timedStreamAsyncAwait(service.saveDataAndCacheBust(), 1000);
+
+      expect(methodBodySpy).toHaveBeenCalledTimes(1);
+      expect(notifierSpy).toHaveBeenCalledTimes(1);
+      expect(methodBodySpy).toHaveBeenCalledBefore(notifierSpy);
     })
 
     it('should clear all caches when the global cache buster is called', () => {
