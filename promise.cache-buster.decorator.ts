@@ -1,7 +1,9 @@
-import { ICacheBusterConfig } from './common/ICacheBusterConfig';
+import {DecoratorFactoryType, ICacheBusterConfig, ICacheBusterConfigInstant} from './common/ICacheBusterConfig';
 import { ICacheable } from './common';
 
-export function PCacheBuster(cacheBusterConfig?: ICacheBusterConfig) {
+export function PCacheBuster(cacheBusterConfig?: ICacheBusterConfig): DecoratorFactoryType<ICacheable<Promise<any>>>
+export function PCacheBuster(cacheBusterConfig?: ICacheBusterConfigInstant): DecoratorFactoryType<any>
+export function PCacheBuster(cacheBusterConfig?: ICacheBusterConfig | ICacheBusterConfigInstant): DecoratorFactoryType<ICacheable<Promise<any>>> | DecoratorFactoryType<any> {
   return function (
     _target: Object,
     _propertyKey: string,

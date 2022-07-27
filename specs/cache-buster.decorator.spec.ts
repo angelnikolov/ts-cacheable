@@ -16,10 +16,16 @@ describe('CacheBusterDecorator', () => {
             return of(this.sumValues(a, b)).pipe(delay(1000));
         }
 
+        // @ts-expect-error
         @CacheBuster({
             cacheBusterNotifier: cacheBusterNotifier
         })
-        public throwWithNonObservableNonInstant(): void {}
+        public throwWithNonObservableNonInstant(): void {
+            /*
+            Method decorated with @CacheBuster should return observable.
+            If you don't want to change the method signature, set isInstant flag to true.
+            */
+        }
 
         @CacheBuster(
             {

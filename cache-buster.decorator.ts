@@ -1,9 +1,11 @@
-import { ICacheBusterConfig } from './common/ICacheBusterConfig';
+import {DecoratorFactoryType, ICacheBusterConfig, ICacheBusterConfigInstant} from './common/ICacheBusterConfig';
 import { ICacheable } from './common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
-export function CacheBuster(cacheBusterConfig?: ICacheBusterConfig) {
+export function CacheBuster(cacheBusterConfig?: ICacheBusterConfig): DecoratorFactoryType<ICacheable<Observable<any>>>
+export function CacheBuster(cacheBusterConfig?: ICacheBusterConfigInstant): DecoratorFactoryType<any>
+export function CacheBuster(cacheBusterConfig?: ICacheBusterConfig | ICacheBusterConfigInstant): DecoratorFactoryType<ICacheable<Observable<any>>> | DecoratorFactoryType<any> {
   return function (
     _target: Object,
     _propertyKey: string,
@@ -13,7 +15,7 @@ export function CacheBuster(cacheBusterConfig?: ICacheBusterConfig) {
     if (propertyDescriptor && propertyDescriptor.value) {
       /* use function instead of an arrow function to keep context of invocation */
       propertyDescriptor.value = function (...parameters: Array<any>) {
-        if(cacheBusterConfig.isInstant) {
+        if('isInstant' in cacheBusterConfig && cacheBusterConfig.isInstant) {
           cacheBusterConfig.cacheBusterNotifier.next();
           return oldMethod.call(this, ...parameters);
         } else {
