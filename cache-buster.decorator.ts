@@ -7,7 +7,7 @@ export function CacheBuster(cacheBusterConfig?: ICacheBusterConfig) {
   return function (
     _target: Object,
     _propertyKey: string,
-    propertyDescriptor: TypedPropertyDescriptor<ICacheable<Observable<any>>>
+    propertyDescriptor: TypedPropertyDescriptor<ICacheable<Observable<any> | any>>
   ) {
     const oldMethod = propertyDescriptor.value;
     if (propertyDescriptor && propertyDescriptor.value) {
