@@ -1,5 +1,5 @@
 import {DecoratorFactoryType, ICacheBusterConfig, ICacheBusterConfigInstant} from './common/ICacheBusterConfig';
-import { ICacheable } from './common';
+import {ICacheable} from './common';
 
 export function PCacheBuster(cacheBusterConfig?: ICacheBusterConfig): DecoratorFactoryType<ICacheable<Promise<any>>>
 export function PCacheBuster(cacheBusterConfig?: ICacheBusterConfigInstant): DecoratorFactoryType<any>
@@ -9,15 +9,22 @@ export function PCacheBuster(cacheBusterConfig?: ICacheBusterConfig | ICacheBust
     _propertyKey: string,
     propertyDescriptor: TypedPropertyDescriptor<ICacheable<Promise<any>>>
   ) {
-    const oldMethod = propertyDescriptor.value;
+    const decoratedMethod = propertyDescriptor.value;
     if (propertyDescriptor && propertyDescriptor.value) {
       /* use function instead of an arrow function to keep context of invocation */
       (propertyDescriptor.value as any) = function (...parameters: Array<any>) {
-        return (oldMethod.call(this, ...parameters) as Promise<any>).then(
+        if(isInstant(cacheBusterConfig)){
+          bustCache(cacheBusterConfig);
+          return decoratedMethod.call(this, ...parameters);
+        }
+
+        const decoratedMethodResult = decoratedMethod.call(this, ...parameters)
+
+        throwErrorIfResultIsNotPromise(decoratedMethodResult);
+
+        return decoratedMethodResult.then(
           response => {
-            if (cacheBusterConfig.cacheBusterNotifier) {
-              cacheBusterConfig.cacheBusterNotifier.next();
-            }
+            bustCache(cacheBusterConfig)
             return response;
           }
         );
@@ -26,3 +33,24 @@ export function PCacheBuster(cacheBusterConfig?: ICacheBusterConfig | ICacheBust
     return propertyDescriptor;
   };
 };
+
+const ERROR_MESSAGE = `
+  Method decorated with @CacheBuster should return Promise. 
+  If you don't want to change the method signature, set isInstant flag to true.
+`;
+
+function throwErrorIfResultIsNotPromise(decoratedMethodResult: any): asserts decoratedMethodResult is Promise<any> {
+  if (decoratedMethodResult instanceof Promise === false) {
+    throw new Error(ERROR_MESSAGE);
+  }
+}
+
+function bustCache(cacheBusterConfig: ICacheBusterConfig): void {
+  if (cacheBusterConfig?.cacheBusterNotifier) {
+    cacheBusterConfig.cacheBusterNotifier.next();
+  }
+}
+
+function isInstant(cacheBusterConfig?: ICacheBusterConfig | ICacheBusterConfigInstant): boolean {
+  return cacheBusterConfig && 'isInstant' in cacheBusterConfig && cacheBusterConfig.isInstant
+}
