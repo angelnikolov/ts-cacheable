@@ -9,7 +9,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     return to.concat(ar || Array.prototype.slice.call(from));
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PCacheBuster = void 0;
+exports.NO_PROMISE_ERROR_MESSAGE = exports.PCacheBuster = void 0;
 function PCacheBuster(cacheBusterConfig) {
     return function (_target, _propertyKey, propertyDescriptor) {
         var decoratedMethod = propertyDescriptor.value;
@@ -38,10 +38,10 @@ function PCacheBuster(cacheBusterConfig) {
 }
 exports.PCacheBuster = PCacheBuster;
 ;
-var ERROR_MESSAGE = "\n  Method decorated with @CacheBuster should return Promise. \n  If you don't want to change the method signature, set isInstant flag to true.\n";
+exports.NO_PROMISE_ERROR_MESSAGE = "\n  Method decorated with @CacheBuster should return Promise. \n  If you don't want to change the method signature, set isInstant flag to true.\n";
 function throwErrorIfResultIsNotPromise(decoratedMethodResult) {
     if (decoratedMethodResult instanceof Promise === false) {
-        throw new Error(ERROR_MESSAGE);
+        throw new Error(exports.NO_PROMISE_ERROR_MESSAGE);
     }
 }
 function bustCache(cacheBusterConfig) {

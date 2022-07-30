@@ -9,7 +9,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     return to.concat(ar || Array.prototype.slice.call(from));
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.throwErrorIfResultIsNotObservable = exports.ERROR_MESSAGE = exports.CacheBuster = void 0;
+exports.throwErrorIfResultIsNotObservable = exports.NO_OBSERVABLE_ERROR_MESSAGE = exports.CacheBuster = void 0;
 var rxjs_1 = require("rxjs");
 var operators_1 = require("rxjs/operators");
 function CacheBuster(cacheBusterConfig) {
@@ -39,10 +39,10 @@ function CacheBuster(cacheBusterConfig) {
 }
 exports.CacheBuster = CacheBuster;
 ;
-exports.ERROR_MESSAGE = "\n  Method decorated with @CacheBuster should return observable. \n  If you don't want to change the method signature, set isInstant flag to true.\n";
+exports.NO_OBSERVABLE_ERROR_MESSAGE = "\n  Method decorated with @CacheBuster should return observable. \n  If you don't want to change the method signature, set isInstant flag to true.\n";
 function throwErrorIfResultIsNotObservable(decoratedMethodResult) {
     if (decoratedMethodResult instanceof rxjs_1.Observable === false) {
-        throw new Error(exports.ERROR_MESSAGE);
+        throw new Error(exports.NO_OBSERVABLE_ERROR_MESSAGE);
     }
 }
 exports.throwErrorIfResultIsNotObservable = throwErrorIfResultIsNotObservable;

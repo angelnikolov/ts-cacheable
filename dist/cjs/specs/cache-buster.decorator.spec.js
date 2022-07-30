@@ -71,7 +71,7 @@ describe('CacheBusterDecorator', function () {
         expect(res).toEqual(3);
     });
     it('it should throw error if [isInstant: undefined] is decorating method that does not return Observable', function () {
-        expect(function () { return service.throwWithNonObservableNonInstant(); }).toThrowError(cache_buster_decorator_1.ERROR_MESSAGE);
+        expect(function () { return service.throwWithNonObservableNonInstant(); }).toThrowError(cache_buster_decorator_1.NO_OBSERVABLE_ERROR_MESSAGE);
     });
     it('should bust the cache before original method has been executed', function () {
         var methodBodySpy = spyOn(service, 'sumValues').and.callThrough();

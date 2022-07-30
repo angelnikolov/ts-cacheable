@@ -21,13 +21,13 @@ export function PCacheBuster(cacheBusterConfig) {
     };
 }
 ;
-const ERROR_MESSAGE = `
+export const NO_PROMISE_ERROR_MESSAGE = `
   Method decorated with @CacheBuster should return Promise. 
   If you don't want to change the method signature, set isInstant flag to true.
 `;
 function throwErrorIfResultIsNotPromise(decoratedMethodResult) {
     if (decoratedMethodResult instanceof Promise === false) {
-        throw new Error(ERROR_MESSAGE);
+        throw new Error(NO_PROMISE_ERROR_MESSAGE);
     }
 }
 function bustCache(cacheBusterConfig) {

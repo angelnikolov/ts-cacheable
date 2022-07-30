@@ -1,33 +1,30 @@
-import {Observable, of, Subject} from "rxjs";
-import {CacheBuster, NO_OBSERVABLE_ERROR_MESSAGE} from "../cache-buster.decorator";
-import {delay} from "rxjs/operators";
-import {TestScheduler} from "rxjs/testing";
+import {Subject} from "rxjs";
+import {NO_PROMISE_ERROR_MESSAGE, PCacheBuster} from "../promise.cache-buster.decorator";
 
-describe('CacheBusterDecorator', () => {
+describe('PCacheBusterDecorator', () => {
     const cacheBusterNotifier = new Subject<void>();
     let service: TestService;
-    let testScheduler: TestScheduler;
 
     class TestService {
-        @CacheBuster({
+        @PCacheBuster({
             cacheBusterNotifier: cacheBusterNotifier
         })
-        public sumWithObservableNonInstant(a: number, b: number): Observable<number> {
-            return of(this.sumValues(a, b)).pipe(delay(1000));
+        public sumWithPromise(a: number, b: number): Promise<number> {
+            return Promise.resolve(this.sumValues(a, b));
         }
 
         // @ts-expect-error
-        @CacheBuster({
+        @PCacheBuster({
             cacheBusterNotifier: cacheBusterNotifier
         })
-        public throwWithNonObservableNonInstant(): void {
+        public throwWithNonPromiseNonInstant(): void {
             /*
-            Method decorated with @CacheBuster should return observable.
+            Method decorated with @PCacheBuster should return Promise.
             If you don't want to change the method signature, set isInstant flag to true.
             */
         }
 
-        @CacheBuster(
+        @PCacheBuster(
             {
                 cacheBusterNotifier: cacheBusterNotifier,
                 isInstant: true
@@ -37,6 +34,16 @@ describe('CacheBusterDecorator', () => {
             return this.sumValues(a, b);
         }
 
+        @PCacheBuster(
+            {
+                cacheBusterNotifier: cacheBusterNotifier,
+                isInstant: true
+            }
+        )
+        public sumWithInstantAndPromise(a: number, b: number): Promise<number> {
+            return Promise.resolve(this.sumValues(a, b));
+        }
+
         public sumValues(a: number, b: number): number {
             return a + b;
         }
@@ -44,9 +51,6 @@ describe('CacheBusterDecorator', () => {
 
     beforeEach(() => {
         service = new TestService();
-        testScheduler = new TestScheduler((actual, expected) => {
-            expect(actual).toEqual(expected);
-        });
     })
 
     it('should create', () => {
@@ -54,7 +58,7 @@ describe('CacheBusterDecorator', () => {
     })
 
     it('should call original method body and return result [isInstant: undefined]', (done) => {
-        service.sumWithObservableNonInstant(1,2).subscribe(res => {
+        service.sumWithPromise(1,2).then(res => {
             expect(res).toEqual(3);
             done();
         });
@@ -66,8 +70,8 @@ describe('CacheBusterDecorator', () => {
         expect(res).toEqual(3);
     })
 
-    it('it should throw error if [isInstant: undefined] is decorating method that does not return Observable', () => {
-        expect(() => service.throwWithNonObservableNonInstant()).toThrowError(NO_OBSERVABLE_ERROR_MESSAGE)
+    it('it should throw error if [isInstant: undefined] is decorating method that does not return Promise', () => {
+        expect(() => service.throwWithNonPromiseNonInstant()).toThrowError(NO_PROMISE_ERROR_MESSAGE)
     })
 
     it('should bust the cache before original method has been executed', () => {
@@ -81,11 +85,11 @@ describe('CacheBusterDecorator', () => {
         expect(notifierSpy).toHaveBeenCalledBefore(methodBodySpy);
     })
 
-    it('should bust the cache after original has been executed (observable emitted)', (done) => {
+    it('should bust the cache after original has been executed (Promise resolved)', (done) => {
         const methodBodySpy = spyOn(service, 'sumValues').and.callThrough();
         const notifierSpy = spyOn(cacheBusterNotifier, 'next').and.callThrough();
 
-        service.sumWithObservableNonInstant(1, 3).subscribe(res => {
+        service.sumWithPromise(1, 3).then(res => {
             expect(methodBodySpy).toHaveBeenCalledTimes(1);
             expect(notifierSpy).toHaveBeenCalledTimes(1);
             expect(methodBodySpy).toHaveBeenCalledBefore(notifierSpy);
@@ -93,13 +97,14 @@ describe('CacheBusterDecorator', () => {
         })
     });
 
-    it('should wait until observable from decorated method emits and then bust the cache', () => {
-        testScheduler.run(({ expectObservable }) => {
-            const source$ = service.sumWithObservableNonInstant(1, 2);
-            const notifier$ = cacheBusterNotifier;
+    it('should bust the cache once', (done) => {
+        const methodBodySpy = spyOn(service, 'sumValues').and.callThrough();
+        const notifierSpy = spyOn(cacheBusterNotifier, 'next').and.callThrough();
 
-            expectObservable(source$).toBe('1000ms (a|)', { a: 3 });
-            expectObservable(notifier$).toBe('1000ms a', { a: undefined });
-        })
+        service.sumWithInstantAndPromise(1,2).then(_ => {
+            expect(methodBodySpy).toHaveBeenCalledTimes(1);
+            expect(notifierSpy).toHaveBeenCalledTimes(1);
+            done();
+        });
     })
 })

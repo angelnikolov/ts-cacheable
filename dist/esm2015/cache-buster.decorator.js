@@ -22,13 +22,13 @@ export function CacheBuster(cacheBusterConfig) {
     };
 }
 ;
-export const ERROR_MESSAGE = `
+export const NO_OBSERVABLE_ERROR_MESSAGE = `
   Method decorated with @CacheBuster should return observable. 
   If you don't want to change the method signature, set isInstant flag to true.
 `;
 export function throwErrorIfResultIsNotObservable(decoratedMethodResult) {
     if (decoratedMethodResult instanceof Observable === false) {
-        throw new Error(ERROR_MESSAGE);
+        throw new Error(NO_OBSERVABLE_ERROR_MESSAGE);
     }
 }
 function bustCache(cacheBusterConfig) {
