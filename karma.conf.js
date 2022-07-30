@@ -17,6 +17,7 @@ module.exports = function(config) {
       './promise.cacheable.decorator.ts',
       './specs/observable-cacheable.decorator.spec.ts',
       './specs/promise-cacheable.decorator.spec.ts',
+      './specs/cache-buster.decorator.spec.ts',
       './specs/cat.ts',
       './specs/service.interface.ts',
     ],

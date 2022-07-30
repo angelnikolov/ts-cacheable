@@ -35,7 +35,7 @@ export function CacheBuster(cacheBusterConfig?: ICacheBusterConfig | ICacheBuste
   };
 };
 
-const ERROR_MESSAGE = `
+export const ERROR_MESSAGE = `
   Method decorated with @CacheBuster should return observable. 
   If you don't want to change the method signature, set isInstant flag to true.
 `;

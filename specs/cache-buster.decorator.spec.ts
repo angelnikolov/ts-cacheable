@@ -1,7 +1,7 @@
 import {Observable, of, Subject} from "rxjs";
-import {CacheBuster} from "../cache-buster.decorator";
-import {TestScheduler} from "rxjs/testing";
+import {CacheBuster, ERROR_MESSAGE} from "../cache-buster.decorator";
 import {delay} from "rxjs/operators";
+import {TestScheduler} from "rxjs/testing";
 
 describe('CacheBusterDecorator', () => {
     const cacheBusterNotifier = new Subject<void>();
@@ -49,6 +49,10 @@ describe('CacheBusterDecorator', () => {
         });
     })
 
+    it('should create', () => {
+        expect(service).toBeTruthy();
+    })
+
     it('should call original method body and return result [isInstant: undefined]', (done) => {
         service.sumWithObservableNonInstant(1,2).subscribe(res => {
             expect(res).toEqual(3);
@@ -56,17 +60,14 @@ describe('CacheBusterDecorator', () => {
         });
     })
 
-    it('should call original method body and return result [isInstant: true]', (done) => {
+    it('should call original method body and return result [isInstant: true]', () => {
         const res = service.sumWithInstant(1,2);
 
         expect(res).toEqual(3);
     })
 
     it('it should throw error if [isInstant: undefined] is decorating method that does not return Observable', () => {
-        expect(() => service.throwWithNonObservableNonInstant()).toThrowError(`
-              Method decorated with @CacheBuster should return observable. 
-              If you don't want to change the method signature, set isInstant flag to true.
-              `)
+        expect(() => service.throwWithNonObservableNonInstant()).toThrowError(ERROR_MESSAGE)
     })
 
     it('should bust the cache before original method has been executed', () => {
