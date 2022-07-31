@@ -10,7 +10,6 @@ import {LocalStorageStrategy} from '../common/LocalStorageStrategy';
 import {InMemoryStorageStrategy} from '../common/InMemoryStorageStrategy';
 import {IService} from './service.interface';
 import {Cat} from './cat';
-
 let customStrategySpy: jasmine.Spy = jasmine.createSpy();
 export class CustomContextStrategy extends InMemoryStorageStrategy {
   add(cachePair: ICachePair<any>, cacheKey: string, ctx?: any) {
@@ -30,11 +29,8 @@ strategies.forEach(s => {
     let service: IService<Observable<any>> = null;
     let mockServiceCallSpy: jasmine.Spy = null;
     const cacheModifier = new Subject<any>();
-    let cacheBusterNotifier: Subject<void>;
-
     beforeEach(() => {
-      cacheBusterNotifier = new Subject<void>();
-
+      const cacheBusterNotifier = new Subject<void>();
       class Service {
         mockServiceCall(parameter: any) {
           return timer(1000).pipe(mapTo({payload: parameter}));
@@ -152,14 +148,6 @@ strategies.forEach(s => {
           cacheBusterNotifier: cacheBusterNotifier
         })
         saveDataAndCacheBust() {
-          return this.mockSaveServiceCall();
-        }
-
-        @CacheBuster({
-          cacheBusterNotifier: cacheBusterNotifier,
-          isInstant: true
-        })
-        bustCacheInstantly() {
           return this.mockSaveServiceCall();
         }
 

@@ -209,9 +209,6 @@ strategies.forEach(function (s) {
             Service.prototype.saveDataAndCacheBust = function () {
                 return this.mockSaveServiceCall();
             };
-            Service.prototype.bustCacheInstantly = function () {
-                return this.mockSaveServiceCall();
-            };
             Service.prototype.getDataWithCacheBusting = function (parameter) {
                 return this.mockServiceCall(parameter);
             };
@@ -311,12 +308,6 @@ strategies.forEach(function (s) {
                     cacheBusterNotifier: cacheBusterNotifier
                 })
             ], Service.prototype, "saveDataAndCacheBust", null);
-            __decorate([
-                (0, promise_cache_buster_decorator_1.PCacheBuster)({
-                    cacheBusterNotifier: cacheBusterNotifier,
-                    isInstant: true
-                })
-            ], Service.prototype, "bustCacheInstantly", null);
             __decorate([
                 (0, promise_cacheable_decorator_1.PCacheable)({
                     cacheBusterObserver: cacheBusterNotifier.asObservable()

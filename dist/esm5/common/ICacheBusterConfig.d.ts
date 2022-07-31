@@ -7,8 +7,8 @@ export interface ICacheBusterConfig {
     cacheBusterNotifier?: Subject<void>;
 }
 /**
- * flag that indicates whether cache should be cleared before decorated method is called.
- * False by default, i.e. cache will be cleared after observable from decorated method emits
+ * flag that indicates whether cache should be cleared before decorated method has been called.
+ * False by default, i.e. cache is cleared after observable from decorated method emits
  */
 export declare type ICacheBusterConfigInstant = ICacheBusterConfig & {
     isInstant: true;

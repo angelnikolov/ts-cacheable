@@ -9,12 +9,9 @@ export interface ICacheBusterConfig {
 }
 
 /**
- * flag that indicates whether cache should be cleared before decorated method is called.
- * False by default, i.e. cache will be cleared after observable from decorated method emits
+ * flag that indicates whether cache should be cleared before decorated method has been called.
+ * False by default, i.e. cache is cleared after observable from decorated method emits
  */
-// isInstant?: boolean;
-
-
 export type ICacheBusterConfigInstant = ICacheBusterConfig & { isInstant: true };
 
 export type DecoratorFactoryType<T> = (_target: Object, _propertyKey: string, propertyDescriptor: TypedPropertyDescriptor<T>) => TypedPropertyDescriptor<T>

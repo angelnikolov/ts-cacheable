@@ -95,9 +95,8 @@ strategies.forEach(function (s) {
         var service = null;
         var mockServiceCallSpy = null;
         var cacheModifier = new rxjs_2.Subject();
-        var cacheBusterNotifier;
         beforeEach(function () {
-            cacheBusterNotifier = new rxjs_2.Subject();
+            var cacheBusterNotifier = new rxjs_2.Subject();
             var Service = /** @class */ (function () {
                 function Service() {
                 }
@@ -150,9 +149,6 @@ strategies.forEach(function (s) {
                     return this.mockServiceCall(parameter);
                 };
                 Service.prototype.saveDataAndCacheBust = function () {
-                    return this.mockSaveServiceCall();
-                };
-                Service.prototype.bustCacheInstantly = function () {
                     return this.mockSaveServiceCall();
                 };
                 Service.prototype.getDataWithCacheBusting = function (parameter) {
@@ -250,12 +246,6 @@ strategies.forEach(function (s) {
                         cacheBusterNotifier: cacheBusterNotifier
                     })
                 ], Service.prototype, "saveDataAndCacheBust", null);
-                __decorate([
-                    (0, cache_buster_decorator_1.CacheBuster)({
-                        cacheBusterNotifier: cacheBusterNotifier,
-                        isInstant: true
-                    })
-                ], Service.prototype, "bustCacheInstantly", null);
                 __decorate([
                     (0, cacheable_decorator_2.Cacheable)({
                         cacheBusterObserver: cacheBusterNotifier.asObservable()

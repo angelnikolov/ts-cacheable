@@ -212,14 +212,6 @@ strategies.forEach(s => {
         return this.mockSaveServiceCall();
       }
 
-      @PCacheBuster({
-        cacheBusterNotifier: cacheBusterNotifier,
-        isInstant: true
-      })
-      bustCacheInstantly() {
-        return this.mockSaveServiceCall();
-      }
-
       @PCacheable({
         cacheBusterObserver: cacheBusterNotifier.asObservable()
       })

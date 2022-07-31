@@ -23,7 +23,6 @@ export interface IService<T> {
   ): T;
   getDataWithCustomCacheDecider(parameter: string): T;
   saveDataAndCacheBust(): T;
-  bustCacheInstantly(): T;
   getDataWithCacheBusting(parameter: string): T;
   getDataWithUndefinedParameter(parameter?: string): T;
   getDataWithMultipleUndefinedParameters(parameter: string, parameter1: string): T;
