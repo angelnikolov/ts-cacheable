@@ -10,6 +10,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.throwErrorIfResultIsNotObservable = exports.NO_OBSERVABLE_ERROR_MESSAGE = exports.CacheBuster = void 0;
+var common_1 = require("./common");
 var rxjs_1 = require("rxjs");
 var operators_1 = require("rxjs/operators");
 function CacheBuster(cacheBusterConfig) {
@@ -22,14 +23,14 @@ function CacheBuster(cacheBusterConfig) {
                 for (var _i = 0; _i < arguments.length; _i++) {
                     parameters[_i] = arguments[_i];
                 }
-                if (isInstant(cacheBusterConfig)) {
-                    bustCache(cacheBusterConfig);
+                if ((0, common_1.isInstant)(cacheBusterConfig)) {
+                    (0, common_1.bustCache)(cacheBusterConfig);
                     return decoratedMethod.call.apply(decoratedMethod, __spreadArray([this], parameters, false));
                 }
                 var decoratedMethodResult = decoratedMethod.call.apply(decoratedMethod, __spreadArray([this], parameters, false));
                 throwErrorIfResultIsNotObservable(decoratedMethodResult);
                 return decoratedMethodResult.pipe((0, operators_1.tap)(function () {
-                    bustCache(cacheBusterConfig);
+                    (0, common_1.bustCache)(cacheBusterConfig);
                 }));
             };
         }
@@ -46,12 +47,4 @@ function throwErrorIfResultIsNotObservable(decoratedMethodResult) {
     }
 }
 exports.throwErrorIfResultIsNotObservable = throwErrorIfResultIsNotObservable;
-function bustCache(cacheBusterConfig) {
-    if (cacheBusterConfig === null || cacheBusterConfig === void 0 ? void 0 : cacheBusterConfig.cacheBusterNotifier) {
-        cacheBusterConfig.cacheBusterNotifier.next();
-    }
-}
-function isInstant(cacheBusterConfig) {
-    return cacheBusterConfig && 'isInstant' in cacheBusterConfig && cacheBusterConfig.isInstant;
-}
 //# sourceMappingURL=cache-buster.decorator.js.map

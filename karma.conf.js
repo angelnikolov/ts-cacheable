@@ -11,6 +11,7 @@ module.exports = function(config) {
       './common/DOMStorageStrategy.ts',
       './common/LocalStorageStrategy.ts',
       './common/InMemoryStorageStrategy.ts',
+      './common/CacheBusterFunctions.ts',
       './cacheable.decorator.ts',
       './cache-buster.decorator.ts',
       './promise.cache-buster.decorator.ts',

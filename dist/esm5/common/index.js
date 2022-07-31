@@ -3,6 +3,7 @@ import { InMemoryStorageStrategy } from './InMemoryStorageStrategy';
 import { IAsyncStorageStrategy } from './IAsyncStorageStrategy';
 import { DOMStorageStrategy } from './DOMStorageStrategy';
 import { LocalStorageStrategy } from './LocalStorageStrategy';
+import { isInstant, bustCache } from './CacheBusterFunctions';
 export var DEFAULT_CACHE_RESOLVER = function (oldParams, newParams) {
     return JSON.stringify(oldParams) === JSON.stringify(newParams);
 };
@@ -16,4 +17,5 @@ export { IStorageStrategy };
 export { IAsyncStorageStrategy };
 export { DOMStorageStrategy };
 export { LocalStorageStrategy };
+export { isInstant, bustCache };
 //# sourceMappingURL=index.js.map

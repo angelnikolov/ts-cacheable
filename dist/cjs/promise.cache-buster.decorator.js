@@ -10,6 +10,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.NO_PROMISE_ERROR_MESSAGE = exports.PCacheBuster = void 0;
+var common_1 = require("./common");
 function PCacheBuster(cacheBusterConfig) {
     return function (_target, _propertyKey, propertyDescriptor) {
         var decoratedMethod = propertyDescriptor.value;
@@ -20,14 +21,14 @@ function PCacheBuster(cacheBusterConfig) {
                 for (var _i = 0; _i < arguments.length; _i++) {
                     parameters[_i] = arguments[_i];
                 }
-                if (isInstant(cacheBusterConfig)) {
-                    bustCache(cacheBusterConfig);
+                if ((0, common_1.isInstant)(cacheBusterConfig)) {
+                    (0, common_1.bustCache)(cacheBusterConfig);
                     return decoratedMethod.call.apply(decoratedMethod, __spreadArray([this], parameters, false));
                 }
                 var decoratedMethodResult = decoratedMethod.call.apply(decoratedMethod, __spreadArray([this], parameters, false));
                 throwErrorIfResultIsNotPromise(decoratedMethodResult);
                 return decoratedMethodResult.then(function (response) {
-                    bustCache(cacheBusterConfig);
+                    (0, common_1.bustCache)(cacheBusterConfig);
                     return response;
                 });
             };
@@ -43,13 +44,5 @@ function throwErrorIfResultIsNotPromise(decoratedMethodResult) {
     if (decoratedMethodResult instanceof Promise === false) {
         throw new Error(exports.NO_PROMISE_ERROR_MESSAGE);
     }
-}
-function bustCache(cacheBusterConfig) {
-    if (cacheBusterConfig === null || cacheBusterConfig === void 0 ? void 0 : cacheBusterConfig.cacheBusterNotifier) {
-        cacheBusterConfig.cacheBusterNotifier.next();
-    }
-}
-function isInstant(cacheBusterConfig) {
-    return cacheBusterConfig && 'isInstant' in cacheBusterConfig && cacheBusterConfig.isInstant;
 }
 //# sourceMappingURL=promise.cache-buster.decorator.js.map

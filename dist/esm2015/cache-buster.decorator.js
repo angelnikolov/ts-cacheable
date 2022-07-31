@@ -1,3 +1,4 @@
+import { bustCache, isInstant } from './common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 export function CacheBuster(cacheBusterConfig) {
@@ -30,13 +31,5 @@ export function throwErrorIfResultIsNotObservable(decoratedMethodResult) {
     if (decoratedMethodResult instanceof Observable === false) {
         throw new Error(NO_OBSERVABLE_ERROR_MESSAGE);
     }
-}
-function bustCache(cacheBusterConfig) {
-    if (cacheBusterConfig === null || cacheBusterConfig === void 0 ? void 0 : cacheBusterConfig.cacheBusterNotifier) {
-        cacheBusterConfig.cacheBusterNotifier.next();
-    }
-}
-function isInstant(cacheBusterConfig) {
-    return cacheBusterConfig && 'isInstant' in cacheBusterConfig && cacheBusterConfig.isInstant;
 }
 //# sourceMappingURL=cache-buster.decorator.js.map

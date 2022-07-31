@@ -1,5 +1,5 @@
 import {DecoratorFactoryType, ICacheBusterConfig, ICacheBusterConfigInstant} from './common/ICacheBusterConfig';
-import {ICacheable} from './common';
+import {bustCache, ICacheable, isInstant} from './common';
 
 export function PCacheBuster(cacheBusterConfig?: ICacheBusterConfig): DecoratorFactoryType<ICacheable<Promise<any>>>
 export function PCacheBuster(cacheBusterConfig?: ICacheBusterConfigInstant): DecoratorFactoryType<any>
@@ -43,14 +43,4 @@ function throwErrorIfResultIsNotPromise(decoratedMethodResult: any): asserts dec
   if (decoratedMethodResult instanceof Promise === false) {
     throw new Error(NO_PROMISE_ERROR_MESSAGE);
   }
-}
-
-function bustCache(cacheBusterConfig: ICacheBusterConfig): void {
-  if (cacheBusterConfig?.cacheBusterNotifier) {
-    cacheBusterConfig.cacheBusterNotifier.next();
-  }
-}
-
-function isInstant(cacheBusterConfig?: ICacheBusterConfig | ICacheBusterConfigInstant): boolean {
-  return cacheBusterConfig && 'isInstant' in cacheBusterConfig && cacheBusterConfig.isInstant
 }

@@ -7,6 +7,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     }
     return to.concat(ar || Array.prototype.slice.call(from));
 };
+import { bustCache, isInstant } from './common';
 export function PCacheBuster(cacheBusterConfig) {
     return function (_target, _propertyKey, propertyDescriptor) {
         var decoratedMethod = propertyDescriptor.value;
@@ -39,13 +40,5 @@ function throwErrorIfResultIsNotPromise(decoratedMethodResult) {
     if (decoratedMethodResult instanceof Promise === false) {
         throw new Error(NO_PROMISE_ERROR_MESSAGE);
     }
-}
-function bustCache(cacheBusterConfig) {
-    if (cacheBusterConfig === null || cacheBusterConfig === void 0 ? void 0 : cacheBusterConfig.cacheBusterNotifier) {
-        cacheBusterConfig.cacheBusterNotifier.next();
-    }
-}
-function isInstant(cacheBusterConfig) {
-    return cacheBusterConfig && 'isInstant' in cacheBusterConfig && cacheBusterConfig.isInstant;
 }
 //# sourceMappingURL=promise.cache-buster.decorator.js.map

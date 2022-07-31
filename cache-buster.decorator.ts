@@ -1,5 +1,5 @@
 import {DecoratorFactoryType, ICacheBusterConfig, ICacheBusterConfigInstant} from './common/ICacheBusterConfig';
-import {ICacheable} from './common';
+import {bustCache, ICacheable, isInstant} from './common';
 import {Observable} from 'rxjs';
 import {tap} from 'rxjs/operators';
 
@@ -44,14 +44,4 @@ export function throwErrorIfResultIsNotObservable(decoratedMethodResult: any): a
   if (decoratedMethodResult instanceof Observable === false) {
     throw new Error(NO_OBSERVABLE_ERROR_MESSAGE);
   }
-}
-
-function bustCache(cacheBusterConfig: ICacheBusterConfig): void {
-  if (cacheBusterConfig?.cacheBusterNotifier) {
-    cacheBusterConfig.cacheBusterNotifier.next();
-  }
-}
-
-function isInstant(cacheBusterConfig?: ICacheBusterConfig | ICacheBusterConfigInstant): boolean {
-  return cacheBusterConfig && 'isInstant' in cacheBusterConfig && cacheBusterConfig.isInstant
 }
