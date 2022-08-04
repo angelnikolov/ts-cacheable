@@ -1,11 +1,13 @@
-import {DecoratorFactoryType, ICacheBusterConfig, ICacheBusterConfigInstant} from './common/ICacheBusterConfig';
+import {
+  DecoratorFactoryTypeOfAnyOrKReturnType,
+  ICacheBusterConfigOrConfigWithInstant
+} from './common/ICacheBusterConfig';
 import {bustCache, ICacheable, isInstant} from './common';
 import {Observable} from 'rxjs';
 import {tap} from 'rxjs/operators';
 
-export function CacheBuster(cacheBusterConfig?: ICacheBusterConfig): DecoratorFactoryType<ICacheable<Observable<any>>>
-export function CacheBuster(cacheBusterConfig?: ICacheBusterConfigInstant): DecoratorFactoryType<any>
-export function CacheBuster(cacheBusterConfig?: ICacheBusterConfig | ICacheBusterConfigInstant): DecoratorFactoryType<ICacheable<Observable<any>>> | DecoratorFactoryType<any> {
+export function CacheBuster<T extends ICacheBusterConfigOrConfigWithInstant>(cacheBusterConfig?: T)
+  : DecoratorFactoryTypeOfAnyOrKReturnType<T, ICacheable<Observable<any>>> {
   return function (
     _target: Object,
     _propertyKey: string,

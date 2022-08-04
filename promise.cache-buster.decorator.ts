@@ -1,9 +1,10 @@
-import {DecoratorFactoryType, ICacheBusterConfig, ICacheBusterConfigInstant} from './common/ICacheBusterConfig';
+import {
+  DecoratorFactoryTypeOfAnyOrKReturnType, ICacheBusterConfigOrConfigWithInstant
+} from './common/ICacheBusterConfig';
 import {bustCache, ICacheable, isInstant} from './common';
 
-export function PCacheBuster(cacheBusterConfig?: ICacheBusterConfig): DecoratorFactoryType<ICacheable<Promise<any>>>
-export function PCacheBuster(cacheBusterConfig?: ICacheBusterConfigInstant): DecoratorFactoryType<any>
-export function PCacheBuster(cacheBusterConfig?: ICacheBusterConfig | ICacheBusterConfigInstant): DecoratorFactoryType<ICacheable<Promise<any>>> | DecoratorFactoryType<any> {
+export function PCacheBuster<T extends ICacheBusterConfigOrConfigWithInstant>(cacheBusterConfig?: T)
+  : DecoratorFactoryTypeOfAnyOrKReturnType<T, ICacheable<Promise<any>>> {
   return function (
     _target: Object,
     _propertyKey: string,

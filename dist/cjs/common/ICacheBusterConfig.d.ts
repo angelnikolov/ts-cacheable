@@ -14,3 +14,5 @@ export declare type ICacheBusterConfigInstant = ICacheBusterConfig & {
     isInstant: true;
 };
 export declare type DecoratorFactoryType<T> = (_target: Object, _propertyKey: string, propertyDescriptor: TypedPropertyDescriptor<T>) => TypedPropertyDescriptor<T>;
+export declare type ICacheBusterConfigOrConfigWithInstant = ICacheBusterConfig | ICacheBusterConfigInstant;
+export declare type DecoratorFactoryTypeOfAnyOrKReturnType<TConfig extends ICacheBusterConfigOrConfigWithInstant, KReturnType> = TConfig extends ICacheBusterConfigInstant ? DecoratorFactoryType<any> : DecoratorFactoryType<KReturnType>;
