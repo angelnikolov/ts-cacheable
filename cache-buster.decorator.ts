@@ -25,9 +25,9 @@ export function CacheBuster(cacheBusterConfig?: ICacheBusterConfig | ICacheBuste
         throwErrorIfResultIsNotObservable(decoratedMethodResult);
 
         return decoratedMethodResult.pipe(
-            tap(() => {
-              bustCache(cacheBusterConfig);
-            })
+          tap(() => {
+            bustCache(cacheBusterConfig);
+          })
         );
       };
     };
