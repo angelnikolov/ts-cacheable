@@ -212,6 +212,14 @@ strategies.forEach(s => {
         return this.mockSaveServiceCall();
       }
 
+      @PCacheBuster({
+        cacheBusterNotifier: cacheBusterNotifier,
+        isInstant: true
+      })
+      saveDataAndCacheBustWithInstant() {
+        return this.mockSaveServiceCall();
+      }
+
       @PCacheable({
         cacheBusterObserver: cacheBusterNotifier.asObservable()
       })
@@ -572,6 +580,47 @@ strategies.forEach(s => {
        * call count has incremented due to the actual method call (instead of cache)
        */
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
+      /**
+       * pass through 1s of time
+       */
+      /**
+       * synchronous cached response should now be returned
+       */
+      expect(await service.getDataWithCacheBusting('test')).toEqual({
+        payload: 'test'
+      });
+    });
+
+    xit('cache data until the cacheBusterNotifier has emitted { isInstant: true }', async () => {
+      // TODO fix async storage heisenbug problem ( test fails unpredictably )
+
+      const asyncFreshData = await service.getDataWithCacheBusting('test');
+      expect(asyncFreshData).toEqual({payload: 'test'});
+      expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+
+      const cachedResponse = await service.getDataWithCacheBusting('test');
+      expect(cachedResponse).toEqual({payload: 'test'});
+      /**
+       * response acquired from cache, so no incrementation on the service spy call counter is expected here
+       */
+      expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+
+      /**
+       * make the save call
+       * cache busting subject will emit instantly and the cache for getDataWithCacheBusting('test') will be relieved of
+       */
+      const promise = service.saveDataAndCacheBustWithInstant()
+
+      await service.getDataWithCacheBusting('test');
+      /**
+       * call count has incremented due to the actual method call (instead of cache)
+       */
+      expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
+
+      /**
+      * expect promise to return original data
+      **/
+      expect(await promise).toEqual('SAVED');
       /**
        * pass through 1s of time
        */

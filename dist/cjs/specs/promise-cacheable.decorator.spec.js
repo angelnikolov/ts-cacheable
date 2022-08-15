@@ -209,6 +209,9 @@ strategies.forEach(function (s) {
             Service.prototype.saveDataAndCacheBust = function () {
                 return this.mockSaveServiceCall();
             };
+            Service.prototype.saveDataAndCacheBustWithInstant = function () {
+                return this.mockSaveServiceCall();
+            };
             Service.prototype.getDataWithCacheBusting = function (parameter) {
                 return this.mockServiceCall(parameter);
             };
@@ -308,6 +311,12 @@ strategies.forEach(function (s) {
                     cacheBusterNotifier: cacheBusterNotifier
                 })
             ], Service.prototype, "saveDataAndCacheBust", null);
+            __decorate([
+                (0, promise_cache_buster_decorator_1.PCacheBuster)({
+                    cacheBusterNotifier: cacheBusterNotifier,
+                    isInstant: true
+                })
+            ], Service.prototype, "saveDataAndCacheBustWithInstant", null);
             __decorate([
                 (0, promise_cacheable_decorator_1.PCacheable)({
                     cacheBusterObserver: cacheBusterNotifier.asObservable()
@@ -769,6 +778,63 @@ strategies.forEach(function (s) {
                          * call count has incremented due to the actual method call (instead of cache)
                          */
                         expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
+                        /**
+                         * pass through 1s of time
+                         */
+                        /**
+                         * synchronous cached response should now be returned
+                         */
+                        _b = expect;
+                        return [4 /*yield*/, service.getDataWithCacheBusting('test')];
+                    case 5:
+                        /**
+                         * pass through 1s of time
+                         */
+                        /**
+                         * synchronous cached response should now be returned
+                         */
+                        _b.apply(void 0, [_c.sent()]).toEqual({
+                            payload: 'test'
+                        });
+                        return [2 /*return*/];
+                }
+            });
+        }); });
+        xit('cache data until the cacheBusterNotifier has emitted { isInstant: true }', function () { return __awaiter(void 0, void 0, void 0, function () {
+            var asyncFreshData, cachedResponse, promise, _a, _b;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0: return [4 /*yield*/, service.getDataWithCacheBusting('test')];
+                    case 1:
+                        asyncFreshData = _c.sent();
+                        expect(asyncFreshData).toEqual({ payload: 'test' });
+                        expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+                        return [4 /*yield*/, service.getDataWithCacheBusting('test')];
+                    case 2:
+                        cachedResponse = _c.sent();
+                        expect(cachedResponse).toEqual({ payload: 'test' });
+                        /**
+                         * response acquired from cache, so no incrementation on the service spy call counter is expected here
+                         */
+                        expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+                        promise = service.saveDataAndCacheBustWithInstant();
+                        return [4 /*yield*/, service.getDataWithCacheBusting('test')];
+                    case 3:
+                        _c.sent();
+                        /**
+                         * call count has incremented due to the actual method call (instead of cache)
+                         */
+                        expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
+                        /**
+                        * expect promise to return original data
+                        **/
+                        _a = expect;
+                        return [4 /*yield*/, promise];
+                    case 4:
+                        /**
+                        * expect promise to return original data
+                        **/
+                        _a.apply(void 0, [_c.sent()]).toEqual('SAVED');
                         /**
                          * pass through 1s of time
                          */

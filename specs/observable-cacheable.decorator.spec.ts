@@ -151,6 +151,14 @@ strategies.forEach(s => {
           return this.mockSaveServiceCall();
         }
 
+        @CacheBuster({
+          cacheBusterNotifier: cacheBusterNotifier,
+          isInstant: true
+        })
+        saveDataAndCacheBustWithInstant() {
+          return this.mockSaveServiceCall();
+        }
+
         @Cacheable({
           cacheBusterObserver: cacheBusterNotifier.asObservable()
         })
@@ -839,6 +847,40 @@ strategies.forEach(s => {
       expect(
         _timedStreamAsyncAwait(service.getDataWithCacheBusting('test'))
       ).toEqual({payload: 'test'});
+    });
+
+    it('cache data until the cacheBusterNotifier has emitted { isInstant: true }', function () {
+      var asyncFreshData = _timedStreamAsyncAwait(service.getDataWithCacheBusting('test'), 1000);
+      expect(asyncFreshData).toEqual({ payload: 'test' });
+      expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+      var cachedResponse = _timedStreamAsyncAwait(service.getDataWithCacheBusting('test'));
+      expect(cachedResponse).toEqual({ payload: 'test' });
+      /**
+       * response acquired from cache, so no incrementation on the service spy call counter is expected here
+       */
+      expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+      /**
+       * make the save call
+       * cache busting subject will emit instantly and the cache for getDataWithCacheBusting('test') will be relieved of
+       */
+      const obs$ = service.saveDataAndCacheBustWithInstant()
+
+      var cachedResponse2 = _timedStreamAsyncAwait(service.getDataWithCacheBusting('test'));
+      expect(cachedResponse2).toEqual(null);
+
+      expect(_timedStreamAsyncAwait(obs$, 1000)).toEqual('SAVED');
+      /**
+       * call count has incremented due to the actual method call (instead of cache)
+       */
+      expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
+      /**
+       * pass through 1s of time
+       */
+      jasmine.clock().tick(1000);
+      /**
+       * synchronous cached response should now be returned
+       */
+      expect(_timedStreamAsyncAwait(service.getDataWithCacheBusting('test'))).toEqual({ payload: 'test' });
     });
 
     it('should clear all caches when the global cache buster is called', () => {
