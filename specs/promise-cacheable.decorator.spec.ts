@@ -72,193 +72,194 @@ strategies.forEach(s => {
     let service: IService<Promise<any>> = null;
     let mockServiceCallSpy: jasmine.Spy = null;
     const cacheModifier = new Subject<any>();
-    class Service {
-      mockServiceCall(parameter: any) {
-        return new Promise<any>(resolve => {
-          setTimeout(() => {
-            resolve({payload: parameter});
-          }, 300);
-        });
-      }
-      mockSaveServiceCall() {
-        return new Promise(resolve => {
-          setTimeout(() => {
-            resolve('SAVED');
-          }, 300);
-        });
-      }
 
-      mockServiceCallWithMultipleParameters(parameter1: any, parameter2: any) {
-        return new Promise(resolve => {
-          setTimeout(() => {
-            resolve({payload: [parameter1, parameter2]});
-          }, 300);
-        });
-      }
-
-      @PCacheable()
-      getData(parameter: string) {
-        return this.mockServiceCall(parameter);
-      }
-
-      @PCacheable()
-      getData1(parameter: string) {
-        return this.mockServiceCall(parameter);
-      }
-
-      @PCacheable()
-      getData2(parameter: string) {
-        return this.mockServiceCall(parameter);
-      }
-
-      @PCacheable()
-      getData3(parameter: string) {
-        return this.mockServiceCall(parameter);
-      }
-
-      @PCacheable()
-      getDataWithParamsObj(parameter: any) {
-        return this.mockServiceCall(parameter);
-      }
-
-      @PCacheable()
-      getDataAndReturnCachedStream(parameter: string) {
-        return this.mockServiceCall(parameter);
-      }
-
-      @PCacheable({
-        maxAge: 400
-      })
-      getDataWithExpiration(parameter: string) {
-        return this.mockServiceCall(parameter);
-      }
-
-      @PCacheable({
-        maxAge: 400,
-        slidingExpiration: true
-      })
-      getDataWithSlidingExpiration(parameter: string) {
-        return this.mockServiceCall(parameter);
-      }
-
-      @PCacheable({
-        maxCacheCount: 5
-      })
-      getDataWithMaxCacheCount(parameter: string) {
-        return this.mockServiceCall(parameter);
-      }
-
-      @PCacheable({
-        maxAge: 400,
-        maxCacheCount: 5
-      })
-      getDataWithMaxCacheCountAndExpiration(parameter: string) {
-        return this.mockServiceCall(parameter);
-      }
-
-      @PCacheable({
-        maxAge: 400,
-        maxCacheCount: 5,
-        slidingExpiration: true
-      })
-      getDataWithMaxCacheCountAndSlidingExpiration(parameter: string) {
-        return this.mockServiceCall(parameter);
-      }
-
-      @PCacheable({
-        cacheResolver: (_oldParameters, newParameters) => {
-          return newParameters.find((param: any) => !!param.straightToLastCache);
-        }
-      })
-      getDataWithCustomCacheResolver(
-        parameter: string,
-        _cacheRerouterParameter?: {straightToLastCache: boolean}
-      ) {
-        return this.mockServiceCall(parameter);
-      }
-
-      @PCacheable({
-        cacheHasher: (_parameters) => _parameters[0] * 2,
-        cacheResolver: (oldParameter, newParameter) => {
-          return newParameter > 5
-        }
-      })
-      getDataWithCustomCacheResolverAndHasher(
-        parameter: number
-      ) {
-        return this.mockServiceCall(parameter);
-      }
-
-      @PCacheable()
-      getWithAComplexType(
-        parameter: Cat
-      ) {
-        return this.mockServiceCall(parameter);
-      }
-
-      @PCacheable({
-        shouldCacheDecider: (response: {payload: string}) => {
-          return response.payload === 'test';
-        }
-      })
-      getDataWithCustomCacheDecider(parameter: string) {
-        return this.mockServiceCall(parameter);
-      }
-
-      @PCacheBuster({
-        cacheBusterNotifier: cacheBusterNotifier
-      })
-      saveDataAndCacheBust() {
-        return this.mockSaveServiceCall();
-      }
-
-      @PCacheBuster({
-        cacheBusterNotifier: cacheBusterNotifier,
-        isInstant: true
-      })
-      saveDataAndCacheBustWithInstant() {
-        return this.mockSaveServiceCall();
-      }
-
-      @PCacheable({
-        cacheBusterObserver: cacheBusterNotifier.asObservable()
-      })
-      getDataWithCacheBusting(parameter: string) {
-        return this.mockServiceCall(parameter);
-      }
-
-      @PCacheable()
-      getDataWithUndefinedParameter(parameter: string = '') {
-        return this.mockServiceCall(parameter);
-      }
-
-      @PCacheable()
-      getDataWithMultipleUndefinedParameters(parameter: string = 'Parameter1', parameter1: string = 'Parameter2') {
-        return this.mockServiceCallWithMultipleParameters(parameter, parameter1);
-      }
-      @PCacheable({
-        maxAge: 400,
-        slidingExpiration: true,
-        storageStrategy: InMemoryStorageStrategy
-      })
-      getDataWithCustomStorageStrategyProvided(parameter: string) {
-        return this.mockServiceCall(parameter);
-      }
-      @PCacheable({
-        storageStrategy: InMemoryStorageStrategy,
-        cacheModifier
-      })
-      getMutableData(parameter: string) {
-        return this.mockServiceCall(parameter);
-      }
-      @PCacheable({
-        storageStrategy: CustomContextStrategy
-      })
-      getDataWithCustomContextStorageStrategy(parameter: string = 'Parameter1') {
-        return this.mockServiceCall(parameter);
-      }
-    }
     beforeEach(() => {
+      class Service {
+        mockServiceCall(parameter: any) {
+          return new Promise<any>(resolve => {
+            setTimeout(() => {
+              resolve({payload: parameter});
+            }, 300);
+          });
+        }
+        mockSaveServiceCall() {
+          return new Promise(resolve => {
+            setTimeout(() => {
+              resolve('SAVED');
+            }, 300);
+          });
+        }
+
+        mockServiceCallWithMultipleParameters(parameter1: any, parameter2: any) {
+          return new Promise(resolve => {
+            setTimeout(() => {
+              resolve({payload: [parameter1, parameter2]});
+            }, 300);
+          });
+        }
+
+        @PCacheable()
+        getData(parameter: string) {
+          return this.mockServiceCall(parameter);
+        }
+
+        @PCacheable()
+        getData1(parameter: string) {
+          return this.mockServiceCall(parameter);
+        }
+
+        @PCacheable()
+        getData2(parameter: string) {
+          return this.mockServiceCall(parameter);
+        }
+
+        @PCacheable()
+        getData3(parameter: string) {
+          return this.mockServiceCall(parameter);
+        }
+
+        @PCacheable()
+        getDataWithParamsObj(parameter: any) {
+          return this.mockServiceCall(parameter);
+        }
+
+        @PCacheable()
+        getDataAndReturnCachedStream(parameter: string) {
+          return this.mockServiceCall(parameter);
+        }
+
+        @PCacheable({
+          maxAge: 400
+        })
+        getDataWithExpiration(parameter: string) {
+          return this.mockServiceCall(parameter);
+        }
+
+        @PCacheable({
+          maxAge: 400,
+          slidingExpiration: true
+        })
+        getDataWithSlidingExpiration(parameter: string) {
+          return this.mockServiceCall(parameter);
+        }
+
+        @PCacheable({
+          maxCacheCount: 5
+        })
+        getDataWithMaxCacheCount(parameter: string) {
+          return this.mockServiceCall(parameter);
+        }
+
+        @PCacheable({
+          maxAge: 400,
+          maxCacheCount: 5
+        })
+        getDataWithMaxCacheCountAndExpiration(parameter: string) {
+          return this.mockServiceCall(parameter);
+        }
+
+        @PCacheable({
+          maxAge: 400,
+          maxCacheCount: 5,
+          slidingExpiration: true
+        })
+        getDataWithMaxCacheCountAndSlidingExpiration(parameter: string) {
+          return this.mockServiceCall(parameter);
+        }
+
+        @PCacheable({
+          cacheResolver: (_oldParameters, newParameters) => {
+            return newParameters.find((param: any) => !!param.straightToLastCache);
+          }
+        })
+        getDataWithCustomCacheResolver(
+            parameter: string,
+            _cacheRerouterParameter?: {straightToLastCache: boolean}
+        ) {
+          return this.mockServiceCall(parameter);
+        }
+
+        @PCacheable({
+          cacheHasher: (_parameters) => _parameters[0] * 2,
+          cacheResolver: (oldParameter, newParameter) => {
+            return newParameter > 5
+          }
+        })
+        getDataWithCustomCacheResolverAndHasher(
+            parameter: number
+        ) {
+          return this.mockServiceCall(parameter);
+        }
+
+        @PCacheable()
+        getWithAComplexType(
+            parameter: Cat
+        ) {
+          return this.mockServiceCall(parameter);
+        }
+
+        @PCacheable({
+          shouldCacheDecider: (response: {payload: string}) => {
+            return response.payload === 'test';
+          }
+        })
+        getDataWithCustomCacheDecider(parameter: string) {
+          return this.mockServiceCall(parameter);
+        }
+
+        @PCacheBuster({
+          cacheBusterNotifier: cacheBusterNotifier
+        })
+        saveDataAndCacheBust() {
+          return this.mockSaveServiceCall();
+        }
+
+        @PCacheBuster({
+          cacheBusterNotifier: cacheBusterNotifier,
+          isInstant: true
+        })
+        saveDataAndCacheBustWithInstant() {
+          return this.mockSaveServiceCall();
+        }
+
+        @PCacheable({
+          cacheBusterObserver: cacheBusterNotifier.asObservable()
+        })
+        getDataWithCacheBusting(parameter: string) {
+          return this.mockServiceCall(parameter);
+        }
+
+        @PCacheable()
+        getDataWithUndefinedParameter(parameter: string = '') {
+          return this.mockServiceCall(parameter);
+        }
+
+        @PCacheable()
+        getDataWithMultipleUndefinedParameters(parameter: string = 'Parameter1', parameter1: string = 'Parameter2') {
+          return this.mockServiceCallWithMultipleParameters(parameter, parameter1);
+        }
+        @PCacheable({
+          maxAge: 400,
+          slidingExpiration: true,
+          storageStrategy: InMemoryStorageStrategy
+        })
+        getDataWithCustomStorageStrategyProvided(parameter: string) {
+          return this.mockServiceCall(parameter);
+        }
+        @PCacheable({
+          storageStrategy: InMemoryStorageStrategy,
+          cacheModifier
+        })
+        getMutableData(parameter: string) {
+          return this.mockServiceCall(parameter);
+        }
+        @PCacheable({
+          storageStrategy: CustomContextStrategy
+        })
+        getDataWithCustomContextStorageStrategy(parameter: string = 'Parameter1') {
+          return this.mockServiceCall(parameter);
+        }
+      }
       service = new Service();
       mockServiceCallSpy = spyOn(service, 'mockServiceCall').and.callThrough();
       if (GlobalCacheConfig.storageStrategy === LocalStorageStrategy) {
@@ -591,7 +592,7 @@ strategies.forEach(s => {
       });
     });
 
-    xit('cache data until the cacheBusterNotifier has emitted { isInstant: true }', async () => {
+    it('cache data until the cacheBusterNotifier has emitted { isInstant: true }', async () => {
       // TODO fix async storage heisenbug problem ( test fails unpredictably )
 
       const asyncFreshData = await service.getDataWithCacheBusting('test');
