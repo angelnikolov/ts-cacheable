@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LocalStorageStrategy = exports.DOMStorageStrategy = exports.IAsyncStorageStrategy = exports.IStorageStrategy = exports.GlobalCacheConfig = exports.DEFAULT_HASHER = exports.DEFAULT_CACHE_RESOLVER = void 0;
+exports.bustCache = exports.isInstant = exports.LocalStorageStrategy = exports.DOMStorageStrategy = exports.IAsyncStorageStrategy = exports.IStorageStrategy = exports.GlobalCacheConfig = exports.DEFAULT_HASHER = exports.DEFAULT_CACHE_RESOLVER = void 0;
 var IStorageStrategy_1 = require("./IStorageStrategy");
 Object.defineProperty(exports, "IStorageStrategy", { enumerable: true, get: function () { return IStorageStrategy_1.IStorageStrategy; } });
 var InMemoryStorageStrategy_1 = require("./InMemoryStorageStrategy");
@@ -10,6 +10,9 @@ var DOMStorageStrategy_1 = require("./DOMStorageStrategy");
 Object.defineProperty(exports, "DOMStorageStrategy", { enumerable: true, get: function () { return DOMStorageStrategy_1.DOMStorageStrategy; } });
 var LocalStorageStrategy_1 = require("./LocalStorageStrategy");
 Object.defineProperty(exports, "LocalStorageStrategy", { enumerable: true, get: function () { return LocalStorageStrategy_1.LocalStorageStrategy; } });
+var CacheBusterFunctions_1 = require("./CacheBusterFunctions");
+Object.defineProperty(exports, "isInstant", { enumerable: true, get: function () { return CacheBusterFunctions_1.isInstant; } });
+Object.defineProperty(exports, "bustCache", { enumerable: true, get: function () { return CacheBusterFunctions_1.bustCache; } });
 var DEFAULT_CACHE_RESOLVER = function (oldParams, newParams) {
     return JSON.stringify(oldParams) === JSON.stringify(newParams);
 };

@@ -158,6 +158,17 @@ export class Service {
 }
 ```
 
+Config mentioned above will empty the cache **after** observable from decorated method has emitted a value. If you want it to empty the cache **before** decorated method has executed, you need to set `isInstant: true` on CacheBuster configuration object.
+```ts
+@CacheBuster({
+  cacheBusterNotifier: cacheBuster$, 
+  isInstant: true
+})
+saveData() {
+  ///no need for an observable now, cache will be emptied right before this method has executed.
+}
+```
+
 If you want to globally bust your whole cache (i.e caches of all Cacheable decorators), just import the `globalCacheBusterNotifier` and call `next()` on it, like:
 ```typescript
 import { globalCacheBusterNotifier } from 'ts-cacheable';

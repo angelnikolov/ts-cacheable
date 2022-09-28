@@ -137,209 +137,218 @@ strategies.forEach(function (s) {
         var service = null;
         var mockServiceCallSpy = null;
         var cacheModifier = new rxjs_1.Subject();
-        var Service = /** @class */ (function () {
-            function Service() {
-            }
-            Service.prototype.mockServiceCall = function (parameter) {
-                return new Promise(function (resolve) {
-                    setTimeout(function () {
-                        resolve({ payload: parameter });
-                    }, 300);
-                });
-            };
-            Service.prototype.mockSaveServiceCall = function () {
-                return new Promise(function (resolve) {
-                    setTimeout(function () {
-                        resolve('SAVED');
-                    }, 300);
-                });
-            };
-            Service.prototype.mockServiceCallWithMultipleParameters = function (parameter1, parameter2) {
-                return new Promise(function (resolve) {
-                    setTimeout(function () {
-                        resolve({ payload: [parameter1, parameter2] });
-                    }, 300);
-                });
-            };
-            Service.prototype.getData = function (parameter) {
-                return this.mockServiceCall(parameter);
-            };
-            Service.prototype.getData1 = function (parameter) {
-                return this.mockServiceCall(parameter);
-            };
-            Service.prototype.getData2 = function (parameter) {
-                return this.mockServiceCall(parameter);
-            };
-            Service.prototype.getData3 = function (parameter) {
-                return this.mockServiceCall(parameter);
-            };
-            Service.prototype.getDataWithParamsObj = function (parameter) {
-                return this.mockServiceCall(parameter);
-            };
-            Service.prototype.getDataAndReturnCachedStream = function (parameter) {
-                return this.mockServiceCall(parameter);
-            };
-            Service.prototype.getDataWithExpiration = function (parameter) {
-                return this.mockServiceCall(parameter);
-            };
-            Service.prototype.getDataWithSlidingExpiration = function (parameter) {
-                return this.mockServiceCall(parameter);
-            };
-            Service.prototype.getDataWithMaxCacheCount = function (parameter) {
-                return this.mockServiceCall(parameter);
-            };
-            Service.prototype.getDataWithMaxCacheCountAndExpiration = function (parameter) {
-                return this.mockServiceCall(parameter);
-            };
-            Service.prototype.getDataWithMaxCacheCountAndSlidingExpiration = function (parameter) {
-                return this.mockServiceCall(parameter);
-            };
-            Service.prototype.getDataWithCustomCacheResolver = function (parameter, _cacheRerouterParameter) {
-                return this.mockServiceCall(parameter);
-            };
-            Service.prototype.getDataWithCustomCacheResolverAndHasher = function (parameter) {
-                return this.mockServiceCall(parameter);
-            };
-            Service.prototype.getWithAComplexType = function (parameter) {
-                return this.mockServiceCall(parameter);
-            };
-            Service.prototype.getDataWithCustomCacheDecider = function (parameter) {
-                return this.mockServiceCall(parameter);
-            };
-            Service.prototype.saveDataAndCacheBust = function () {
-                return this.mockSaveServiceCall();
-            };
-            Service.prototype.getDataWithCacheBusting = function (parameter) {
-                return this.mockServiceCall(parameter);
-            };
-            Service.prototype.getDataWithUndefinedParameter = function (parameter) {
-                if (parameter === void 0) { parameter = ''; }
-                return this.mockServiceCall(parameter);
-            };
-            Service.prototype.getDataWithMultipleUndefinedParameters = function (parameter, parameter1) {
-                if (parameter === void 0) { parameter = 'Parameter1'; }
-                if (parameter1 === void 0) { parameter1 = 'Parameter2'; }
-                return this.mockServiceCallWithMultipleParameters(parameter, parameter1);
-            };
-            Service.prototype.getDataWithCustomStorageStrategyProvided = function (parameter) {
-                return this.mockServiceCall(parameter);
-            };
-            Service.prototype.getMutableData = function (parameter) {
-                return this.mockServiceCall(parameter);
-            };
-            Service.prototype.getDataWithCustomContextStorageStrategy = function (parameter) {
-                if (parameter === void 0) { parameter = 'Parameter1'; }
-                return this.mockServiceCall(parameter);
-            };
-            __decorate([
-                (0, promise_cacheable_decorator_1.PCacheable)()
-            ], Service.prototype, "getData", null);
-            __decorate([
-                (0, promise_cacheable_decorator_1.PCacheable)()
-            ], Service.prototype, "getData1", null);
-            __decorate([
-                (0, promise_cacheable_decorator_1.PCacheable)()
-            ], Service.prototype, "getData2", null);
-            __decorate([
-                (0, promise_cacheable_decorator_1.PCacheable)()
-            ], Service.prototype, "getData3", null);
-            __decorate([
-                (0, promise_cacheable_decorator_1.PCacheable)()
-            ], Service.prototype, "getDataWithParamsObj", null);
-            __decorate([
-                (0, promise_cacheable_decorator_1.PCacheable)()
-            ], Service.prototype, "getDataAndReturnCachedStream", null);
-            __decorate([
-                (0, promise_cacheable_decorator_1.PCacheable)({
-                    maxAge: 400
-                })
-            ], Service.prototype, "getDataWithExpiration", null);
-            __decorate([
-                (0, promise_cacheable_decorator_1.PCacheable)({
-                    maxAge: 400,
-                    slidingExpiration: true
-                })
-            ], Service.prototype, "getDataWithSlidingExpiration", null);
-            __decorate([
-                (0, promise_cacheable_decorator_1.PCacheable)({
-                    maxCacheCount: 5
-                })
-            ], Service.prototype, "getDataWithMaxCacheCount", null);
-            __decorate([
-                (0, promise_cacheable_decorator_1.PCacheable)({
-                    maxAge: 400,
-                    maxCacheCount: 5
-                })
-            ], Service.prototype, "getDataWithMaxCacheCountAndExpiration", null);
-            __decorate([
-                (0, promise_cacheable_decorator_1.PCacheable)({
-                    maxAge: 400,
-                    maxCacheCount: 5,
-                    slidingExpiration: true
-                })
-            ], Service.prototype, "getDataWithMaxCacheCountAndSlidingExpiration", null);
-            __decorate([
-                (0, promise_cacheable_decorator_1.PCacheable)({
-                    cacheResolver: function (_oldParameters, newParameters) {
-                        return newParameters.find(function (param) { return !!param.straightToLastCache; });
-                    }
-                })
-            ], Service.prototype, "getDataWithCustomCacheResolver", null);
-            __decorate([
-                (0, promise_cacheable_decorator_1.PCacheable)({
-                    cacheHasher: function (_parameters) { return _parameters[0] * 2; },
-                    cacheResolver: function (oldParameter, newParameter) {
-                        return newParameter > 5;
-                    }
-                })
-            ], Service.prototype, "getDataWithCustomCacheResolverAndHasher", null);
-            __decorate([
-                (0, promise_cacheable_decorator_1.PCacheable)()
-            ], Service.prototype, "getWithAComplexType", null);
-            __decorate([
-                (0, promise_cacheable_decorator_1.PCacheable)({
-                    shouldCacheDecider: function (response) {
-                        return response.payload === 'test';
-                    }
-                })
-            ], Service.prototype, "getDataWithCustomCacheDecider", null);
-            __decorate([
-                (0, promise_cache_buster_decorator_1.PCacheBuster)({
-                    cacheBusterNotifier: cacheBusterNotifier
-                })
-            ], Service.prototype, "saveDataAndCacheBust", null);
-            __decorate([
-                (0, promise_cacheable_decorator_1.PCacheable)({
-                    cacheBusterObserver: cacheBusterNotifier.asObservable()
-                })
-            ], Service.prototype, "getDataWithCacheBusting", null);
-            __decorate([
-                (0, promise_cacheable_decorator_1.PCacheable)()
-            ], Service.prototype, "getDataWithUndefinedParameter", null);
-            __decorate([
-                (0, promise_cacheable_decorator_1.PCacheable)()
-            ], Service.prototype, "getDataWithMultipleUndefinedParameters", null);
-            __decorate([
-                (0, promise_cacheable_decorator_1.PCacheable)({
-                    maxAge: 400,
-                    slidingExpiration: true,
-                    storageStrategy: InMemoryStorageStrategy_1.InMemoryStorageStrategy
-                })
-            ], Service.prototype, "getDataWithCustomStorageStrategyProvided", null);
-            __decorate([
-                (0, promise_cacheable_decorator_1.PCacheable)({
-                    storageStrategy: InMemoryStorageStrategy_1.InMemoryStorageStrategy,
-                    cacheModifier: cacheModifier
-                })
-            ], Service.prototype, "getMutableData", null);
-            __decorate([
-                (0, promise_cacheable_decorator_1.PCacheable)({
-                    storageStrategy: CustomContextStrategy
-                })
-            ], Service.prototype, "getDataWithCustomContextStorageStrategy", null);
-            return Service;
-        }());
         beforeEach(function () {
+            var Service = /** @class */ (function () {
+                function Service() {
+                }
+                Service.prototype.mockServiceCall = function (parameter) {
+                    return new Promise(function (resolve) {
+                        setTimeout(function () {
+                            resolve({ payload: parameter });
+                        }, 300);
+                    });
+                };
+                Service.prototype.mockSaveServiceCall = function () {
+                    return new Promise(function (resolve) {
+                        setTimeout(function () {
+                            resolve('SAVED');
+                        }, 300);
+                    });
+                };
+                Service.prototype.mockServiceCallWithMultipleParameters = function (parameter1, parameter2) {
+                    return new Promise(function (resolve) {
+                        setTimeout(function () {
+                            resolve({ payload: [parameter1, parameter2] });
+                        }, 300);
+                    });
+                };
+                Service.prototype.getData = function (parameter) {
+                    return this.mockServiceCall(parameter);
+                };
+                Service.prototype.getData1 = function (parameter) {
+                    return this.mockServiceCall(parameter);
+                };
+                Service.prototype.getData2 = function (parameter) {
+                    return this.mockServiceCall(parameter);
+                };
+                Service.prototype.getData3 = function (parameter) {
+                    return this.mockServiceCall(parameter);
+                };
+                Service.prototype.getDataWithParamsObj = function (parameter) {
+                    return this.mockServiceCall(parameter);
+                };
+                Service.prototype.getDataAndReturnCachedStream = function (parameter) {
+                    return this.mockServiceCall(parameter);
+                };
+                Service.prototype.getDataWithExpiration = function (parameter) {
+                    return this.mockServiceCall(parameter);
+                };
+                Service.prototype.getDataWithSlidingExpiration = function (parameter) {
+                    return this.mockServiceCall(parameter);
+                };
+                Service.prototype.getDataWithMaxCacheCount = function (parameter) {
+                    return this.mockServiceCall(parameter);
+                };
+                Service.prototype.getDataWithMaxCacheCountAndExpiration = function (parameter) {
+                    return this.mockServiceCall(parameter);
+                };
+                Service.prototype.getDataWithMaxCacheCountAndSlidingExpiration = function (parameter) {
+                    return this.mockServiceCall(parameter);
+                };
+                Service.prototype.getDataWithCustomCacheResolver = function (parameter, _cacheRerouterParameter) {
+                    return this.mockServiceCall(parameter);
+                };
+                Service.prototype.getDataWithCustomCacheResolverAndHasher = function (parameter) {
+                    return this.mockServiceCall(parameter);
+                };
+                Service.prototype.getWithAComplexType = function (parameter) {
+                    return this.mockServiceCall(parameter);
+                };
+                Service.prototype.getDataWithCustomCacheDecider = function (parameter) {
+                    return this.mockServiceCall(parameter);
+                };
+                Service.prototype.saveDataAndCacheBust = function () {
+                    return this.mockSaveServiceCall();
+                };
+                Service.prototype.saveDataAndCacheBustWithInstant = function () {
+                    return this.mockSaveServiceCall();
+                };
+                Service.prototype.getDataWithCacheBusting = function (parameter) {
+                    return this.mockServiceCall(parameter);
+                };
+                Service.prototype.getDataWithUndefinedParameter = function (parameter) {
+                    if (parameter === void 0) { parameter = ''; }
+                    return this.mockServiceCall(parameter);
+                };
+                Service.prototype.getDataWithMultipleUndefinedParameters = function (parameter, parameter1) {
+                    if (parameter === void 0) { parameter = 'Parameter1'; }
+                    if (parameter1 === void 0) { parameter1 = 'Parameter2'; }
+                    return this.mockServiceCallWithMultipleParameters(parameter, parameter1);
+                };
+                Service.prototype.getDataWithCustomStorageStrategyProvided = function (parameter) {
+                    return this.mockServiceCall(parameter);
+                };
+                Service.prototype.getMutableData = function (parameter) {
+                    return this.mockServiceCall(parameter);
+                };
+                Service.prototype.getDataWithCustomContextStorageStrategy = function (parameter) {
+                    if (parameter === void 0) { parameter = 'Parameter1'; }
+                    return this.mockServiceCall(parameter);
+                };
+                __decorate([
+                    (0, promise_cacheable_decorator_1.PCacheable)()
+                ], Service.prototype, "getData", null);
+                __decorate([
+                    (0, promise_cacheable_decorator_1.PCacheable)()
+                ], Service.prototype, "getData1", null);
+                __decorate([
+                    (0, promise_cacheable_decorator_1.PCacheable)()
+                ], Service.prototype, "getData2", null);
+                __decorate([
+                    (0, promise_cacheable_decorator_1.PCacheable)()
+                ], Service.prototype, "getData3", null);
+                __decorate([
+                    (0, promise_cacheable_decorator_1.PCacheable)()
+                ], Service.prototype, "getDataWithParamsObj", null);
+                __decorate([
+                    (0, promise_cacheable_decorator_1.PCacheable)()
+                ], Service.prototype, "getDataAndReturnCachedStream", null);
+                __decorate([
+                    (0, promise_cacheable_decorator_1.PCacheable)({
+                        maxAge: 400
+                    })
+                ], Service.prototype, "getDataWithExpiration", null);
+                __decorate([
+                    (0, promise_cacheable_decorator_1.PCacheable)({
+                        maxAge: 400,
+                        slidingExpiration: true
+                    })
+                ], Service.prototype, "getDataWithSlidingExpiration", null);
+                __decorate([
+                    (0, promise_cacheable_decorator_1.PCacheable)({
+                        maxCacheCount: 5
+                    })
+                ], Service.prototype, "getDataWithMaxCacheCount", null);
+                __decorate([
+                    (0, promise_cacheable_decorator_1.PCacheable)({
+                        maxAge: 400,
+                        maxCacheCount: 5
+                    })
+                ], Service.prototype, "getDataWithMaxCacheCountAndExpiration", null);
+                __decorate([
+                    (0, promise_cacheable_decorator_1.PCacheable)({
+                        maxAge: 400,
+                        maxCacheCount: 5,
+                        slidingExpiration: true
+                    })
+                ], Service.prototype, "getDataWithMaxCacheCountAndSlidingExpiration", null);
+                __decorate([
+                    (0, promise_cacheable_decorator_1.PCacheable)({
+                        cacheResolver: function (_oldParameters, newParameters) {
+                            return newParameters.find(function (param) { return !!param.straightToLastCache; });
+                        }
+                    })
+                ], Service.prototype, "getDataWithCustomCacheResolver", null);
+                __decorate([
+                    (0, promise_cacheable_decorator_1.PCacheable)({
+                        cacheHasher: function (_parameters) { return _parameters[0] * 2; },
+                        cacheResolver: function (oldParameter, newParameter) {
+                            return newParameter > 5;
+                        }
+                    })
+                ], Service.prototype, "getDataWithCustomCacheResolverAndHasher", null);
+                __decorate([
+                    (0, promise_cacheable_decorator_1.PCacheable)()
+                ], Service.prototype, "getWithAComplexType", null);
+                __decorate([
+                    (0, promise_cacheable_decorator_1.PCacheable)({
+                        shouldCacheDecider: function (response) {
+                            return response.payload === 'test';
+                        }
+                    })
+                ], Service.prototype, "getDataWithCustomCacheDecider", null);
+                __decorate([
+                    (0, promise_cache_buster_decorator_1.PCacheBuster)({
+                        cacheBusterNotifier: cacheBusterNotifier
+                    })
+                ], Service.prototype, "saveDataAndCacheBust", null);
+                __decorate([
+                    (0, promise_cache_buster_decorator_1.PCacheBuster)({
+                        cacheBusterNotifier: cacheBusterNotifier,
+                        isInstant: true
+                    })
+                ], Service.prototype, "saveDataAndCacheBustWithInstant", null);
+                __decorate([
+                    (0, promise_cacheable_decorator_1.PCacheable)({
+                        cacheBusterObserver: cacheBusterNotifier.asObservable()
+                    })
+                ], Service.prototype, "getDataWithCacheBusting", null);
+                __decorate([
+                    (0, promise_cacheable_decorator_1.PCacheable)()
+                ], Service.prototype, "getDataWithUndefinedParameter", null);
+                __decorate([
+                    (0, promise_cacheable_decorator_1.PCacheable)()
+                ], Service.prototype, "getDataWithMultipleUndefinedParameters", null);
+                __decorate([
+                    (0, promise_cacheable_decorator_1.PCacheable)({
+                        maxAge: 400,
+                        slidingExpiration: true,
+                        storageStrategy: InMemoryStorageStrategy_1.InMemoryStorageStrategy
+                    })
+                ], Service.prototype, "getDataWithCustomStorageStrategyProvided", null);
+                __decorate([
+                    (0, promise_cacheable_decorator_1.PCacheable)({
+                        storageStrategy: InMemoryStorageStrategy_1.InMemoryStorageStrategy,
+                        cacheModifier: cacheModifier
+                    })
+                ], Service.prototype, "getMutableData", null);
+                __decorate([
+                    (0, promise_cacheable_decorator_1.PCacheable)({
+                        storageStrategy: CustomContextStrategy
+                    })
+                ], Service.prototype, "getDataWithCustomContextStorageStrategy", null);
+                return Service;
+            }());
             service = new Service();
             mockServiceCallSpy = spyOn(service, 'mockServiceCall').and.callThrough();
             if (common_1.GlobalCacheConfig.storageStrategy === LocalStorageStrategy_1.LocalStorageStrategy) {
@@ -769,6 +778,63 @@ strategies.forEach(function (s) {
                          * call count has incremented due to the actual method call (instead of cache)
                          */
                         expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
+                        /**
+                         * pass through 1s of time
+                         */
+                        /**
+                         * synchronous cached response should now be returned
+                         */
+                        _b = expect;
+                        return [4 /*yield*/, service.getDataWithCacheBusting('test')];
+                    case 5:
+                        /**
+                         * pass through 1s of time
+                         */
+                        /**
+                         * synchronous cached response should now be returned
+                         */
+                        _b.apply(void 0, [_c.sent()]).toEqual({
+                            payload: 'test'
+                        });
+                        return [2 /*return*/];
+                }
+            });
+        }); });
+        it('cache data until the cacheBusterNotifier has emitted { isInstant: true }', function () { return __awaiter(void 0, void 0, void 0, function () {
+            var asyncFreshData, cachedResponse, promise, _a, _b;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0: return [4 /*yield*/, service.getDataWithCacheBusting('test')];
+                    case 1:
+                        asyncFreshData = _c.sent();
+                        expect(asyncFreshData).toEqual({ payload: 'test' });
+                        expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+                        return [4 /*yield*/, service.getDataWithCacheBusting('test')];
+                    case 2:
+                        cachedResponse = _c.sent();
+                        expect(cachedResponse).toEqual({ payload: 'test' });
+                        /**
+                         * response acquired from cache, so no incrementation on the service spy call counter is expected here
+                         */
+                        expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+                        promise = service.saveDataAndCacheBustWithInstant();
+                        return [4 /*yield*/, service.getDataWithCacheBusting('test')];
+                    case 3:
+                        _c.sent();
+                        /**
+                         * call count has incremented due to the actual method call (instead of cache)
+                         */
+                        expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
+                        /**
+                        * expect promise to return original data
+                        **/
+                        _a = expect;
+                        return [4 /*yield*/, promise];
+                    case 4:
+                        /**
+                        * expect promise to return original data
+                        **/
+                        _a.apply(void 0, [_c.sent()]).toEqual('SAVED');
                         /**
                          * pass through 1s of time
                          */

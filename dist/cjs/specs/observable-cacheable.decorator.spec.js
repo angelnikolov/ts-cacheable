@@ -151,6 +151,9 @@ strategies.forEach(function (s) {
                 Service.prototype.saveDataAndCacheBust = function () {
                     return this.mockSaveServiceCall();
                 };
+                Service.prototype.saveDataAndCacheBustWithInstant = function () {
+                    return this.mockSaveServiceCall();
+                };
                 Service.prototype.getDataWithCacheBusting = function (parameter) {
                     return this.mockServiceCall(parameter);
                 };
@@ -246,6 +249,12 @@ strategies.forEach(function (s) {
                         cacheBusterNotifier: cacheBusterNotifier
                     })
                 ], Service.prototype, "saveDataAndCacheBust", null);
+                __decorate([
+                    (0, cache_buster_decorator_1.CacheBuster)({
+                        cacheBusterNotifier: cacheBusterNotifier,
+                        isInstant: true
+                    })
+                ], Service.prototype, "saveDataAndCacheBustWithInstant", null);
                 __decorate([
                     (0, cacheable_decorator_2.Cacheable)({
                         cacheBusterObserver: cacheBusterNotifier.asObservable()
@@ -740,6 +749,37 @@ strategies.forEach(function (s) {
             expect(_timedStreamAsyncAwait(service.saveDataAndCacheBust(), 1000)).toEqual('SAVED');
             var cachedResponse2 = _timedStreamAsyncAwait(service.getDataWithCacheBusting('test'));
             expect(cachedResponse2).toEqual(null);
+            /**
+             * call count has incremented due to the actual method call (instead of cache)
+             */
+            expect(mockServiceCallSpy).toHaveBeenCalledTimes(2);
+            /**
+             * pass through 1s of time
+             */
+            jasmine.clock().tick(1000);
+            /**
+             * synchronous cached response should now be returned
+             */
+            expect(_timedStreamAsyncAwait(service.getDataWithCacheBusting('test'))).toEqual({ payload: 'test' });
+        });
+        it('cache data until the cacheBusterNotifier has emitted { isInstant: true }', function () {
+            var asyncFreshData = _timedStreamAsyncAwait(service.getDataWithCacheBusting('test'), 1000);
+            expect(asyncFreshData).toEqual({ payload: 'test' });
+            expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+            var cachedResponse = _timedStreamAsyncAwait(service.getDataWithCacheBusting('test'));
+            expect(cachedResponse).toEqual({ payload: 'test' });
+            /**
+             * response acquired from cache, so no incrementation on the service spy call counter is expected here
+             */
+            expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
+            /**
+             * make the save call
+             * cache busting subject will emit instantly and the cache for getDataWithCacheBusting('test') will be relieved of
+             */
+            var obs$ = service.saveDataAndCacheBustWithInstant();
+            var cachedResponse2 = _timedStreamAsyncAwait(service.getDataWithCacheBusting('test'));
+            expect(cachedResponse2).toEqual(null);
+            expect(_timedStreamAsyncAwait(obs$, 1000)).toEqual('SAVED');
             /**
              * call count has incremented due to the actual method call (instead of cache)
              */
