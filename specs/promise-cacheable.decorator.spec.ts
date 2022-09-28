@@ -593,8 +593,6 @@ strategies.forEach(s => {
     });
 
     it('cache data until the cacheBusterNotifier has emitted { isInstant: true }', async () => {
-      // TODO fix async storage heisenbug problem ( test fails unpredictably )
-
       const asyncFreshData = await service.getDataWithCacheBusting('test');
       expect(asyncFreshData).toEqual({payload: 'test'});
       expect(mockServiceCallSpy).toHaveBeenCalledTimes(1);
