@@ -72,7 +72,7 @@ export interface ICacheConfig {
   slidingExpiration?: boolean;
   /**
    * max cacheCount for different parameters
-   * @description maximum allowed unique caches (same parameters)
+   * @description maximum allowed unique caches (different parameters)
    */
   maxCacheCount?: number;
   /**
@@ -101,7 +101,7 @@ Here are all the possible global configurations:
   slidingExpiration: boolean;
   /**
    * max cacheCount for different parameters
-   * @description maximum allowed unique caches (same parameters)
+   * @description maximum allowed unique caches (different parameters)
    */
   maxCacheCount: number;
   /**
