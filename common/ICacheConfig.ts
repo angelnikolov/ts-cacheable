@@ -53,5 +53,5 @@ export interface ICacheConfig {
    * Whatever is returned from the callback will be automatically stored against the chosen cacheKey in the
    * storage of the storage strategy you've chosen.
    */
-  cacheModifier?: Subject<(cachePairs: ICachePair<Observable<any>>[]) => ICachePair<Observable<any>>[]>;
+  cacheModifier?: Subject<(cachePairs: ICachePair<any>[]) => ICachePair<any>[]>;
 }
