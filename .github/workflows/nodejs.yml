@@ -28,5 +28,5 @@ jobs:
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v5.0.7
       with:
-        file: ./coverage/lcov/coverage.xml 
+        files: ./coverage/lcov/coverage.xml 
         fail_ci_if_error: true
