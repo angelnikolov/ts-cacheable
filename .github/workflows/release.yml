@@ -1,4 +1,4 @@
-name: 🔒 Dry Run - NPM Release Preview
+name: 🔒 NPM Release Preview
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   release:
-    name: Dry-run NPM release
+    name: NPM release
     runs-on: ubuntu-latest
 
     permissions:
@@ -61,7 +61,7 @@ jobs:
           git add package.json package-lock.json
           git commit -am "chore: release v${{ steps.version_step.outputs.version }}"
           git tag ${{ steps.version_step.outputs.version }}
-          git push origin main --follow-tags
+          git push origin master --follow-tags
 
       - name: 🚀 Publish to NPM
         run: npm publish --access public
