@@ -11,7 +11,8 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      contents: read    # Only read permissions for safety
+      contents: write    # Only read permissions for safety
+      packages: write   # Allow publishing to NPM
 
     steps:
       - name: 📦 Checkout code
