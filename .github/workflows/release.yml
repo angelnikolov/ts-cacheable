@@ -63,7 +63,6 @@ jobs:
           git commit -m "chore: release ${{ steps.version_step.outputs.version }}"
           git tag -a ${{ steps.version_step.outputs.version }} -m "Release ${{ steps.version_step.outputs.version }}"
    
-          git tag ${{ steps.version_step.outputs.version }}
           git push origin master --follow-tags
 
       - name: 🚀 Publish to NPM
