@@ -46,40 +46,29 @@ jobs:
           echo "Current package version is: $CURRENT_VERSION"
           echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
 
-      # - name: 🚨 Bump version (DISABLED)
-      #   id: version_step
-      #   run: |
-      #     npm version patch --no-git-tag-version
-      #     NEW_VERSION=$(node -p "require('./package.json').version")
-      #     echo "Bumped to version: $NEW_VERSION"
-      #     echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
-
-      - name: 🪵 Simulate version bump
+      - name: 🚨 Bump version
         id: version_step
         run: |
-          SIMULATED_NEW_VERSION=$(node -p "require('./package.json').version.split('.').map((n, i, arr) => i === 2 ? ++n : n).join('.')") # Simulates patch bump
-          echo "Simulated version bump to: $SIMULATED_NEW_VERSION"
-          echo "version=$SIMULATED_NEW_VERSION" >> $GITHUB_OUTPUT
+          npm version patch --no-git-tag-version
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          echo "Bumped to version: $NEW_VERSION"
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
-      # - name: ✅ Commit and tag version (DISABLED)
-      #   run: |
-      #     git config user.name "github-actions[bot]"
-      #     git config user.email "github-actions[bot]@users.noreply.github.com"
-      #     git commit -am "chore: release v${{ steps.version_step.outputs.version }}"
-      #     git tag v${{ steps.version_step.outputs.version }}
-      #     git push origin main --follow-tags
-
-      - name: 🪵 Simulate git tag creation
+      - name: ✅ Commit and tag version
         run: |
-          echo "Would commit changes and tag: v${{ steps.version_step.outputs.version }}"
-          echo "Simulated git command: git tag v${{ steps.version_step.outputs.version }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json
+          git commit -am "chore: release v${{ steps.version_step.outputs.version }}"
+          git tag ${{ steps.version_step.outputs.version }}
+          git push origin main --follow-tags
 
-      # - name: 🚀 Publish to NPM (DISABLED)
-      #   run: npm publish --access public
-      #   env:
-      #     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: 🚀 Publish to NPM
+        run: npm publish --access public
         env:
-            CI: true
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          CI: true
+            
 
       - name: 🪵 Simulate NPM publish
         run: |
