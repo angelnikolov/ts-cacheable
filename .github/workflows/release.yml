@@ -3,7 +3,7 @@ name: 🔒 Dry Run - NPM Release Preview
 on:
   push:
     branches:
-      - main  # Only run this on main for now
+      - master  # Only run this on master for now
 
 jobs:
   release:
