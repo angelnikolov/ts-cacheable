@@ -20,14 +20,24 @@ jobs:
       - name: 🧰 Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 18.x
           registry-url: 'https://registry.npmjs.org/'
 
       - name: 📥 Install dependencies
-        run: npm ci
+        run: |
+            npm ci
+            npm install rxjs@6.2.0
 
       - name: 🧪 Run tests
         run: npm test
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5.0.7
+        with:
+            files: ./coverage/lcov/coverage.xml 
+            token: ${{ secrets.CODECOV_TOKEN }}
+            fail_ci_if_error: true
+        
 
       - name: 🔍 Get current version
         id: version_info
@@ -68,6 +78,8 @@ jobs:
       #   run: npm publish --access public
       #   env:
       #     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        env:
+            CI: true
 
       - name: 🪵 Simulate NPM publish
         run: |
