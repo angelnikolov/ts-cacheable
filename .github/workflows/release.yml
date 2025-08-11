@@ -45,6 +45,7 @@ jobs:
         id: version_info
         run: |
           CURRENT_VERSION=$(node -p "require('./package.json').version")
+          echo cat package.json
           echo "Current package version is: $CURRENT_VERSION"
           echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
 
@@ -53,6 +54,7 @@ jobs:
         run: |
           npm version patch --no-git-tag-version
           NEW_VERSION=$(node -p "require('./package.json').version")
+          echo cat package.json
           echo "Bumped to version: $NEW_VERSION"
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
