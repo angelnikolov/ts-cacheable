@@ -11,12 +11,14 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      contents: write    # Only read permissions for safety
-      packages: write   # Allow publishing to NPM
+      contents: write    # Needed to push tags
+      packages: write    # Allow publishing to NPM
 
     steps:
       - name: 📦 Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # ensure full history for tags
 
       - name: 🧰 Setup Node.js
         uses: actions/setup-node@v4
@@ -38,7 +40,6 @@ jobs:
             files: ./coverage/lcov/coverage.xml 
             token: ${{ secrets.CODECOV_TOKEN }}
             fail_ci_if_error: true
-        
 
       - name: 🔍 Get current version
         id: version_info
@@ -62,16 +63,16 @@ jobs:
           git add package.json package-lock.json
           git commit -m "chore: release ${{ steps.version_step.outputs.version }}"
           git tag -a ${{ steps.version_step.outputs.version }} -m "Release ${{ steps.version_step.outputs.version }}"
-   
           git push origin master --follow-tags
+
+
+      - name: 🧐 Preview npm package contents
+        run: |
+          echo "Previewing npm package contents for version ${{ steps.version_step.outputs.version }}..."
+          npm pack --dry-run
 
       - name: 🚀 Publish to NPM
         run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           CI: true
-            
-
-    #   - name: 🪵 Simulate NPM publish
-    #     run: |
-    #       echo "Would publish version: ${{ steps.version_step.outputs.version }} to NPM"
